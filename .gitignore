@@ -6,6 +6,6 @@ target/
 *.iml
 node_modules/
 dist/
-uploads/
-audio/
+/uploads/
+/audio/
 *.log
