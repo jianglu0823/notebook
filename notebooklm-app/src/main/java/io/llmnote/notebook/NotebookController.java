@@ -22,7 +22,7 @@ public class NotebookController {
 
     @GetMapping("/{id}")
     public Notebook get(@PathVariable Long id, Principal principal) {
-        return notebookService.getOwned(id, principal.ownerId());
+        return notebookService.getReadable(id, principal.ownerId());
     }
 
     @PostMapping

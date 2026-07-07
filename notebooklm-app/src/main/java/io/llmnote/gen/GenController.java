@@ -36,14 +36,14 @@ public class GenController {
     /** 列出该 notebook 的所有生成文档(最新在前)。 */
     @GetMapping
     public List<GeneratedDoc> list(@PathVariable Long notebookId, Principal principal) {
-        notebookService.getOwned(notebookId, principal.ownerId());
+        notebookService.getReadable(notebookId, principal.ownerId());
         return docRepo.findByNotebookIdOrderByIdDesc(notebookId);
     }
 
     /** 查询单个文档(用于前端轮询生成状态)。 */
     @GetMapping("/{id}")
     public GeneratedDoc get(@PathVariable Long notebookId, @PathVariable Long id, Principal principal) {
-        notebookService.getOwned(notebookId, principal.ownerId());
+        notebookService.getReadable(notebookId, principal.ownerId());
         return docRepo.findById(id)
                 .filter(d -> d.getNotebookId().equals(notebookId))
                 .orElseThrow(() -> new IllegalArgumentException("doc not found: " + id));

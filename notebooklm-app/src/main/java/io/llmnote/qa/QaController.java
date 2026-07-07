@@ -33,8 +33,8 @@ public class QaController {
 
     @PostMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter ask(@PathVariable Long notebookId, @RequestBody AskReq req, Principal principal) {
-        // SSE 回调在异步线程执行,ThreadLocal 不可用:在 servlet 线程上先校验归属。
-        notebookService.getOwned(notebookId, principal.ownerId());
+        // SSE 回调在异步线程执行,ThreadLocal 不可用:在 servlet 线程上先校验可读(本人或系统笔记本)。
+        notebookService.getReadable(notebookId, principal.ownerId());
 
         String sessionId = (req.getSessionId() == null || req.getSessionId().isBlank())
                 ? UUID.randomUUID().toString() : req.getSessionId();
@@ -81,7 +81,7 @@ public class QaController {
     /** 会话历史(按 session)。 */
     @GetMapping("/history")
     public List<QaHistory> history(@PathVariable Long notebookId, @RequestParam String sessionId, Principal principal) {
-        notebookService.getOwned(notebookId, principal.ownerId());
+        notebookService.getReadable(notebookId, principal.ownerId());
         return historyRepo.findBySessionIdOrderByIdAsc(sessionId);
     }
 

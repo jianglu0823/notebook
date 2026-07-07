@@ -30,13 +30,20 @@ public class NoteService {
     private final IngestService ingestService;
 
     public List<Note> list(Long notebookId, String ownerId) {
-        notebookService.getOwned(notebookId, ownerId);
+        notebookService.getReadable(notebookId, ownerId);
         return noteRepo.findByNotebookIdOrderByIdDesc(notebookId);
     }
 
-    /** 取笔记并校验归属(先校验笔记本归属,再校验笔记属于该笔记本)。 */
+    /** 取笔记并校验归属(先校验笔记本归属,再校验笔记属于该笔记本)。用于修改类入口。 */
     public Note getOwnedNote(Long notebookId, Long noteId, String ownerId) {
         notebookService.getOwned(notebookId, ownerId);
+        return noteRepo.findByIdAndNotebookId(noteId, notebookId)
+                .orElseThrow(() -> new ForbiddenException("note not found: " + noteId));
+    }
+
+    /** 取笔记并校验可读(本人笔记本或系统笔记本)。用于只读/问答类入口。 */
+    public Note getReadableNote(Long notebookId, Long noteId, String ownerId) {
+        notebookService.getReadable(notebookId, ownerId);
         return noteRepo.findByIdAndNotebookId(noteId, notebookId)
                 .orElseThrow(() -> new ForbiddenException("note not found: " + noteId));
     }

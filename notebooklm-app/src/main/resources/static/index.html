@@ -91,6 +91,9 @@
       <button class="sec hidden" id="logoutBtn" onclick="logout()">退出</button>
     </div>
     <div id="nbList"></div>
+    <label id="hideSysWrap" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mut);margin:6px 2px">
+      <input type="checkbox" id="hideSys" onchange="toggleHideSys()"> 隐藏系统公告笔记本
+    </label>
     <div id="nbNew">
       <div class="row"><input id="nbName" placeholder="新笔记本名称"></div>
       <button onclick="createNb()" style="width:100%">+ 新建笔记本</button>
@@ -121,6 +124,7 @@
 
       <!-- note detail: rich body + uploaded files -->
       <div id="tab-note" class="tabpane hidden">
+        <div id="roTip" class="mut" style="display:none;padding:8px 12px;background:var(--panel2);border-radius:6px;margin-bottom:10px">🔒 这是系统公告笔记本,只读浏览。你可以在「问答」标签基于它提问。</div>
         <div id="noteEmpty" class="empty">选择或新建一条笔记开始编辑</div>
         <div id="noteEditor" class="hidden">
           <div class="card">
@@ -138,11 +142,11 @@
             <div id="noteBody" contenteditable="true" onblur="saveNote()"></div>
             <div class="row" style="margin-top:10px;justify-content:space-between">
               <span class="mut" id="noteSaveState"></span>
-              <span><button onclick="saveNote()">保存正文</button>
+              <span id="noteActions"><button onclick="saveNote()">保存正文</button>
               <button class="sec" onclick="deleteNote()">删除笔记</button></span>
             </div>
           </div>
-          <div class="card">
+          <div class="card" id="uploadCard">
             <div class="row"><input type="file" id="fileInput"></div>
             <button onclick="uploadFile()">上传文件到本笔记</button>
             <span class="mut" style="margin-left:10px">支持 PDF / Word / TXT / 图片 / 音频</span>
@@ -165,7 +169,7 @@
       <div id="tab-docs" class="tabpane hidden">
         <div class="card">
           <div class="scope" id="docScope"></div>
-          <div class="row">
+          <div class="row" id="docActions">
             <button onclick="genDoc('SUMMARY')">生成摘要</button>
             <button onclick="genDoc('STUDY_GUIDE')">学习指南</button>
             <button onclick="genDoc('FAQ')">FAQ</button>
@@ -178,8 +182,10 @@
       <div id="tab-podcast" class="tabpane hidden">
         <div class="card">
           <div class="scope" id="podScope"></div>
+          <div id="podActions">
           <button onclick="genPodcast()">🎙️ 生成音频概览(双主持人)</button>
           <span class="mut" style="margin-left:10px">异步生成,约需 1-2 分钟</span>
+          </div>
         </div>
         <div id="podList"></div>
       </div>
@@ -206,6 +212,11 @@ let notebooks = [], currentNb = null, currentTab = 'note', qaSession = null;
 let notes = [], currentNote = null, selectedNotes = new Set();
 let pollTimer = null;
 let authMode = 'login';
+let hideSys = localStorage.getItem('nblm_hide_sys') === '1';
+
+// 系统内置只读笔记本判定(owner_id=system)
+function isSystemNb(nb) { return !!nb && nb.ownerId === 'system'; }
+function currentIsSystem() { return isSystemNb(currentNb); }
 
 // ---- auth ----
 function token() { return localStorage.getItem('nblm_token'); }
@@ -283,11 +294,22 @@ function resetToEmpty() {
 
 async function loadNotebooks() {
   notebooks = await j(`${API}/notebooks`);
+  document.getElementById('hideSys').checked = hideSys;
+  const hasSys = notebooks.some(isSystemNb);
+  document.getElementById('hideSysWrap').style.display = hasSys ? 'flex' : 'none';
+  const visible = notebooks.filter(n => !(hideSys && isSystemNb(n)));
   const el = document.getElementById('nbList');
-  el.innerHTML = notebooks.map(n => `
+  el.innerHTML = visible.map(n => `
     <div class="nb-item ${currentNb&&currentNb.id===n.id?'active':''}" onclick="selectNb(${n.id})">
-      <div>${esc(n.name)}</div>${n.description?`<div class="desc">${esc(n.description)}</div>`:''}
+      <div>${isSystemNb(n)?'<span class="badge" style="color:var(--warn);margin-right:6px">系统</span>':''}${esc(n.name)}</div>${n.description?`<div class="desc">${esc(n.description)}</div>`:''}
     </div>`).join('');
+}
+
+function toggleHideSys() {
+  hideSys = document.getElementById('hideSys').checked;
+  localStorage.setItem('nblm_hide_sys', hideSys ? '1' : '0');
+  if (hideSys && currentIsSystem()) resetToEmpty();
+  loadNotebooks();
 }
 
 async function createNb() {
@@ -304,7 +326,27 @@ async function selectNb(id) {
   document.getElementById('noNb').classList.add('hidden');
   loadNotebooks();
   await loadNotes(true);
+  applyReadOnlyUI();
   switchTab('note');
+}
+
+/** 系统只读笔记本:隐藏新建笔记、隐藏编辑/上传/生成入口;保留查看与问答。 */
+function applyReadOnlyUI() {
+  const ro = currentIsSystem();
+  document.getElementById('notesFoot').style.display = ro ? 'none' : '';
+  document.getElementById('nbNew') && (document.getElementById('nbNew').style.display = '');
+  // 笔记编辑区:工具栏 / 正文可编辑 / 保存删除 / 上传
+  const noteBody = document.getElementById('noteBody');
+  if (noteBody) noteBody.setAttribute('contenteditable', ro ? 'false' : 'true');
+  ['rtToolbar','noteActions','uploadCard'].forEach(id => {
+    const e = document.getElementById(id); if (e) e.style.display = ro ? 'none' : '';
+  });
+  const et = document.getElementById('editTitle'); if (et) et.disabled = ro;
+  // 生成 / 播客入口
+  ['docActions','podActions'].forEach(id => {
+    const e = document.getElementById(id); if (e) e.style.display = ro ? 'none' : '';
+  });
+  const roTip = document.getElementById('roTip'); if (roTip) roTip.style.display = ro ? '' : 'none';
 }
 
 // ---- notes ----
@@ -348,7 +390,7 @@ function toggleSelectAll() {
 function selectedNoteIds() { return [...selectedNotes]; }
 
 async function createNote() {
-  if (!currentNb) return;
+  if (!currentNb || currentIsSystem()) return;
   const title = document.getElementById('noteTitle').value.trim();
   const note = await j(`${API}/notebooks/${currentNb.id}/notes`, {
     method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title})
@@ -372,7 +414,7 @@ async function openNote(id) {
 }
 
 async function saveNote() {
-  if (!currentNote) return;
+  if (!currentNote || currentIsSystem()) return;
   const title = document.getElementById('editTitle').value.trim();
   const content = document.getElementById('noteBody').innerHTML;
   if (currentNote.title === title && (currentNote.content||'') === content) return;
@@ -390,7 +432,7 @@ async function saveNote() {
 }
 
 async function deleteNote() {
-  if (!currentNote) return;
+  if (!currentNote || currentIsSystem()) return;
   if (!confirm('确定删除这条笔记及其上传文件?')) return;
   await j(`${API}/notebooks/${currentNb.id}/notes/${currentNote.id}`, {method:'DELETE'});
   currentNote = null;
@@ -418,6 +460,7 @@ function switchTab(tab) {
   if (tab==='docs') loadDocs();
   if (tab==='podcast') loadPodcasts();
   if (tab==='qa') { document.getElementById('qaLog').innerHTML=''; }
+  applyReadOnlyUI();
   renderScopes();
 }
 
@@ -439,7 +482,7 @@ async function loadSources() {
 }
 
 async function uploadFile() {
-  if (!currentNote) return;
+  if (!currentNote || currentIsSystem()) return;
   const f = document.getElementById('fileInput').files[0];
   if (!f) return;
   const fd = new FormData(); fd.append('file', f);
@@ -493,6 +536,7 @@ function renderCites(botEl, cites) {
 
 // ---- docs ----
 async function genDoc(kind) {
+  if (currentIsSystem()) return;
   await j(`${API}/notebooks/${currentNb.id}/docs/${kind}`, {
     method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({noteIds:selectedNoteIds()})
   });
@@ -514,6 +558,7 @@ async function loadDocs() {
 
 // ---- podcast ----
 async function genPodcast() {
+  if (currentIsSystem()) return;
   await j(`${API}/notebooks/${currentNb.id}/podcasts`, {
     method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({noteIds:selectedNoteIds()})
   });

@@ -24,7 +24,7 @@ public class NoteController {
 
     @GetMapping("/{noteId}")
     public Note get(@PathVariable Long notebookId, @PathVariable Long noteId, Principal principal) {
-        return noteService.getOwnedNote(notebookId, noteId, principal.ownerId());
+        return noteService.getReadableNote(notebookId, noteId, principal.ownerId());
     }
 
     @PostMapping
@@ -47,7 +47,7 @@ public class NoteController {
     /** 该笔记下的上传文件(不含 NOTE_BODY 正文源)。 */
     @GetMapping("/{noteId}/sources")
     public List<Source> sources(@PathVariable Long notebookId, @PathVariable Long noteId, Principal principal) {
-        noteService.getOwnedNote(notebookId, noteId, principal.ownerId());
+        noteService.getReadableNote(notebookId, noteId, principal.ownerId());
         return sourceRepo.findByNoteId(noteId).stream()
                 .filter(s -> !NoteService.NOTE_BODY_TYPE.equals(s.getType()))
                 .toList();

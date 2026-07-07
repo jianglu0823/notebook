@@ -35,13 +35,13 @@ public class PodcastController {
 
     @GetMapping
     public List<Podcast> list(@PathVariable Long notebookId, Principal principal) {
-        notebookService.getOwned(notebookId, principal.ownerId());
+        notebookService.getReadable(notebookId, principal.ownerId());
         return podcastRepo.findByNotebookIdOrderByIdDesc(notebookId);
     }
 
     @GetMapping("/{id}")
     public Podcast get(@PathVariable Long notebookId, @PathVariable Long id, Principal principal) {
-        notebookService.getOwned(notebookId, principal.ownerId());
+        notebookService.getReadable(notebookId, principal.ownerId());
         return podcastRepo.findById(id)
                 .filter(p -> p.getNotebookId().equals(notebookId))
                 .orElseThrow(() -> new IllegalArgumentException("podcast not found: " + id));
@@ -50,7 +50,7 @@ public class PodcastController {
     /** 播放/下载合成音频。 */
     @GetMapping("/{id}/audio")
     public ResponseEntity<Resource> audio(@PathVariable Long notebookId, @PathVariable Long id, Principal principal) {
-        notebookService.getOwned(notebookId, principal.ownerId());
+        notebookService.getReadable(notebookId, principal.ownerId());
         Podcast p = podcastRepo.findById(id)
                 .filter(x -> x.getNotebookId().equals(notebookId))
                 .orElseThrow(() -> new IllegalArgumentException("podcast not found: " + id));
