@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NotebookLM · 自建</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg:#0f1115; --panel:#181b22; --panel2:#20242e; --line:#2a2f3a; --fg:#e6e8ec; --mut:#9aa3b2; --accent:#4f8cff; --ok:#3fb950; --warn:#d29922; --err:#f85149; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background:var(--bg); color:var(--fg); height:100vh; overflow:hidden; }
+  #app { display:grid; grid-template-columns:240px 260px 1fr; height:100vh; }
+  /* sidebar */
+  #sidebar { background:var(--panel); border-right:1px solid var(--line); display:flex; flex-direction:column; }
+  #sidebar h1 { font-size:15px; padding:16px; border-bottom:1px solid var(--line); color:var(--accent); }
+  #nbList { flex:1; overflow-y:auto; }
+  .nb-item { padding:12px 16px; cursor:pointer; border-bottom:1px solid var(--line); font-size:14px; }
+  .nb-item:hover { background:var(--panel2); }
+  .nb-item.active { background:var(--panel2); border-left:3px solid var(--accent); }
+  .nb-item .desc { font-size:12px; color:var(--mut); margin-top:3px; }
+  #nbNew { padding:12px 16px; border-top:1px solid var(--line); }
+  /* notes column */
+  #notesCol { background:var(--panel); border-right:1px solid var(--line); display:flex; flex-direction:column; overflow:hidden; }
+  #notesHead { padding:12px 14px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; }
+  #notesHead .t { font-size:13px; color:var(--mut); }
+  #noteList { flex:1; overflow-y:auto; }
+  .note-item { padding:10px 14px; border-bottom:1px solid var(--line); display:flex; gap:8px; align-items:center; font-size:14px; }
+  .note-item:hover { background:var(--panel2); }
+  .note-item.active { background:var(--panel2); border-left:3px solid var(--accent); }
+  .note-item .nm { flex:1; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .note-item input[type=checkbox] { width:auto; cursor:pointer; }
+  #notesFoot { padding:10px 14px; border-top:1px solid var(--line); }
+  /* main */
+  #main { display:flex; flex-direction:column; overflow:hidden; }
+  #tabs { display:flex; border-bottom:1px solid var(--line); background:var(--panel); }
+  .tab { padding:12px 20px; cursor:pointer; font-size:14px; color:var(--mut); border-bottom:2px solid transparent; }
+  .tab.active { color:var(--fg); border-bottom-color:var(--accent); }
+  #content { flex:1; overflow-y:auto; padding:20px; }
+  .hidden { display:none !important; }
+  /* generic */
+  button { background:var(--accent); color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-size:13px; }
+  button:hover { filter:brightness(1.1); }
+  button.sec { background:var(--panel2); border:1px solid var(--line); color:var(--fg); }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  input, textarea { background:var(--panel2); border:1px solid var(--line); color:var(--fg); padding:8px; border-radius:6px; font-size:13px; width:100%; font-family:inherit; }
+  .row { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:14px; margin-bottom:12px; }
+  .badge { font-size:11px; padding:2px 8px; border-radius:10px; background:var(--panel2); }
+  .badge.DONE { color:var(--ok); } .badge.FAILED { color:var(--err); }
+  .badge.PENDING,.badge.PARSING,.badge.SCRIPTING,.badge.SYNTHESIZING,.badge.GENERATING,.badge.EMBEDDING { color:var(--warn); }
+  .mut { color:var(--mut); font-size:12px; }
+  /* rich text editor */
+  #rtToolbar { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px; }
+  #rtToolbar button { background:var(--panel2); border:1px solid var(--line); color:var(--fg); padding:5px 10px; font-size:13px; min-width:32px; }
+  #rtToolbar button:hover { background:var(--accent); }
+  #noteBody { min-height:260px; max-height:50vh; overflow-y:auto; background:var(--panel2); border:1px solid var(--line); border-radius:6px; padding:12px; font-size:14px; line-height:1.6; outline:none; }
+  #noteBody:focus { border-color:var(--accent); }
+  #noteBody blockquote { border-left:3px solid var(--accent); padding-left:10px; color:var(--mut); margin:6px 0; }
+  #noteBody ul,#noteBody ol { padding-left:22px; }
+  /* qa */
+  #qaLog { display:flex; flex-direction:column; gap:14px; }
+  .msg { max-width:80%; padding:10px 14px; border-radius:10px; white-space:pre-wrap; line-height:1.55; }
+  .msg.user { align-self:flex-end; background:var(--accent); }
+  .msg.bot { align-self:flex-start; background:var(--panel); border:1px solid var(--line); }
+  .cites { margin-top:8px; font-size:12px; }
+  .cite { display:block; padding:6px 8px; margin-top:4px; background:var(--panel2); border-radius:6px; color:var(--mut); }
+  sup.cref { color:var(--accent); font-weight:bold; }
+  #qaBar { display:flex; gap:8px; padding-top:12px; border-top:1px solid var(--line); margin-top:12px; }
+  pre.doc { white-space:pre-wrap; line-height:1.6; font-family:inherit; }
+  .empty { color:var(--mut); text-align:center; margin-top:60px; }
+  .scope { font-size:12px; color:var(--mut); margin-bottom:10px; }
+  /* auth bar */
+  #authBar { padding:10px 16px; border-bottom:1px solid var(--line); font-size:13px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  #authBar .who { color:var(--mut); flex:1; }
+  #authBar button { padding:5px 10px; font-size:12px; }
+  /* modal */
+  #authModal { position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:100; }
+  #authModal .box { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:24px; width:320px; }
+  #authModal h2 { font-size:16px; margin-bottom:16px; }
+  #authModal .row { margin-bottom:12px; }
+  #authErr { color:var(--err); font-size:12px; min-height:16px; margin-bottom:8px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <h1>📓 NotebookLM 自建</h1>
+    <div id="authBar">
+      <span class="who" id="whoami">加载中…</span>
+      <button class="sec" id="loginBtn" onclick="openAuth('login')">登录</button>
+      <button class="sec" id="registerBtn" onclick="openAuth('register')">注册</button>
+      <button class="sec hidden" id="logoutBtn" onclick="logout()">退出</button>
+    </div>
+    <div id="nbList"></div>
+    <div id="nbNew">
+      <div class="row"><input id="nbName" placeholder="新笔记本名称"></div>
+      <button onclick="createNb()" style="width:100%">+ 新建笔记本</button>
+    </div>
+  </aside>
+
+  <section id="notesCol">
+    <div id="notesHead">
+      <span class="t" id="notesTitle">笔记</span>
+      <button class="sec" id="selAllBtn" onclick="toggleSelectAll()" title="全选/全不选">全选</button>
+    </div>
+    <div id="noteList"><div class="empty" style="margin-top:30px">← 选择笔记本</div></div>
+    <div id="notesFoot">
+      <div class="row"><input id="noteTitle" placeholder="新笔记标题"></div>
+      <button onclick="createNote()" style="width:100%">+ 新建笔记</button>
+    </div>
+  </section>
+
+  <main id="main">
+    <div id="tabs">
+      <div class="tab active" data-tab="note" onclick="switchTab('note')">笔记</div>
+      <div class="tab" data-tab="qa" onclick="switchTab('qa')">问答</div>
+      <div class="tab" data-tab="docs" onclick="switchTab('docs')">生成</div>
+      <div class="tab" data-tab="podcast" onclick="switchTab('podcast')">播客</div>
+    </div>
+    <div id="content">
+      <div class="empty" id="noNb">← 请选择或新建一个笔记本</div>
+
+      <!-- note detail: rich body + uploaded files -->
+      <div id="tab-note" class="tabpane hidden">
+        <div id="noteEmpty" class="empty">选择或新建一条笔记开始编辑</div>
+        <div id="noteEditor" class="hidden">
+          <div class="card">
+            <div class="row"><input id="editTitle" placeholder="笔记标题"></div>
+            <div id="rtToolbar">
+              <button type="button" onmousedown="event.preventDefault()" onclick="rt('bold')"><b>B</b></button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="rt('italic')"><i>I</i></button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="rt('underline')"><u>U</u></button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="rt('insertUnorderedList')">• 列表</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="rt('insertOrderedList')">1. 列表</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="rtQuote()">❝ 引用</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="rt('undo')">↶</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="rt('redo')">↷</button>
+            </div>
+            <div id="noteBody" contenteditable="true" onblur="saveNote()"></div>
+            <div class="row" style="margin-top:10px;justify-content:space-between">
+              <span class="mut" id="noteSaveState"></span>
+              <span><button onclick="saveNote()">保存正文</button>
+              <button class="sec" onclick="deleteNote()">删除笔记</button></span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="row"><input type="file" id="fileInput"></div>
+            <button onclick="uploadFile()">上传文件到本笔记</button>
+            <span class="mut" style="margin-left:10px">支持 PDF / Word / TXT / 图片 / 音频</span>
+            <div id="sourceList" style="margin-top:12px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- qa -->
+      <div id="tab-qa" class="tabpane hidden" style="display:flex;flex-direction:column;height:100%">
+        <div class="scope" id="qaScope"></div>
+        <div id="qaLog" style="flex:1"></div>
+        <div id="qaBar">
+          <input id="qaInput" placeholder="基于选中笔记提问…" onkeydown="if(event.key==='Enter')ask()">
+          <button id="qaBtn" onclick="ask()">发送</button>
+        </div>
+      </div>
+
+      <!-- docs -->
+      <div id="tab-docs" class="tabpane hidden">
+        <div class="card">
+          <div class="scope" id="docScope"></div>
+          <div class="row">
+            <button onclick="genDoc('SUMMARY')">生成摘要</button>
+            <button onclick="genDoc('STUDY_GUIDE')">学习指南</button>
+            <button onclick="genDoc('FAQ')">FAQ</button>
+          </div>
+        </div>
+        <div id="docList"></div>
+      </div>
+
+      <!-- podcast -->
+      <div id="tab-podcast" class="tabpane hidden">
+        <div class="card">
+          <div class="scope" id="podScope"></div>
+          <button onclick="genPodcast()">🎙️ 生成音频概览(双主持人)</button>
+          <span class="mut" style="margin-left:10px">异步生成,约需 1-2 分钟</span>
+        </div>
+        <div id="podList"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="authModal" class="hidden">
+  <div class="box">
+    <h2 id="authTitle">登录</h2>
+    <div id="authErr"></div>
+    <div class="row"><input id="authUser" placeholder="用户名" autocomplete="username"></div>
+    <div class="row"><input id="authPass" type="password" placeholder="密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitAuth()"></div>
+    <div class="row" style="gap:8px">
+      <button onclick="submitAuth()" style="flex:1">确定</button>
+      <button class="sec" onclick="closeAuth()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/api';
+let notebooks = [], currentNb = null, currentTab = 'note', qaSession = null;
+let notes = [], currentNote = null, selectedNotes = new Set();
+let pollTimer = null;
+let authMode = 'login';
+
+// ---- auth ----
+function token() { return localStorage.getItem('nblm_token'); }
+function authHeaders(extra) {
+  const h = Object.assign({}, extra || {});
+  const t = token();
+  if (t) h['Authorization'] = 'Bearer ' + t;
+  return h;
+}
+
+async function j(url, opts) {
+  opts = opts || {};
+  opts.credentials = 'include';               // 传游客 cookie
+  opts.headers = authHeaders(opts.headers);   // 传 JWT
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error(await r.text());
+  const ct = r.headers.get('content-type') || '';
+  return ct.includes('json') ? r.json() : r.text();
+}
+
+async function loadMe() {
+  try {
+    const me = await j(`${API}/auth/me`);
+    const guest = me.guest;
+    document.getElementById('whoami').textContent = guest ? '游客模式' : ('👤 ' + me.username);
+    document.getElementById('loginBtn').classList.toggle('hidden', !guest);
+    document.getElementById('registerBtn').classList.toggle('hidden', !guest);
+    document.getElementById('logoutBtn').classList.toggle('hidden', guest);
+  } catch (e) { document.getElementById('whoami').textContent = '游客模式'; }
+}
+
+function openAuth(mode) {
+  authMode = mode;
+  document.getElementById('authTitle').textContent = mode==='login' ? '登录' : '注册';
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authUser').value = '';
+  document.getElementById('authPass').value = '';
+  document.getElementById('authModal').classList.remove('hidden');
+  document.getElementById('authUser').focus();
+}
+function closeAuth() { document.getElementById('authModal').classList.add('hidden'); }
+
+async function submitAuth() {
+  const username = document.getElementById('authUser').value.trim();
+  const password = document.getElementById('authPass').value;
+  if (!username || !password) { document.getElementById('authErr').textContent='请填写用户名和密码'; return; }
+  try {
+    const res = await j(`${API}/auth/${authMode}`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username, password})
+    });
+    localStorage.setItem('nblm_token', res.token);
+    closeAuth();
+    resetToEmpty();
+    await loadMe();
+    await loadNotebooks();
+  } catch (e) {
+    document.getElementById('authErr').textContent = '失败:' + (e.message||'').slice(0,120);
+  }
+}
+
+function logout() {
+  localStorage.removeItem('nblm_token');
+  resetToEmpty();
+  loadMe();
+  loadNotebooks();
+}
+
+function resetToEmpty() {
+  currentNb = null; notes = []; currentNote = null; selectedNotes.clear();
+  document.getElementById('noNb').classList.remove('hidden');
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.add('hidden'));
+  document.getElementById('noteList').innerHTML = '<div class="empty" style="margin-top:30px">← 选择笔记本</div>';
+}
+
+async function loadNotebooks() {
+  notebooks = await j(`${API}/notebooks`);
+  const el = document.getElementById('nbList');
+  el.innerHTML = notebooks.map(n => `
+    <div class="nb-item ${currentNb&&currentNb.id===n.id?'active':''}" onclick="selectNb(${n.id})">
+      <div>${esc(n.name)}</div>${n.description?`<div class="desc">${esc(n.description)}</div>`:''}
+    </div>`).join('');
+}
+
+async function createNb() {
+  const name = document.getElementById('nbName').value.trim();
+  if (!name) return;
+  await j(`${API}/notebooks`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
+  document.getElementById('nbName').value='';
+  await loadNotebooks();
+}
+
+async function selectNb(id) {
+  currentNb = notebooks.find(n => n.id === id);
+  qaSession = null; currentNote = null;
+  document.getElementById('noNb').classList.add('hidden');
+  loadNotebooks();
+  await loadNotes(true);
+  switchTab('note');
+}
+
+// ---- notes ----
+async function loadNotes(selectAll) {
+  if (!currentNb) return;
+  notes = await j(`${API}/notebooks/${currentNb.id}/notes`);
+  if (selectAll) { selectedNotes = new Set(notes.map(n => n.id)); }
+  else { selectedNotes = new Set([...selectedNotes].filter(id => notes.some(n => n.id === id))); }
+  renderNotes();
+  renderScopes();
+}
+
+function renderNotes() {
+  const el = document.getElementById('noteList');
+  if (!notes.length) { el.innerHTML = '<div class="empty" style="margin-top:30px">还没有笔记,新建一条吧</div>'; return; }
+  el.innerHTML = notes.map(n => `
+    <div class="note-item ${currentNote&&currentNote.id===n.id?'active':''}">
+      <input type="checkbox" ${selectedNotes.has(n.id)?'checked':''} onchange="toggleNote(${n.id})">
+      <span class="nm" onclick="openNote(${n.id})" title="${esc(n.title)}">${esc(n.title)}</span>
+    </div>`).join('');
+}
+
+function renderScopes() {
+  const total = notes.length, sel = selectedNotes.size;
+  const txt = sel === 0 ? '未选择笔记 → 将使用整个笔记本作为来源'
+            : (sel === total ? `来源:全部 ${total} 条笔记` : `来源:已选 ${sel}/${total} 条笔记`);
+  ['qaScope','docScope','podScope'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent = txt; });
+}
+
+function toggleNote(id) {
+  if (selectedNotes.has(id)) selectedNotes.delete(id); else selectedNotes.add(id);
+  renderScopes();
+}
+
+function toggleSelectAll() {
+  if (selectedNotes.size === notes.length) selectedNotes.clear();
+  else selectedNotes = new Set(notes.map(n => n.id));
+  renderNotes(); renderScopes();
+}
+
+function selectedNoteIds() { return [...selectedNotes]; }
+
+async function createNote() {
+  if (!currentNb) return;
+  const title = document.getElementById('noteTitle').value.trim();
+  const note = await j(`${API}/notebooks/${currentNb.id}/notes`, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title})
+  });
+  document.getElementById('noteTitle').value='';
+  await loadNotes(false);
+  selectedNotes.add(note.id);
+  openNote(note.id);
+}
+
+async function openNote(id) {
+  currentNote = await j(`${API}/notebooks/${currentNb.id}/notes/${id}`);
+  switchTab('note');
+  renderNotes();
+  document.getElementById('noteEmpty').classList.add('hidden');
+  document.getElementById('noteEditor').classList.remove('hidden');
+  document.getElementById('editTitle').value = currentNote.title || '';
+  document.getElementById('noteBody').innerHTML = currentNote.content || '';
+  document.getElementById('noteSaveState').textContent = '';
+  loadSources();
+}
+
+async function saveNote() {
+  if (!currentNote) return;
+  const title = document.getElementById('editTitle').value.trim();
+  const content = document.getElementById('noteBody').innerHTML;
+  if (currentNote.title === title && (currentNote.content||'') === content) return;
+  document.getElementById('noteSaveState').textContent = '保存中…';
+  try {
+    currentNote = await j(`${API}/notebooks/${currentNb.id}/notes/${currentNote.id}`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title, content})
+    });
+    document.getElementById('noteSaveState').textContent = '已保存 ✓';
+    await loadNotes(false);
+    renderNotes();
+  } catch (e) {
+    document.getElementById('noteSaveState').textContent = '保存失败:' + (e.message||'').slice(0,80);
+  }
+}
+
+async function deleteNote() {
+  if (!currentNote) return;
+  if (!confirm('确定删除这条笔记及其上传文件?')) return;
+  await j(`${API}/notebooks/${currentNb.id}/notes/${currentNote.id}`, {method:'DELETE'});
+  currentNote = null;
+  document.getElementById('noteEditor').classList.add('hidden');
+  document.getElementById('noteEmpty').classList.remove('hidden');
+  await loadNotes(false);
+}
+
+// rich text
+function rt(cmd) { document.execCommand(cmd, false, null); document.getElementById('noteBody').focus(); }
+function rtQuote() { document.execCommand('formatBlock', false, 'blockquote'); document.getElementById('noteBody').focus(); }
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
+  document.querySelectorAll('.tabpane').forEach(p => p.classList.add('hidden'));
+  if (!currentNb) { document.getElementById('noNb').classList.remove('hidden'); return; }
+  document.getElementById('noNb').classList.add('hidden');
+  document.getElementById('tab-'+tab).classList.remove('hidden');
+  if (tab==='note') {
+    document.getElementById('noteEmpty').classList.toggle('hidden', !!currentNote);
+    document.getElementById('noteEditor').classList.toggle('hidden', !currentNote);
+    if (currentNote) loadSources();
+  }
+  if (tab==='docs') loadDocs();
+  if (tab==='podcast') loadPodcasts();
+  if (tab==='qa') { document.getElementById('qaLog').innerHTML=''; }
+  renderScopes();
+}
+
+// ---- sources (per note) ----
+async function loadSources() {
+  if (!currentNote) return;
+  const list = await j(`${API}/notebooks/${currentNb.id}/notes/${currentNote.id}/sources`);
+  const anyPending = list.some(s => !['DONE','FAILED'].includes(s.status));
+  document.getElementById('sourceList').innerHTML = list.length ? list.map(s => `
+    <div class="card" style="margin-bottom:8px">
+      <div class="row" style="justify-content:space-between;margin:0">
+        <div><b>${esc(s.name)}</b> <span class="mut">[${s.type}]</span></div>
+        <span class="badge ${s.status}">${s.status}</span>
+      </div>
+      ${s.chunkCount?`<div class="mut">切块 ${s.chunkCount} · 字数 ${s.charCount||'-'}</div>`:''}
+      ${s.errorMsg?`<div class="mut" style="color:var(--err)">${esc(s.errorMsg)}</div>`:''}
+    </div>`).join('') : '<div class="mut">本笔记还没有上传文件</div>';
+  schedulePoll(anyPending, loadSources);
+}
+
+async function uploadFile() {
+  if (!currentNote) return;
+  const f = document.getElementById('fileInput').files[0];
+  if (!f) return;
+  const fd = new FormData(); fd.append('file', f);
+  await j(`${API}/notebooks/${currentNb.id}/notes/${currentNote.id}/sources`, {method:'POST', body:fd});
+  document.getElementById('fileInput').value='';
+  loadSources();
+}
+
+// ---- qa ----
+function ask() {
+  const inp = document.getElementById('qaInput');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value=''; document.getElementById('qaBtn').disabled=true;
+  const log = document.getElementById('qaLog');
+  log.insertAdjacentHTML('beforeend', `<div class="msg user">${esc(q)}</div>`);
+  const bot = document.createElement('div'); bot.className='msg bot'; bot.textContent='';
+  log.appendChild(bot); log.scrollTop = log.scrollHeight;
+
+  fetch(`${API}/notebooks/${currentNb.id}/qa`, {
+    method:'POST', credentials:'include',
+    headers:authHeaders({'Content-Type':'application/json'}),
+    body:JSON.stringify({question:q, sessionId:qaSession, noteIds:selectedNoteIds()})
+  }).then(async resp => {
+    const reader = resp.body.getReader(); const dec = new TextDecoder();
+    let buf='', answer='', cites=[];
+    while (true) {
+      const {value, done} = await reader.read(); if (done) break;
+      buf += dec.decode(value, {stream:true});
+      const parts = buf.split('\n\n'); buf = parts.pop();
+      for (const p of parts) {
+        const ev = (p.match(/event:(.*)/)||[])[1]?.trim();
+        const data = p.split('\n').filter(l=>l.startsWith('data:')).map(l=>l.slice(5)).join('\n');
+        if (ev==='session') qaSession = data.trim();
+        else if (ev==='citations') { cites = JSON.parse(data); }
+        else if (ev==='delta') { answer += data; bot.textContent = answer; log.scrollTop=log.scrollHeight; }
+        else if (ev==='done') { renderCites(bot, cites); }
+      }
+    }
+  }).catch(e => { bot.textContent = '出错: '+e.message; })
+    .finally(() => { document.getElementById('qaBtn').disabled=false; });
+}
+
+function renderCites(botEl, cites) {
+  if (!cites || !cites.length) return;
+  const div = document.createElement('div'); div.className='cites';
+  div.innerHTML = '<b>引用来源:</b>' + cites.map(c =>
+    `<span class="cite"><sup class="cref">[${c.index}]</sup> ${esc(c.sourceName)} · ${esc((c.snippet||'').slice(0,80))}…</span>`).join('');
+  botEl.appendChild(div);
+}
+
+// ---- docs ----
+async function genDoc(kind) {
+  await j(`${API}/notebooks/${currentNb.id}/docs/${kind}`, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({noteIds:selectedNoteIds()})
+  });
+  loadDocs();
+}
+async function loadDocs() {
+  const list = await j(`${API}/notebooks/${currentNb.id}/docs`);
+  const anyPending = list.some(d => !['DONE','FAILED'].includes(d.status));
+  document.getElementById('docList').innerHTML = list.length ? list.map(d => `
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin:0">
+        <b>${kindLabel(d.kind)}</b><span class="badge ${d.status}">${d.status}</span>
+      </div>
+      ${d.status==='DONE'?`<pre class="doc">${esc(d.content||'')}</pre>`:''}
+      ${d.errorMsg?`<div class="mut" style="color:var(--err)">${esc(d.errorMsg)}</div>`:''}
+    </div>`).join('') : '<div class="empty">还没有生成文档</div>';
+  schedulePoll(anyPending, loadDocs);
+}
+
+// ---- podcast ----
+async function genPodcast() {
+  await j(`${API}/notebooks/${currentNb.id}/podcasts`, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({noteIds:selectedNoteIds()})
+  });
+  loadPodcasts();
+}
+async function loadPodcasts() {
+  const list = await j(`${API}/notebooks/${currentNb.id}/podcasts`);
+  const anyPending = list.some(p => !['DONE','FAILED'].includes(p.status));
+  document.getElementById('podList').innerHTML = list.length ? list.map(p => `
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin:0">
+        <b>${esc(p.title||'(生成中…)')}</b><span class="badge ${p.status}">${p.status}</span>
+      </div>
+      ${p.status==='DONE'?`<audio controls style="width:100%;margin-top:8px" src="${API}/notebooks/${currentNb.id}/podcasts/${p.id}/audio${audioTokenQs()}"></audio>`:''}
+      ${p.status==='DONE'&&p.script?renderScript(p.script):''}
+      ${p.errorMsg?`<div class="mut" style="color:var(--err)">${esc(p.errorMsg)}</div>`:''}
+    </div>`).join('') : '<div class="empty">还没有播客</div>';
+  schedulePoll(anyPending, loadPodcasts);
+}
+function renderScript(s) {
+  try { const o = JSON.parse(s);
+    return '<details style="margin-top:8px"><summary class="mut">对话脚本</summary>' +
+      o.turns.map(t=>`<div style="margin-top:6px"><b style="color:var(--accent)">${t.speaker}</b>: ${esc(t.text)}</div>`).join('') +
+      '</details>';
+  } catch { return ''; }
+}
+
+// ---- helpers ----
+function schedulePoll(active, fn) {
+  if (pollTimer) { clearTimeout(pollTimer); pollTimer=null; }
+  if (active) pollTimer = setTimeout(fn, 3000);
+}
+function kindLabel(k){return {SUMMARY:'摘要',STUDY_GUIDE:'学习指南',FAQ:'FAQ'}[k]||k;}
+function audioTokenQs(){ const t=token(); return t ? ('?token='+encodeURIComponent(t)) : ''; }
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+loadMe();
+loadNotebooks();
+</script>
+</body>
+</html>

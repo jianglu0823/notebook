@@ -1,0 +1,85 @@
+server:
+  port: ${APP_PORT:8080}
+
+spring:
+  application:
+    name: notebooklm-app
+  # 从 Nacos 配置中心导入(可选,导入失败不阻断启动,便于本地开发)
+  config:
+    import:
+      - optional:nacos:notebooklm-app.yaml
+  cloud:
+    nacos:
+      server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+      discovery:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+      config:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        file-extension: yaml
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+
+  # MySQL(对外映射 3307)
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3307}/notebooklm?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none   # 表已由 init.sql 建好
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    show-sql: false
+
+  # Redis
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:redis123456}
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# 应用自定义配置
+notebooklm:
+  dashscope:
+    api-key: ${DASHSCOPE_API_KEY:}
+    chat-model: qwen-plus
+    vl-model: qwen-vl-max
+    embedding-model: text-embedding-v3
+    tts-model: cosyvoice-v1
+    tts-voice-a: longwan     # 主持人 A 音色
+    tts-voice-b: longcheng   # 主持人 B 音色
+  milvus:
+    host: ${MILVUS_HOST:127.0.0.1}
+    port: ${MILVUS_PORT:19530}
+    collection: nblm_chunks
+    dim: 1024   # text-embedding-v3 维度
+  storage:
+    upload-dir: ${UPLOAD_DIR:./uploads}
+    audio-dir: ${AUDIO_DIR:./audio}
+  auth:
+    jwt-secret: ${JWT_SECRET:change-me-in-prod-at-least-32-bytes-long-secret}
+    jwt-expiry-seconds: ${JWT_EXPIRY_SECONDS:604800}   # 7 天
+    guest-cookie-name: ${GUEST_COOKIE_NAME:nblm_guest}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    elasticsearch:
+      enabled: false   # 用 Milvus 做向量库,不用 ES

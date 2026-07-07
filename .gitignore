@@ -1,0 +1,11 @@
+.env
+target/
+*.class
+.DS_Store
+.idea/
+*.iml
+node_modules/
+dist/
+uploads/
+audio/
+*.log

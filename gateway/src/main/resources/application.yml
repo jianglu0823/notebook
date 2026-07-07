@@ -1,0 +1,58 @@
+server:
+  port: ${GATEWAY_PORT:8090}
+
+spring:
+  application:
+    name: gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:redis123456}
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+    gateway:
+      # 全局 CORS(浏览器直连网关时)
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns: "*"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            allow-credentials: true
+            max-age: 3600
+      routes:
+        # API 与 SSE 全部转发到应用;经服务发现负载均衡
+        - id: notebooklm-app
+          uri: lb://notebooklm-app
+          predicates:
+            - Path=/api/**,/actuator/**
+        # 静态前端(SPA)也由应用提供
+        - id: notebooklm-app-static
+          uri: lb://notebooklm-app
+          predicates:
+            - Path=/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# 基于 IP 的限流(防 demo 开放后被无限调用产生 DashScope 成本)
+gateway:
+  ratelimit:
+    enabled: ${RATELIMIT_ENABLED:true}
+    burst-per-minute: ${RATELIMIT_BURST_PER_MIN:20}   # 单 IP 每分钟总突发上限
+    max-upload-bytes: ${RATELIMIT_MAX_UPLOAD_BYTES:10485760}  # 10MB
+    qa-per-day: ${RATELIMIT_QA_PER_DAY:50}
+    doc-per-day: ${RATELIMIT_DOC_PER_DAY:20}
+    podcast-per-day: ${RATELIMIT_PODCAST_PER_DAY:5}
+    upload-per-day: ${RATELIMIT_UPLOAD_PER_DAY:30}
