@@ -129,6 +129,7 @@ services:
       dockerfile: notebooklm-app/Dockerfile
     container_name: nblm-app
     environment:
+      TZ: Asia/Shanghai
       APP_PORT: "8080"
       NACOS_ADDR: nacos:8848
       NACOS_USERNAME: ${NACOS_AUTH_IDENTITY_VALUE:-nacos}
