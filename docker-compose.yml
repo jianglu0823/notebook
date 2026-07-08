@@ -147,6 +147,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change-me-in-prod-at-least-32-bytes-long-secret}
       UPLOAD_DIR: /data/uploads
       AUDIO_DIR: /data/audio
+      IMAGE_DIR: /data/images
     ports:
       - "${APP_PORT:-8080}:8080"
     volumes:

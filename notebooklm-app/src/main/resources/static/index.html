@@ -204,6 +204,110 @@
   .tbtn .ti { font-size:22px; line-height:1; }
   .tbtn .tl { font-size:12px; color:var(--mut); font-weight:600; white-space:nowrap; }
 
+  /* ---- 工作台 · 小红书 ---- */
+  .studio-entries { display:flex; gap:10px; flex-wrap:wrap; }
+  #studioView { display:none; grid-column:2 / -1; grid-row:1; overflow-y:auto; background:var(--bg); padding:0 0 var(--sp-4); }
+  body.studio #listCol, body.studio #editorCol, body.studio #aiPanel { display:none !important; }
+  body.studio #aiFab { display:none !important; }
+  body.studio #homeView { display:none !important; }
+  body.studio #studioView { display:block; }
+  #writingView { display:none; grid-column:2 / -1; grid-row:1; overflow-y:auto; background:var(--bg); padding:0 0 var(--sp-4); }
+  body.writing #listCol, body.writing #editorCol, body.writing #aiPanel { display:none !important; }
+  body.writing #aiFab { display:none !important; }
+  body.writing #homeView { display:none !important; }
+  body.writing #writingView { display:block; }
+  .w-genre { display:flex; gap:10px; flex-wrap:wrap; margin:6px 0 14px; }
+  .w-genre .gcard { flex:1 1 150px; min-width:150px; text-align:left; padding:12px 14px; border-radius:var(--radius); border:1px solid var(--line); background:var(--panel2); cursor:pointer; transition:all .18s ease-in-out; }
+  .w-genre .gcard:hover { border-color:var(--line-strong); transform:translateY(-1px); }
+  .w-genre .gcard.on { border-color:#ff2e63; background:color-mix(in srgb,#ff2e63 8%,transparent); }
+  .w-genre .gcard .gt { font-weight:750; font-size:14px; margin-bottom:3px; }
+  .w-genre .gcard .gs { font-size:12px; color:var(--mut); }
+  .agent-legend { display:flex; gap:14px; flex-wrap:wrap; margin:4px 0 14px; }
+  .agent-legend .alg { font-size:12px; font-weight:650; padding:3px 10px; border-radius:12px; border:1px solid var(--line); }
+  .agent-legend .alg.author { color:#3b82f6; border-color:color-mix(in srgb,#3b82f6 40%,transparent); }
+  .agent-legend .alg.checker { color:#22c55e; border-color:color-mix(in srgb,#22c55e 40%,transparent); }
+  .agent-legend .alg.editor { color:#a855f7; border-color:color-mix(in srgb,#a855f7 40%,transparent); }
+  .wround { border:1px solid var(--line); border-radius:var(--radius); margin-bottom:14px; overflow:hidden; }
+  .wround .rhd { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--panel2); border-bottom:1px solid var(--line); font-weight:700; font-size:13px; }
+  .wround .rhd .verdict { margin-left:auto; font-size:11px; padding:2px 10px; border-radius:12px; border:1px solid var(--line); }
+  .wround .rhd .verdict.approve { color:#22c55e; border-color:color-mix(in srgb,#22c55e 45%,transparent); }
+  .wround .rhd .verdict.revise { color:#f59e0b; border-color:color-mix(in srgb,#f59e0b 45%,transparent); }
+  .wmsg { padding:12px 14px; border-bottom:1px solid var(--line); }
+  .wmsg:last-child { border-bottom:none; }
+  .wmsg .role { font-size:12px; font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .wmsg.author .role { color:#3b82f6; }
+  .wmsg.checker .role { color:#22c55e; }
+  .wmsg.editor .role { color:#a855f7; }
+  .wmsg .body { font-size:13.5px; line-height:1.7; white-space:pre-wrap; color:var(--fg); max-height:280px; overflow-y:auto; }
+  .wspin { display:inline-block; width:13px; height:13px; border:2px solid color-mix(in srgb,#ff2e63 30%,transparent); border-top-color:#ff2e63; border-radius:50%; animation:xspin .7s linear infinite; }
+  .w-timeline { position:relative; padding-left:20px; }
+  .w-timeline::before { content:''; position:absolute; left:5px; top:4px; bottom:4px; width:2px; background:var(--line); }
+  .tl-ev { position:relative; padding:7px 0 7px 4px; animation:fadeUp .28s ease-in-out; }
+  .tl-ev::before { content:''; position:absolute; left:-19px; top:12px; width:9px; height:9px; border-radius:50%; background:var(--line-strong); border:2px solid var(--panel); }
+  .tl-ev.author::before { background:#3b82f6; }
+  .tl-ev.checker::before { background:#22c55e; }
+  .tl-ev.editor::before { background:#a855f7; }
+  .tl-ev.system::before { background:#ff2e63; }
+  .tl-ev .tl-text { font-size:13.5px; font-weight:600; color:var(--fg); }
+  .tl-ev.system .tl-text { color:var(--mut); font-weight:700; }
+  .tl-ev .tl-detail { margin-top:5px; font-size:12px; line-height:1.6; color:var(--mut); background:var(--panel2); border:1px solid var(--line); border-left:2px solid #22c55e; border-radius:6px; padding:7px 10px; white-space:pre-wrap; }
+  .tl-ev.live .tl-text { color:#ff2e63; }
+  .w-work-item { display:flex; align-items:center; gap:10px; padding:11px 13px; border:1px solid var(--line); border-radius:var(--radius); margin-bottom:8px; cursor:pointer; transition:all .15s ease-in-out; }
+  .w-work-item:hover { border-color:var(--line-strong); background:var(--panel2); }
+  .w-work-item .wtopic { font-weight:650; font-size:14px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .w-work-item button { padding:6px 12px; font-size:12px; flex:none; }
+  .studio-hero { position:relative; overflow:hidden; padding:34px var(--sp-4) 26px; border-bottom:1px solid var(--line);
+    background:
+      radial-gradient(1100px 300px at 15% -40%, color-mix(in srgb, #ff2e63 20%, transparent), transparent 70%),
+      radial-gradient(900px 260px at 85% -30%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%); }
+  .studio-hero .hi { font-size:13px; color:#ff2e63; font-weight:700; letter-spacing:.6px; text-transform:uppercase; margin-bottom:8px; }
+  .studio-hero .greetline { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+  .studio-hero h1 { font-size:26px; font-weight:850; letter-spacing:-.5px; line-height:1.2; }
+  .studio-hero .sub { margin-top:10px; color:var(--mut); font-size:14px; }
+  .studio-wrap { max-width:1040px; margin:0 auto; padding:var(--sp-3) var(--sp-4) 0; }
+  .studio-topbar { display:flex; gap:10px; margin-bottom:var(--sp-3); }
+  .studio-steps { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:var(--sp-3); }
+  .studio-steps .sitem { display:flex; align-items:center; gap:7px; padding:7px 13px; border-radius:22px; border:1px solid var(--line); background:var(--panel); font-size:13px; color:var(--mut); font-weight:600; }
+  .studio-steps .sitem .sn { width:20px; height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px; background:var(--panel2); border:1px solid var(--line); }
+  .studio-steps .sitem.done { border-color:color-mix(in srgb,var(--ok,#22c55e) 45%,transparent); color:var(--ok,#22c55e); }
+  .studio-steps .sitem.done .sn { background:color-mix(in srgb,var(--ok,#22c55e) 18%,transparent); border-color:transparent; }
+  .studio-steps .sitem.active { border-color:color-mix(in srgb,#ff2e63 55%,transparent); color:#ff2e63; background:color-mix(in srgb,#ff2e63 8%,transparent); }
+  .studio-steps .sitem.active .sn { background:#ff2e63; color:#fff; border-color:transparent; }
+  .studio-steps .sarrow { color:var(--line-strong); font-size:12px; }
+  .xstep { animation:fadeUp .25s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  .title-cards { display:flex; flex-direction:column; gap:10px; }
+  .tcard { text-align:left; padding:13px 16px; border-radius:var(--radius); border:1px solid var(--line); background:var(--panel2); color:var(--fg); font-size:14px; font-weight:600; cursor:pointer; transition:all .15s ease; line-height:1.5; display:flex; align-items:center; gap:9px; }
+  .tcard:hover { border-color:var(--line-strong); transform:translateY(-1px); }
+  .tcard.on { border-color:color-mix(in srgb,#ff2e63 55%,transparent); background:color-mix(in srgb,#ff2e63 8%,transparent); }
+  .title-cards.locked .tcard:not(.on) { opacity:.45; }
+  .tcard:disabled { cursor:not-allowed; }
+  .tcard:disabled:hover { transform:none; }
+  .title-cards.locked .tcard.on { border-color:color-mix(in srgb,#ff2e63 55%,transparent); }
+  .tspin { flex:none; width:14px; height:14px; border-radius:50%; border:2px solid color-mix(in srgb,#ff2e63 30%,transparent); border-top-color:#ff2e63; animation:xspin .7s linear infinite; }
+  @keyframes xspin { to { transform:rotate(360deg); } }
+  .style-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }
+  .scard { text-align:left; padding:16px; border-radius:var(--radius); border:1px solid var(--line); background:var(--panel2); color:var(--fg); cursor:pointer; transition:all .15s ease; }
+  .scard:hover { border-color:var(--line-strong); transform:translateY(-2px); box-shadow:var(--shadow-sm); }
+  .scard.on { border-color:color-mix(in srgb,#ff2e63 55%,transparent); background:color-mix(in srgb,#ff2e63 8%,transparent); }
+  .scard .se { font-size:22px; } .scard .st { font-weight:800; font-size:15px; margin:6px 0 3px; } .scard .sd { font-size:12px; color:var(--mut); line-height:1.5; }
+  .research-box, .copy-box { background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-top:16px; font-size:14px; line-height:1.75; white-space:pre-wrap; max-height:360px; overflow-y:auto; }
+  .img-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+  .img-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; margin-top:16px; }
+  .img-cell { border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--panel2); }
+  .img-cell img { width:100%; display:block; aspect-ratio:1; object-fit:cover; }
+  .img-cell .ic-bar { padding:8px 10px; display:flex; justify-content:flex-end; }
+  .img-cell .ic-bar a { font-size:12px; color:var(--accent); text-decoration:none; font-weight:600; }
+  .pub-row { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+  .xnotice { font-size:13px; color:var(--mut); padding:14px; text-align:center; }
+  .xerr { color:var(--err); }
+  .work-item { background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:12px 15px; display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .work-item .wi-t { font-weight:700; font-size:14px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .work-item .wi-d { font-size:11px; color:var(--mut); flex:none; }
+  .work-item button { padding:6px 12px; font-size:12px; flex:none; }
+  .xbadge { font-size:11px; padding:2px 9px; border-radius:12px; border:1px solid var(--line); flex:none; }
+
+
   /* Markdown 编辑器 */
   #mdEditor { display:none; }
   #mdToolbar { display:flex; gap:6px; align-items:center; margin:10px 0; padding-bottom:10px; border-bottom:1px solid var(--line); }
@@ -411,10 +515,157 @@
           </div>
           <div id="newsJobs"></div>
         </div>
+
+        <div class="widget">
+          <div class="wt">🛠 工作台</div>
+          <div class="wd">多智能体协作工作流,把一个方向变成可直接发布的内容。</div>
+          <div class="studio-entries">
+            <button class="tbtn" onclick="selectStudio()"><span class="ti">📱</span><span class="tl">小红书文案</span></button>
+            <button class="tbtn" onclick="selectWriting()"><span class="ti">✍️</span><span class="tl">协作写作</span></button>
+            <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">🎬</span><span class="tl">短视频生成</span></button>
+            <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">📊</span><span class="tl">公众号排版</span></button>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- left nav -->
+    <!-- 工作台 · 小红书文案生成 -->
+    <section id="studioView">
+      <div class="studio-hero">
+        <div class="hi">工作台 · 小红书文案生成</div>
+        <div class="greetline"><h1>把一个方向,变成一篇爆款笔记</h1></div>
+        <div class="sub">方向 → 联网标题 → 素材搜集 → 风格文案 → AI 配图,一步步来。</div>
+      </div>
+      <div class="studio-wrap">
+        <div class="studio-topbar">
+          <button class="sec" onclick="newXhs()">＋ 新建项目</button>
+          <button class="sec" onclick="toggleWorks()" id="worksToggle">📁 我的作品</button>
+        </div>
+
+        <div id="worksPanel" class="widget hidden">
+          <div class="wt">📁 我的作品</div>
+          <div id="worksList"><div class="mut">加载中…</div></div>
+        </div>
+
+        <div class="studio-steps" id="studioSteps"></div>
+
+        <div id="studioBody">
+          <!-- Step1 方向 -->
+          <div class="widget xstep" id="xstep1">
+            <div class="wt">① 选择方向</div>
+            <div class="wd">选一个预设方向,或自己输入;AI 会联网检索热点,给出多个候选标题。</div>
+            <div class="chips" id="dirChips"></div>
+            <div class="news-run">
+              <input id="dirInput" placeholder="自定义方向,如「秋季通勤穿搭」「露营好物」…" onkeydown="if(event.key==='Enter')submitDirection()">
+              <button id="dirBtn" onclick="submitDirection()">✦ 生成标题方向</button>
+            </div>
+            <div id="titlesStage"></div>
+          </div>
+
+          <!-- Step2 标题 → 素材 -->
+          <div class="widget xstep hidden" id="xstep2">
+            <div class="wt">② 选择标题</div>
+            <div class="wd">点选一个最中意的标题,AI 将联网搜集该标题的全量素材。</div>
+            <div class="title-cards" id="titleCards"></div>
+            <div id="researchStage"></div>
+          </div>
+
+          <!-- Step3 风格 → 文案 -->
+          <div class="widget xstep hidden" id="xstep3">
+            <div class="wt">③ 选择风格,生成文案</div>
+            <div class="wd">不同风格产出的小红书文案调性完全不同。</div>
+            <div class="style-cards" id="styleCards"></div>
+            <div class="img-actions"><button id="copyBtn" onclick="genCopy()">✍️ 生成文案</button></div>
+            <div id="copyStage"></div>
+          </div>
+
+          <!-- Step4 配图 -->
+          <div class="widget xstep hidden" id="xstep4">
+            <div class="wt">④ 生成配图</div>
+            <div class="wd">AI 从文案提炼画面,用通义万相生成 1~3 张配图。</div>
+            <div class="img-actions">
+              <button id="imgBtn" onclick="genImages()">🎨 生成配图</button>
+              <button class="sec" disabled title="敬请期待">🎬 合成短视频</button>
+            </div>
+            <div id="imagesStage"></div>
+          </div>
+
+          <!-- 发布管理 -->
+          <div class="widget xstep hidden" id="xstepPublish">
+            <div class="wt">⑤ 发布管理</div>
+            <div class="wd">小红书暂无公开发布 API,这里做本地状态管理 + 一键复制导出。</div>
+            <div class="pub-row">
+              <span class="mut">发布状态:</span>
+              <div class="chips" id="pubChips"></div>
+            </div>
+            <div class="img-actions">
+              <button onclick="copyFinalCopy()">📋 复制文案</button>
+              <button class="sec" onclick="selectHome()">✓ 完成</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 工作台 · 多智能体协作写作 -->
+    <section id="writingView">
+      <div class="studio-hero">
+        <div class="hi">工作台 · 多智能体协作写作</div>
+        <div class="greetline"><h1>作者 · 编辑 · 核查,三个智能体协作打磨一篇稿子</h1></div>
+        <div class="sub">给定主题,作者写稿 → 核查员联网核实事实 → 主编审稿裁决,多轮迭代直到定稿。你可以全程围观它们协作。</div>
+      </div>
+      <div class="studio-wrap">
+        <div class="studio-topbar">
+          <button class="sec" onclick="newWriting()">＋ 新建创作</button>
+          <button class="sec" onclick="toggleWWorks()" id="wworksToggle">📁 我的创作</button>
+        </div>
+
+        <div id="wworksPanel" class="widget hidden">
+          <div class="wt">📁 我的创作</div>
+          <div id="wworksList"><div class="mut">加载中…</div></div>
+        </div>
+
+        <!-- 提交表单 -->
+        <div class="widget" id="wForm">
+          <div class="wt">✍️ 新建创作</div>
+          <div class="wd">输入主题,选择体裁与协作轮数。三个智能体会自动开始协作。</div>
+          <div class="w-genre" id="wGenreCards"></div>
+          <div class="news-run">
+            <input id="wTopic" placeholder="写作主题,如「介绍量子计算的科普文」「一篇关于城市夜跑的短故事」…" onkeydown="if(event.key==='Enter')submitWriting()">
+          </div>
+          <div class="pub-row">
+            <span class="mut">协作轮数:</span>
+            <div class="chips" id="wRoundChips"></div>
+          </div>
+          <div class="img-actions"><button id="wSubmitBtn" onclick="submitWriting()">✦ 开始协作创作</button></div>
+        </div>
+
+        <!-- 协作过程 + 终稿 -->
+        <div id="wRun" class="hidden">
+          <div class="widget">
+            <div class="wt">🤝 协作过程 <span class="mut" id="wStatusHint"></span></div>
+            <div class="agent-legend">
+              <span class="alg author">✒️ 作者</span>
+              <span class="alg checker">🔎 核查员(联网)</span>
+              <span class="alg editor">🧑‍⚖️ 主编</span>
+            </div>
+            <div class="w-timeline" id="wTimeline"></div>
+          </div>
+          <div class="widget" id="wRoundsBox">
+            <div class="wt">📄 各轮稿件详情</div>
+            <div id="wRounds"></div>
+          </div>
+          <div class="widget hidden" id="wFinalBox">
+            <div class="wt">🏆 终稿 <span class="xbadge" id="wApprovedBadge"></span></div>
+            <div class="copy-box" id="wFinal"></div>
+            <div class="img-actions">
+              <button onclick="copyWFinal()">📋 复制终稿</button>
+              <button class="sec" onclick="newWriting()">＋ 再来一篇</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     <nav id="nav">
       <div class="primary">
         <button onclick="createNote()">✚ 新建笔记</button>
@@ -426,6 +677,8 @@
         <div class="ghd">视图</div>
         <div class="navitem active" id="view-home" onclick="selectHome()"><span class="ic">🏠</span><span class="lbl">首页</span></div>
         <div class="navitem" id="view-all" onclick="selectAll()"><span class="ic">📝</span><span class="lbl">全部笔记</span></div>
+        <div class="navitem" id="view-studio" onclick="selectStudio()"><span class="ic">🛠</span><span class="lbl">工作台</span></div>
+        <div class="navitem" id="view-writing" onclick="selectWriting()"><span class="ic">✍️</span><span class="lbl">协作写作</span></div>
         <div class="navitem muted" onclick="soon()"><span class="ic">🕐</span><span class="lbl">最近</span></div>
         <div class="navitem muted" onclick="soon()"><span class="ic">⭐</span><span class="lbl">快捷方式</span></div>
       </div>
@@ -647,6 +900,30 @@ let newsPreset = '';           // 选中的预设方向;空 = 用自定义输入
 let newsTimer = null;          // 新闻任务轮询
 let currentUser = null;        // 当前登录用户 {username, guest}
 let quoteTimer = null;         // 首页鸡汤语句轮询
+let xhs = null;                // 当前小红书项目
+let xhsPoll = null;            // 小红书阶段轮询定时器
+let xhsBusy = false;           // 某异步阶段进行中(锁定交互)
+let xhsDir = '';               // 选中的方向预设
+let xhsStyle = '';             // 选中的风格
+const XHS_DIRS = ['美妆护肤','秋季穿搭','美食探店','数码好物','旅行攻略','家居收纳','健身减脂','母婴育儿'];
+const XHS_STYLES = [
+  {k:'ZHONGCAO', e:'🌱', t:'种草安利', d:'真诚分享体验,突出优点,营造「必入」冲动'},
+  {k:'DUSHE',    e:'🐍', t:'毒舌吐槽', d:'犀利幽默、敢说真话,反差感强但不低俗'},
+  {k:'GANHUO',   e:'📚', t:'干货教程', d:'条理清晰、可执行,多用步骤清单要点'},
+  {k:'ZHIYU',    e:'🌸', t:'治愈温柔', d:'舒缓文艺、有情绪价值,给人陪伴感'}];
+const XHS_STEP_STATUS = {NEW:0, TITLES_DONE:1, RESEARCH_DONE:2, COPY_DONE:3, IMAGES_DONE:4};
+const PUB_LABEL = {DRAFT:'草稿', READY:'待发', PUBLISHED:'已发'};
+// ---- 多智能体协作写作 ----
+let writing = null;            // 当前协作写作项目
+let writingPoll = null;        // 轮询定时器
+let wGenre = 'ARTICLE';        // 选中的体裁
+let wRounds = 3;               // 选中的协作轮数
+const W_GENRES = [
+  {k:'ARTICLE', t:'📄 文章', d:'科普、观点、解说等常规文章'},
+  {k:'STORY',   t:'📖 故事', d:'短故事、小说片段、叙事'},
+  {k:'REVIEW',  t:'⭐ 测评', d:'产品测评、种草长文'},
+  {k:'SCRIPT',  t:'🎬 脚本', d:'短视频/口播脚本'}];
+const W_STATUS_LABEL = {PENDING:'排队中', RUNNING:'协作中', DONE:'已完成', FAILED:'失败'};
 const QUOTES = [
   '今天多记一点,明天少慌一点。',
   '好记性不如烂笔头,你已经赢在起跑线。',
@@ -882,12 +1159,14 @@ async function nbMgrDelete(id) {
 
 // ---- views / cards ----
 function setActiveNav(elId) {
-  ['view-home','view-all'].forEach(id => {
+  ['view-home','view-all','view-studio','view-writing'].forEach(id => {
     const e = document.getElementById(id); if (e) e.classList.toggle('active', id === elId);
   });
 }
 // ---- 首页 ----
 function selectHome() {
+  document.body.classList.remove('studio');
+  document.body.classList.remove('writing');
   document.body.classList.remove('home');
   document.body.classList.add('home');
   setActiveNav('view-home');
@@ -970,6 +1249,8 @@ async function loadNews() {
 function newsStatusLabel(s) { return {PENDING:'排队中',GENERATING:'收集中',DONE:'完成',FAILED:'失败'}[s]||s; }
 async function openNewsNote(notebookId, noteId) {
   document.body.classList.remove('home');
+  document.body.classList.remove('studio');
+  document.body.classList.remove('writing');
   await loadNotebooks();
   currentNb = nbById(notebookId) || null;
   setActiveNav('');
@@ -987,6 +1268,8 @@ function setActiveView(elId) {
 }
 async function selectAll() {
   document.body.classList.remove('home');
+  document.body.classList.remove('studio');
+  document.body.classList.remove('writing');
   currentNb = null;
   setActiveNav('view-all');
   document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
@@ -997,6 +1280,8 @@ async function selectAll() {
 }
 async function selectNb(id) {
   document.body.classList.remove('home');
+  document.body.classList.remove('studio');
+  document.body.classList.remove('writing');
   currentNb = nbById(id) || null;
   document.getElementById('view-home').classList.remove('active');
   document.getElementById('view-all').classList.remove('active');
@@ -1547,6 +1832,466 @@ function renderScript(s) {
       o.turns.map(t=>`<div style="margin-top:6px"><b style="color:var(--accent)">${t.speaker}</b>: ${esc(t.text)}</div>`).join('') +
       '</details>';
   } catch { return ''; }
+}
+
+// ---- 工作台 · 小红书文案生成 ----
+function selectStudio() {
+  document.body.classList.remove('home');
+  document.body.classList.remove('writing');
+  document.body.classList.add('studio');
+  setActiveNav('view-studio');
+  currentNb = null;
+  document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
+  if (xhsPoll) { clearTimeout(xhsPoll); xhsPoll = null; }
+  document.getElementById('worksPanel').classList.add('hidden');
+  renderDirChips();
+  renderStyleCards();
+  if (xhs) renderXhs(); else newXhs();
+  closeNav();
+}
+function newXhs() {
+  if (xhsPoll) { clearTimeout(xhsPoll); xhsPoll = null; }
+  xhsBusy = false;
+  xhs = null; xhsDir = ''; xhsStyle = '';
+  document.getElementById('dirInput').value = '';
+  document.getElementById('titlesStage').innerHTML = '';
+  document.getElementById('titleCards').innerHTML = '';
+  document.getElementById('researchStage').innerHTML = '';
+  document.getElementById('styleCards') && renderStyleCards();
+  document.getElementById('copyStage').innerHTML = '';
+  document.getElementById('imagesStage').innerHTML = '';
+  document.getElementById('worksPanel').classList.add('hidden');
+  renderDirChips();
+  showXstep(1);
+  renderSteps(0);
+}
+function renderDirChips() {
+  document.getElementById('dirChips').innerHTML = XHS_DIRS.map(d =>
+    `<span class="chip ${xhsDir===d?'on':''}" onclick="pickDir('${d}')">${d}</span>`).join('');
+}
+function pickDir(d) {
+  xhsDir = (xhsDir === d) ? '' : d;
+  if (xhsDir) document.getElementById('dirInput').value = '';
+  renderDirChips();
+}
+function renderStyleCards() {
+  const el = document.getElementById('styleCards');
+  if (!el) return;
+  el.innerHTML = XHS_STYLES.map(s =>
+    `<div class="scard ${xhsStyle===s.k?'on':''}" onclick="pickStyle('${s.k}')">
+       <div class="se">${s.e}</div><div class="st">${s.t}</div><div class="sd">${s.d}</div>
+     </div>`).join('');
+}
+function pickStyle(k) { xhsStyle = k; renderStyleCards(); }
+
+function renderSteps(active) {
+  const labels = ['方向','标题','风格文案','配图','发布'];
+  const el = document.getElementById('studioSteps');
+  el.innerHTML = labels.map((l, i) => {
+    const cls = i < active ? 'done' : (i === active ? 'active' : '');
+    const arrow = i < labels.length-1 ? '<span class="sarrow">→</span>' : '';
+    return `<span class="sitem ${cls}"><span class="sn">${i<active?'✓':i+1}</span>${l}</span>${arrow}`;
+  }).join('');
+}
+function showXstep(n) {
+  document.getElementById('xstep1').classList.toggle('hidden', n < 1);
+  document.getElementById('xstep2').classList.toggle('hidden', n < 2);
+  document.getElementById('xstep3').classList.toggle('hidden', n < 3);
+  document.getElementById('xstep4').classList.toggle('hidden', n < 4);
+  document.getElementById('xstepPublish').classList.toggle('hidden', n < 4);
+}
+
+async function submitDirection() {
+  const dir = document.getElementById('dirInput').value.trim() || xhsDir;
+  if (!dir) { toast('请选择方向或输入关键词', 'info'); return; }
+  const btn = document.getElementById('dirBtn'); btn.disabled = true;
+  document.getElementById('titlesStage').innerHTML = '<div class="xnotice">AI 正在联网检索热点、生成候选标题…</div>' + skeletonCards(3);
+  try {
+    xhs = await j(`${API}/studio/xhs`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({direction:dir})});
+    renderSteps(0);
+    pollXhs('TITLES_DONE');
+  } catch (e) { toast('提交失败:' + errText(e), 'err'); document.getElementById('titlesStage').innerHTML = ''; }
+  finally { btn.disabled = false; }
+}
+async function chooseTitle(title) {
+  if (!xhs) return;
+  if (xhsBusy) { toast('AI 正在搜集素材,请稍候…', 'info'); return; }
+  xhs.chosenTitle = title;
+  xhsBusy = true;
+  renderTitleCards();
+  document.getElementById('researchStage').innerHTML = '<div class="xnotice">AI 正在联网搜集素材…</div>' + skeletonCards(2);
+  try {
+    xhs = await j(`${API}/studio/xhs/${xhs.id}/research`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title})});
+    renderTitleCards();
+    pollXhs('RESEARCH_DONE');
+  } catch (e) { xhsBusy = false; renderTitleCards(); toast('提交失败:' + errText(e), 'err'); }
+}
+async function genCopy() {
+  if (!xhs) return;
+  if (!xhsStyle) { toast('请选择一种风格', 'info'); return; }
+  document.getElementById('copyStage').innerHTML = '<div class="xnotice">AI 正在按所选风格创作文案…</div>' + skeletonCards(2);
+  try {
+    xhs = await j(`${API}/studio/xhs/${xhs.id}/copy`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({style:xhsStyle})});
+    pollXhs('COPY_DONE');
+  } catch (e) { toast('提交失败:' + errText(e), 'err'); }
+}
+async function genImages() {
+  if (!xhs) return;
+  const btn = document.getElementById('imgBtn'); btn.disabled = true;
+  document.getElementById('imagesStage').innerHTML = '<div class="xnotice">AI 正在提炼画面并生成配图,约需 10~30 秒…</div>' + skeletonCards(3);
+  try {
+    xhs = await j(`${API}/studio/xhs/${xhs.id}/images`, {method:'POST', headers:{'Content-Type':'application/json'}});
+    pollXhs('IMAGES_DONE');
+  } catch (e) { toast('提交失败:' + errText(e), 'err'); }
+  finally { btn.disabled = false; }
+}
+
+// 轮询到目标状态(或 FAILED)为止。各异步阶段进行中,status 仍停留在上一完成态,
+// 故不能靠 status 判忙,而是显式轮询直至 status === 目标态。
+function pollXhs(target) {
+  if (xhsPoll) { clearTimeout(xhsPoll); xhsPoll = null; }
+  if (!xhs) return;
+  xhsBusy = true;
+  const tick = async () => {
+    if (!document.body.classList.contains('studio') || !xhs) { xhsBusy = false; return; }
+    try {
+      xhs = await j(`${API}/studio/xhs/${xhs.id}`);
+      if (xhs.status === target || xhs.status === 'FAILED') xhsBusy = false;
+      renderXhs();
+      if (!xhsBusy) return;
+      xhsPoll = setTimeout(tick, 3000);
+    } catch (e) { xhsPoll = setTimeout(tick, 3000); }
+  };
+  xhsPoll = setTimeout(tick, 2000);
+}
+
+function renderXhs() {
+  if (!xhs) return;
+  const st = XHS_STEP_STATUS[xhs.status] ?? 0;
+  if (xhs.status === 'FAILED') { renderXhsFailed(); return; }
+
+  // 步骤条:当前所处阶段
+  let activeStep = 0;
+  if (xhs.status === 'TITLES_DONE') activeStep = 1;
+  else if (xhs.status === 'RESEARCH_DONE') activeStep = 2;
+  else if (xhs.status === 'COPY_DONE') activeStep = 3;
+  else if (xhs.status === 'IMAGES_DONE') activeStep = 4;
+  renderSteps(activeStep);
+
+  // Step1 标题产出
+  if (xhs.titleOptions) {
+    let titles = [];
+    try { titles = JSON.parse(xhs.titleOptions); } catch {}
+    document.getElementById('titlesStage').innerHTML = titles.length
+      ? '<div class="wd" style="margin-top:16px">✓ 已生成候选标题,请到「② 选择标题」中点选。</div>' : '';
+    renderTitleCards(titles);
+    showXstep(2);
+  }
+  // Step2 素材产出
+  if (xhs.research) {
+    document.getElementById('researchStage').innerHTML =
+      `<div class="research-box">${esc(xhs.research)}</div>`;
+    renderStyleCards();
+    showXstep(3);
+  }
+  // Step3 文案产出
+  if (xhs.copyText) {
+    document.getElementById('copyStage').innerHTML =
+      `<div class="copy-box" id="copyText">${esc(xhs.copyText)}</div>
+       <div class="img-actions"><button onclick="copyFinalCopy()">📋 一键复制文案</button></div>`;
+    if (xhs.style) xhsStyle = xhs.style, renderStyleCards();
+    showXstep(4);
+  }
+  // Step4 配图产出
+  if (xhs.imagePaths) {
+    let paths = [];
+    try { paths = JSON.parse(xhs.imagePaths); } catch {}
+    document.getElementById('imagesStage').innerHTML = paths.length
+      ? `<div class="img-grid">${paths.map((_, i) => {
+          const url = `${API}/studio/xhs/${xhs.id}/images/${i}${audioTokenQs()}`;
+          return `<div class="img-cell"><img src="${url}" alt="配图${i+1}">
+                    <div class="ic-bar"><a href="${url}" download="xhs_${xhs.id}_${i}.png">⬇ 下载</a></div></div>`;
+        }).join('')}</div>`
+      : '<div class="xnotice">未生成配图</div>';
+    renderPubChips();
+    showXstep(4);
+  }
+}
+function renderXhsFailed() {
+  const msg = esc(xhs.errorMsg || '任务失败,请重试');
+  const stage = ['titlesStage','researchStage','copyStage','imagesStage']
+    .find(id => { const e = document.getElementById(id); return e && e.querySelector('.xnotice'); });
+  const html = `<div class="xnotice xerr">✗ ${msg}</div>`;
+  if (stage) document.getElementById(stage).innerHTML = html;
+  else document.getElementById('titlesStage').innerHTML = html;
+  toast('生成失败:' + msg, 'err');
+}
+
+function renderTitleCards(titles) {
+  if (!titles) { try { titles = JSON.parse(xhs.titleOptions || '[]'); } catch { titles = []; } }
+  const el = document.getElementById('titleCards');
+  if (!el) return;
+  const locked = xhsBusy;
+  el.classList.toggle('locked', locked);
+  el.innerHTML = titles.map(t => {
+    const on = xhs.chosenTitle === t;
+    const spin = (on && locked) ? '<span class="tspin"></span>' : '';
+    const dis = locked ? 'disabled' : '';
+    return `<button class="tcard ${on?'on':''}" ${dis} onclick="chooseTitle(${JSON.stringify(t).replace(/"/g,'&quot;')})">${spin}${esc(t)}</button>`;
+  }).join('');
+}
+function renderPubChips() {
+  const el = document.getElementById('pubChips');
+  if (!el) return;
+  const cur = xhs.publishStatus || 'DRAFT';
+  el.innerHTML = Object.keys(PUB_LABEL).map(k =>
+    `<span class="chip ${cur===k?'on':''}" onclick="setPublish('${k}')">${PUB_LABEL[k]}</span>`).join('');
+}
+async function setPublish(status) {
+  if (!xhs) return;
+  try {
+    xhs = await j(`${API}/studio/xhs/${xhs.id}/publish`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({publishStatus:status})});
+    renderPubChips();
+    toast('状态已更新为「' + PUB_LABEL[status] + '」', 'ok');
+  } catch (e) { toast('更新失败:' + errText(e), 'err'); }
+}
+async function copyFinalCopy() {
+  const text = xhs && xhs.copyText;
+  if (!text) { toast('还没有文案', 'info'); return; }
+  try { await navigator.clipboard.writeText(text); toast('文案已复制到剪贴板', 'ok'); }
+  catch { toast('复制失败,请手动选择文本', 'err'); }
+}
+
+// 我的作品
+async function toggleWorks() {
+  const panel = document.getElementById('worksPanel');
+  if (!panel.classList.contains('hidden')) { panel.classList.add('hidden'); return; }
+  panel.classList.remove('hidden');
+  await loadWorks();
+}
+async function loadWorks() {
+  const el = document.getElementById('worksList');
+  el.innerHTML = '<div class="mut">加载中…</div>';
+  let list;
+  try { list = await j(`${API}/studio/xhs`); } catch (e) { el.innerHTML = '<div class="mut">加载失败</div>'; return; }
+  if (!list.length) { el.innerHTML = '<div class="mut">还没有项目,点「新建项目」开始吧</div>'; return; }
+  el.innerHTML = list.map(p => `
+    <div class="work-item">
+      <span class="wi-t">${esc(p.chosenTitle || p.direction || '未命名')}</span>
+      <span class="xbadge">${xhsStatusLabel(p.status)}</span>
+      <span class="xbadge">${PUB_LABEL[p.publishStatus]||p.publishStatus}</span>
+      <span class="wi-d">${fmtDate(p.createdAt)}</span>
+      <button class="sec" onclick="openWork(${p.id})">打开</button>
+      <button class="sec" onclick="deleteWork(${p.id})">删除</button>
+    </div>`).join('');
+}
+function xhsStatusLabel(s) {
+  return {NEW:'新建',TITLES_DONE:'待选标题',RESEARCH_DONE:'待写文案',COPY_DONE:'待配图',IMAGES_DONE:'已完成',FAILED:'失败'}[s]||s;
+}
+async function openWork(id) {
+  if (xhsPoll) { clearTimeout(xhsPoll); xhsPoll = null; }
+  xhsBusy = false;
+  try { xhs = await j(`${API}/studio/xhs/${id}`); } catch (e) { toast('打开失败:' + errText(e), 'err'); return; }
+  xhsStyle = xhs.style || '';
+  document.getElementById('worksPanel').classList.add('hidden');
+  document.getElementById('titlesStage').innerHTML = '';
+  document.getElementById('researchStage').innerHTML = '';
+  document.getElementById('copyStage').innerHTML = '';
+  document.getElementById('imagesStage').innerHTML = '';
+  showXstep(1);
+  renderXhs();
+}
+async function deleteWork(id) {
+  if (!await confirmDialog('确定删除这个小红书项目?', {title:'删除项目', okText:'删除'})) return;
+  try {
+    await j(`${API}/studio/xhs/${id}`, {method:'DELETE'});
+    toast('已删除', 'ok');
+    if (xhs && xhs.id === id) newXhs();
+    loadWorks();
+  } catch (e) { toast('删除失败:' + errText(e), 'err'); }
+}
+
+// ---- 工作台 · 多智能体协作写作 ----
+function selectWriting() {
+  document.body.classList.remove('home');
+  document.body.classList.remove('studio');
+  document.body.classList.add('writing');
+  setActiveNav('view-writing');
+  currentNb = null;
+  document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
+  if (writingPoll) { clearTimeout(writingPoll); writingPoll = null; }
+  document.getElementById('wworksPanel').classList.add('hidden');
+  renderWGenres();
+  renderWRoundChips();
+  if (writing) renderWriting(); else newWriting();
+  closeNav();
+}
+function newWriting() {
+  if (writingPoll) { clearTimeout(writingPoll); writingPoll = null; }
+  writing = null; wGenre = 'ARTICLE'; wRounds = 3;
+  document.getElementById('wTopic').value = '';
+  document.getElementById('wRun').classList.add('hidden');
+  document.getElementById('wFinalBox').classList.add('hidden');
+  document.getElementById('wRounds').innerHTML = '';
+  document.getElementById('wworksPanel').classList.add('hidden');
+  document.getElementById('wForm').classList.remove('hidden');
+  renderWGenres();
+  renderWRoundChips();
+}
+function renderWGenres() {
+  const el = document.getElementById('wGenreCards');
+  if (!el) return;
+  el.innerHTML = W_GENRES.map(g =>
+    `<div class="gcard ${wGenre===g.k?'on':''}" onclick="pickGenre('${g.k}')">
+       <div class="gt">${g.t}</div><div class="gs">${g.d}</div></div>`).join('');
+}
+function pickGenre(k) { wGenre = k; renderWGenres(); }
+function renderWRoundChips() {
+  const el = document.getElementById('wRoundChips');
+  if (!el) return;
+  el.innerHTML = [1,2,3,4,5].map(n =>
+    `<span class="chip ${wRounds===n?'on':''}" onclick="pickRounds(${n})">${n} 轮</span>`).join('');
+}
+function pickRounds(n) { wRounds = n; renderWRoundChips(); }
+async function submitWriting() {
+  const topic = document.getElementById('wTopic').value.trim();
+  if (!topic) { toast('请输入写作主题', 'info'); return; }
+  const btn = document.getElementById('wSubmitBtn');
+  btn.disabled = true; btn.textContent = '启动中…';
+  try {
+    writing = await j(`${API}/studio/writing`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({topic, genre: wGenre, maxRounds: wRounds})
+    });
+    document.getElementById('wForm').classList.add('hidden');
+    document.getElementById('wRun').classList.remove('hidden');
+    renderWriting();
+    pollWriting();
+  } catch (e) {
+    toast('启动失败:' + errText(e), 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '✦ 开始协作创作';
+  }
+}
+function pollWriting() {
+  if (writingPoll) { clearTimeout(writingPoll); writingPoll = null; }
+  if (!writing) return;
+  const active = writing.status === 'PENDING' || writing.status === 'RUNNING';
+  if (!active) return;
+  writingPoll = setTimeout(async () => {
+    try {
+      writing = await j(`${API}/studio/writing/${writing.id}`);
+      renderWriting();
+      pollWriting();
+    } catch (e) { /* 轮询失败静默重试一次 */ pollWriting(); }
+  }, 2000);
+}
+function renderWriting() {
+  if (!writing) return;
+  document.getElementById('wForm').classList.add('hidden');
+  document.getElementById('wRun').classList.remove('hidden');
+  const running = writing.status === 'PENDING' || writing.status === 'RUNNING';
+  const hint = document.getElementById('wStatusHint');
+  if (writing.status === 'FAILED') {
+    hint.innerHTML = `<span class="xerr">✗ ${esc(writing.errorMsg||'协作失败')}</span>`;
+  } else {
+    hint.innerHTML = running
+      ? `<span class="wspin"></span> ${W_STATUS_LABEL[writing.status]||writing.status}…`
+      : `✓ ${W_STATUS_LABEL[writing.status]||writing.status}`;
+  }
+  renderWTimeline();
+  renderWRounds();
+  // 各轮详情:协作中先折叠(时间线更适合围观),完成后展示
+  document.getElementById('wRoundsBox').classList.toggle('hidden',
+    !(writing.rounds && JSON.parse(writing.rounds||'[]').length));
+  // 终稿
+  const fb = document.getElementById('wFinalBox');
+  if (writing.status === 'DONE' && writing.finalText) {
+    fb.classList.remove('hidden');
+    document.getElementById('wFinal').textContent = writing.finalText;
+    const badge = document.getElementById('wApprovedBadge');
+    badge.textContent = writing.approved ? '主编 APPROVE' : '轮数用尽·当前最佳稿';
+    badge.style.color = writing.approved ? '#22c55e' : 'var(--mut)';
+  } else {
+    fb.classList.add('hidden');
+  }
+}
+function renderWTimeline() {
+  const el = document.getElementById('wTimeline');
+  if (!el) return;
+  let evs = [];
+  try { evs = writing.events ? JSON.parse(writing.events) : []; } catch (e) { evs = []; }
+  const running = writing.status === 'PENDING' || writing.status === 'RUNNING';
+  let html = evs.map((ev, i) => {
+    const live = running && i === evs.length - 1 && (ev.type === 'think' || ev.type === 'tool');
+    return `<div class="tl-ev ${esc(ev.role)} ${live?'live':''}">
+      <div class="tl-text">${live?'<span class="wspin"></span> ':''}${esc(ev.text)}</div>
+      ${ev.detail?`<div class="tl-detail">${esc(ev.detail)}</div>`:''}
+    </div>`;
+  }).join('');
+  if (running) html += `<div class="tl-ev system live"><div class="tl-text"><span class="wspin"></span> 智能体协作中…</div></div>`;
+  if (!html) html = '<div class="mut">等待智能体启动…</div>';
+  el.innerHTML = html;
+}
+function renderWRounds() {
+  const el = document.getElementById('wRounds');
+  let rounds = [];
+  try { rounds = writing.rounds ? JSON.parse(writing.rounds) : []; } catch (e) { rounds = []; }
+  let html = rounds.map(r => `
+    <div class="wround">
+      <div class="rhd">第 ${r.round} 轮
+        <span class="verdict ${r.verdict==='APPROVE'?'approve':'revise'}">${r.verdict==='APPROVE'?'✓ 定稿':'↻ 需修改'}</span>
+      </div>
+      <div class="wmsg author"><div class="role">✒️ 作者稿件</div><div class="body">${esc(r.draft)}</div></div>
+      <div class="wmsg checker"><div class="role">🔎 核查员(联网核实)</div><div class="body">${esc(r.factcheck)}</div></div>
+      <div class="wmsg editor"><div class="role">🧑‍⚖️ 主编审稿</div><div class="body">${esc(r.review)}</div></div>
+    </div>`).join('');
+  if (!html) html = '<div class="mut">尚无已完成的轮次。</div>';
+  el.innerHTML = html;
+}
+function copyWFinal() {
+  if (!writing || !writing.finalText) return;
+  navigator.clipboard.writeText(writing.finalText)
+    .then(() => toast('终稿已复制', 'ok'))
+    .catch(() => toast('复制失败', 'err'));
+}
+function toggleWWorks() {
+  const panel = document.getElementById('wworksPanel');
+  const show = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !show);
+  if (show) loadWWorks();
+}
+async function loadWWorks() {
+  const list = document.getElementById('wworksList');
+  try {
+    const items = await j(`${API}/studio/writing`);
+    if (!items.length) { list.innerHTML = '<div class="mut">还没有创作,点「新建创作」开始。</div>'; return; }
+    list.innerHTML = items.map(p => `
+      <div class="w-work-item" onclick="openWWork(${p.id})">
+        <span class="wtopic">${esc(p.topic)}</span>
+        <span class="xbadge">${W_STATUS_LABEL[p.status]||p.status}</span>
+        <button class="sec" onclick="event.stopPropagation();deleteWWork(${p.id})">删除</button>
+      </div>`).join('');
+  } catch (e) { list.innerHTML = '<div class="xerr">加载失败</div>'; }
+}
+async function openWWork(id) {
+  if (writingPoll) { clearTimeout(writingPoll); writingPoll = null; }
+  try {
+    writing = await j(`${API}/studio/writing/${id}`);
+    document.getElementById('wworksPanel').classList.add('hidden');
+    renderWriting();
+    pollWriting();
+  } catch (e) { toast('打开失败:' + errText(e), 'err'); }
+}
+async function deleteWWork(id) {
+  if (!await confirmDialog('确定删除这个创作项目?', {title:'删除创作', okText:'删除'})) return;
+  try {
+    await j(`${API}/studio/writing/${id}`, {method:'DELETE'});
+    toast('已删除', 'ok');
+    if (writing && writing.id === id) newWriting();
+    loadWWorks();
+  } catch (e) { toast('删除失败:' + errText(e), 'err'); }
 }
 
 // ---- helpers ----

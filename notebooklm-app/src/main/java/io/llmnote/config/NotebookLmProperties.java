@@ -37,6 +37,7 @@ public class NotebookLmProperties {
     public static class Storage {
         private String uploadDir = "./uploads";
         private String audioDir = "./audio";
+        private String imageDir = "./images";
     }
 
     @Data

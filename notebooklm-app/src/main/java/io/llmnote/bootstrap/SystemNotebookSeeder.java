@@ -65,6 +65,14 @@ public class SystemNotebookSeeder implements ApplicationRunner {
             noteService.updateBody(nbId, n2.getId(), n2.getTitle(), NOTE2_HTML, OWNER);
             log.info("system note #2 ingested");
 
+            Note n3 = noteService.create(nbId, "三、新闻聚合 · 小红书文案工作台", "RICHTEXT", OWNER);
+            noteService.updateBody(nbId, n3.getId(), n3.getTitle(), NOTE3_HTML, OWNER);
+            log.info("system note #3 ingested");
+
+            Note n4 = noteService.create(nbId, "四、多智能体协作写作(作者 / 核查 / 主编)", "RICHTEXT", OWNER);
+            noteService.updateBody(nbId, n4.getId(), n4.getTitle(), NOTE4_HTML, OWNER);
+            log.info("system note #4 ingested");
+
             // 基于全部笔记生成摘要文档 + 音频概览(异步任务)
             genService.submit(nbId, "SUMMARY", null);
             podcastService.submit(nbId, null);
@@ -127,6 +135,9 @@ public class SystemNotebookSeeder implements ApplicationRunner {
               <li><b>RAG 问答</b>:基于所选笔记检索作答,SSE 流式返回,带可点击出处引用。</li>
               <li><b>文档生成</b>:一键生成摘要 / 学习指南 / FAQ(Markdown)。</li>
               <li><b>音频概览</b>:qwen 生成双主持人对话脚本 → CosyVoice 逐句合成 → 拼接为 MP3。</li>
+              <li><b>新闻聚合</b>:选方向 → qwen <code>enable_search</code> 联网检索最新动态 → 整理成笔记入库。</li>
+              <li><b>小红书工作台</b>:方向→标题→联网素材→风格文案→通义万相配图的多步创作流水线。</li>
+              <li><b>多智能体协作写作</b>:作者 / 核查员 / 主编三个 ReActAgent 迭代收敛,核查员自主联网核实事实,过程实时围观。</li>
             </ul>
 
             <h3>技术栈</h3>
@@ -144,8 +155,9 @@ public class SystemNotebookSeeder implements ApplicationRunner {
             <p>后端按内部模块划分:<code>config</code>(AgentScope/DashScope/Milvus/CORS 配置)、<code>notebook</code>(笔记本&资料)、
             <code>note</code>(笔记层)、<code>ingest</code>(上传→解析→分块→向量化、图像理解、音频转写)、
             <code>qa</code>(RAG 问答 + 引用,SSE 流式)、<code>gen</code>(摘要/学习指南/FAQ)、<code>audio</code>(播客脚本 + TTS)、
+            <code>news</code>(新闻方向联网聚合)、<code>studio</code>(创作工作台:小红书文案流水线 + 多智能体协作写作)、
             <code>auth</code>(自研 JWT + 游客模式,账号隔离)、<code>log</code>(登录 / 操作访问日志)。架构演进上当前为<b>模块化单体</b>,但从第一天即接入 Nacos,
-            后续可按五个内部模块平滑拆成独立微服务,网关与注册中心已就位。</p>
+            后续可按内部模块平滑拆成独立微服务,网关与注册中心已就位。</p>
 
             <h3>账号与权限</h3>
             <p>自研 JWT 鉴权(jjwt + BCrypt)+ 游客模式:每个主体以 <code>owner_id</code> 隔离数据(注册用户为 <code>u:&lt;id&gt;</code>,
@@ -225,5 +237,68 @@ public class SystemNotebookSeeder implements ApplicationRunner {
 
             <p class="mut"><i>参考来源:AgentScope 官方仓库 README 与文档(docs.agentscope.io)、arXiv 论文 2402.14034 与 2508.16279。
             以上为科普性质介绍,具体 API 以官方最新文档为准。</i></p>
+            """;
+
+    private static final String NOTE3_HTML = """
+            <h2>创作工作台:从「读资料」到「产内容」</h2>
+            <p>除了围绕自有资料做 RAG 问答,鹿匠笔记还内置一个<b>内容创作工作台</b>,把大模型的<b>联网检索</b>与
+            <b>文生图</b>能力串成可交付的生产流水线。目前包含两条:<b>新闻方向聚合</b>与<b>小红书文案生成</b>。</p>
+
+            <h3>一、新闻聚合</h3>
+            <p>选一个预设方向(或自定义关键词)→ 后端用 qwen 的 <code>enable_search</code> 联网检索该方向的最新动态 →
+            由大模型整理成一篇结构化笔记,直接落进指定笔记本成为一条 <code>Note</code>,随后即可复用 RAG 问答 / 生成 / 播客。
+            实现上遵循统一的<b>异步任务 + 前端轮询</b>范式:提交建 <code>PENDING</code> 任务 →
+            <code>@Async</code> 联网整理 → <code>DONE/FAILED</code>,前端 <code>GET /{id}</code> 轮询进度。</p>
+
+            <h3>二、小红书文案工作台(多步向导)</h3>
+            <p>一条 <code>xhs_project</code> 记录贯穿全流程,状态机推进:
+            <code>NEW → TITLES_DONE → RESEARCH_DONE → COPY_DONE → IMAGES_DONE</code>,每一步都是独立异步任务:</p>
+            <ol>
+              <li><b>方向 → 标题</b>:输入方向(如「秋季通勤穿搭」),联网扩写出 6~8 个候选<b>标题方向</b>。</li>
+              <li><b>标题 → 素材</b>:选定标题后,联网检索该标题的全量素材,汇成一篇长文。</li>
+              <li><b>风格 → 文案</b>:选风格(种草 / 毒舌 / 干货 / 治愈),按风格化 system prompt 生成小红书文案
+                  (标题党标题 + 正文 + emoji + #话题标签),支持一键复制。</li>
+              <li><b>配图</b>:先让 qwen 把文案压成画面描述 prompt,再用<b>通义万相 <code>wanx</code></b>
+                  (<code>ImageSynthesis</code>)逐条文生图,下载 OSS 临时链接<b>落盘</b>持久化后由应用吐 PNG。</li>
+              <li><b>发布管理</b>:本地草稿 / 待发 / 已发状态流转 + 一键复制文案 + 下载配图
+                  (小红书无公开发布 API,不做直发)。</li>
+            </ol>
+            <p>后端在 <code>io.llmnote.studio</code> 包,复用 <code>DashScopeChatModel</code> / <code>ChatCompletion</code> /
+            <code>enable_search</code> 联网检索 / <code>ImageSynthesis</code> 文生图;控制器 <code>/api/studio/xhs</code>
+            按 <code>owner_id</code> 做账号隔离。</p>
+            """;
+
+    private static final String NOTE4_HTML = """
+            <h2>多智能体协作写作:让三个 Agent 互相「较真」</h2>
+            <p>这是本项目最能体现 <b>agentic(自主智能体)</b> 特性的场景:三个 <code>ReActAgent</code> 被编排成一个
+            <b>迭代收敛循环</b>,围绕一个写作主题分工协作、反复打磨,直到主编满意或用尽轮数。与小红书那条<b>硬编码顺序状态机</b>
+            本质不同——这里核查员<b>由 LLM 自主决定</b>是否 / 何时 / 用什么关键词联网核实,是真正的「推理—行动」循环。</p>
+
+            <h3>三个角色</h3>
+            <ul>
+              <li><b>✒️ 作者(author)</b>:根据主题与反馈撰写 / 打磨稿件,只输出正文。</li>
+              <li><b>🔎 核查员(factchecker)</b>:挂载 <code>web_search</code> 工具,在 ReAct 循环中<b>自主联网</b>逐条核实
+                  数据 / 时间 / 人物 / 事件 / 专有名词,严禁凭记忆下结论,给出核实结论与修正建议。</li>
+              <li><b>🧑‍⚖️ 主编(editor)</b>:从结构 / 表达 / 吸引力 / 切题四方面审稿,并结合核查报告做出裁决,
+                  末尾输出 <code>VERDICT: APPROVE</code> 或 <code>VERDICT: REVISE</code>(收敛信号)。</li>
+            </ul>
+
+            <h3>协作流程</h3>
+            <p>作者写初稿 → 每轮:核查员联网核实 + 主编审稿裁决 → 若 <code>APPROVE</code> 则收敛定稿;否则作者据反馈改稿,
+            最多 <code>maxRounds</code>(1~5)轮。每一步的思考 / 工具调用<b>实时写入事件时间线</b>,前端轮询即可
+            「围观」智能体协作过程——包括核查员正在<b>搜什么关键词</b>、检索到什么事实预览,把原本只在后端日志里的
+            「思考」暴露到 UI。</p>
+
+            <h3>技术要点</h3>
+            <ul>
+              <li><b>ReAct 智能体</b>:<code>ReActAgent.builder().name().sysPrompt().model(chatModel).toolkit(..).maxIters(..)</code>,
+                  <code>agent.call(prompt, RuntimeContext.empty()).block()</code> 阻塞取回复(无状态、可多用户并发)。</li>
+              <li><b>Agentic 工具调用</b>:<code>Toolkit</code> 注册带 <code>@Tool</code> 注解的 <code>WebSearchTool</code>,
+                  底层仍走 qwen <code>enable_search</code> 返回 grounded 事实;每次调用回调 listener 把查询写入事件流。</li>
+              <li><b>持久化</b>:<code>writing_project</code> 记录 <code>rounds</code>(每轮 draft/factcheck/review/verdict)与
+                  <code>events</code>(事件时间线)两个 JSON,前端逐段轮询渲染。</li>
+            </ul>
+            <p>后端在 <code>io.llmnote.studio</code> 包(<code>WritingAgentService</code> / <code>WebSearchTool</code>),
+            控制器 <code>/api/studio/writing</code> 按 <code>owner_id</code> 做账号隔离。</p>
             """;
 }

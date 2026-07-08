@@ -1,6 +1,8 @@
-# Superbook
+# 鹿匠笔记
 
 一个类 Google **NotebookLM** 的应用:上传自己的资料(PDF / Word / 文本 / 图片 / 音频),基于这些资料做**带出处引用的问答**,并能一键生成**摘要 / 学习指南 / FAQ**,以及**音频概览播客**(两位 AI 主持人对话式讲解)。
+
+在此之上还内置一个**内容创作工作台**:**新闻方向联网聚合**、**小红书文案生成流水线**(方向→标题→素材→风格文案→通义万相配图),以及**多智能体协作写作**(作者 / 核查员 / 主编三个 ReActAgent 迭代收敛,核查员自主联网核实事实)。
 
 全部大模型能力统一走**通义千问 / DashScope**,微服务基础设施基于 **Spring Cloud + Nacos**,一键 Docker 部署。
 
@@ -16,6 +18,9 @@
 | RAG 问答 | 基于笔记本资料检索作答,SSE 流式返回,**带可点击出处引用** |
 | 文档生成 | 一键生成摘要 / 学习指南 / FAQ(Markdown) |
 | 音频概览 | qwen 生成双主持人对话脚本 → CosyVoice 逐句合成 → 拼接为 MP3 |
+| 新闻聚合 | 选方向 → qwen `enable_search` 联网检索最新动态 → 整理成笔记入库 |
+| 小红书工作台 | 方向→标题→联网素材→风格文案→通义万相 `wanx` 配图的多步创作流水线 |
+| 多智能体写作 | 作者 / 核查员 / 主编三个 `ReActAgent` 迭代收敛,核查员自主联网核实,过程实时围观 |
 | 账号与隔离 | 自研 JWT + 游客模式,`owner_id` 数据隔离;内置只读「系统公告」笔记本 |
 | 访问日志 | 记录登录 / 注册 / 写操作的 IP、设备类型、动作(见 `/api/logs`) |
 
@@ -39,7 +44,7 @@
       │   Nacos      │  模块化单体,JDK21 / Spring Boot 3.3    │
       │  :8848       ├────────────────────────────────────────┤
       └──────────────┤ auth │ notebook │ note │ ingest │ qa    │
-                     │      │  gen │ audio │ log(访问日志)      │
+                     │  gen │ audio │ news │ studio │ log      │
                      └───┬──────────┬──────────┬───────────┬───┘
                          │          │          │           │
                 向量检索 │   元数据 │   大模型  │   缓存/会话 │
@@ -94,6 +99,8 @@ LLM-note/
         ├── qa/                 # RAG 问答 + 引用(SSE 流式)
         ├── gen/                # 摘要 / 学习指南 / FAQ 生成
         ├── audio/              # 播客脚本生成 + TTS 合成
+        ├── news/               # 新闻方向联网聚合
+        ├── studio/             # 创作工作台:小红书文案流水线 + 多智能体协作写作
         ├── log/                # 登录 / 操作访问日志
         ├── bootstrap/          # 启动时植入内置「系统公告」笔记本
         └── llm/                # DashScopeChatModel 阻塞式封装
@@ -255,6 +262,48 @@ curl http://localhost:9000/api/notebooks/1/podcasts/1          # 状态轮询
 curl http://localhost:9000/api/notebooks/1/podcasts/1/audio -o podcast.mp3
 ```
 状态流转:`PENDING → SCRIPTING → SYNTHESIZING → DONE`(失败为 `FAILED`,附 `errorMsg`)。
+
+#### 新闻聚合(异步)
+```bash
+# 提交一个新闻方向,联网检索并整理成笔记
+curl -X POST http://localhost:9000/api/news \
+  -H "Content-Type: application/json" \
+  -d '{"topic":"AI 大模型"}'
+
+curl http://localhost:9000/api/news          # 我的任务列表
+curl http://localhost:9000/api/news/1        # 状态轮询(DONE 后带生成的 notebookId/noteId)
+```
+
+#### 小红书文案工作台(多步异步)
+```bash
+# Step1 方向 → 候选标题
+curl -X POST http://localhost:9000/api/studio/xhs \
+  -H "Content-Type: application/json" -d '{"direction":"秋季通勤穿搭"}'
+curl http://localhost:9000/api/studio/xhs/1                 # 轮询到 TITLES_DONE
+
+curl -X POST http://localhost:9000/api/studio/xhs/1/research \
+  -H "Content-Type: application/json" -d '{"title":"选定的标题"}'   # Step2 联网素材
+curl -X POST http://localhost:9000/api/studio/xhs/1/copy \
+  -H "Content-Type: application/json" -d '{"style":"ZHONGCAO"}'    # Step3 风格文案
+curl -X POST http://localhost:9000/api/studio/xhs/1/images         # Step4 通义万相配图
+
+curl http://localhost:9000/api/studio/xhs/1/images/0 -o img0.png   # 取配图
+curl -X PUT http://localhost:9000/api/studio/xhs/1/publish \
+  -H "Content-Type: application/json" -d '{"publishStatus":"READY"}'
+```
+状态流转:`NEW → TITLES_DONE → RESEARCH_DONE → COPY_DONE → IMAGES_DONE`;风格枚举 `ZHONGCAO / DUSHE / GANHUO / ZHIYU`(种草 / 毒舌 / 干货 / 治愈)。
+
+#### 多智能体协作写作(异步)
+```bash
+# 提交主题;体裁 ARTICLE/STORY/REVIEW/SCRIPT,maxRounds 1~5
+curl -X POST http://localhost:9000/api/studio/writing \
+  -H "Content-Type: application/json" \
+  -d '{"topic":"介绍杭州的秋天","genre":"ARTICLE","maxRounds":3}'
+
+curl http://localhost:9000/api/studio/writing            # 我的创作列表
+curl http://localhost:9000/api/studio/writing/1          # 轮询:events 事件时间线 + rounds 每轮过程 + finalText 终稿
+```
+状态流转:`PENDING → RUNNING → DONE`(失败为 `FAILED`)。作者写初稿,每轮核查员自主联网核实 + 主编 `VERDICT: APPROVE/REVISE` 裁决,收敛或用尽轮数即定稿;`events` 实时暴露核查员搜索的关键词与事实预览,前端可「围观」协作过程。
 
 ---
 
