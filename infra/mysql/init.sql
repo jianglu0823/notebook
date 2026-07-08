@@ -112,6 +112,20 @@ CREATE TABLE IF NOT EXISTS podcast (
     INDEX idx_podcast_notebook (notebook_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 新闻收集任务(选方向 → 联网搜索最新动态 → 整理成笔记)
+CREATE TABLE IF NOT EXISTS news_job (
+    id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+    owner_id      VARCHAR(64)   NOT NULL COMMENT '主体:u:<id> / g:<uuid>',
+    topic         VARCHAR(255)  NOT NULL COMMENT '新闻方向:预设分类或自定义关键词',
+    status        VARCHAR(32)   NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/GENERATING/DONE/FAILED',
+    notebook_id   BIGINT        NULL COMMENT '生成笔记所在笔记本',
+    note_id       BIGINT        NULL COMMENT '生成的笔记',
+    error_msg     VARCHAR(2048) NULL,
+    created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_news_owner (owner_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 访问/操作日志(登录、注册及各类写操作;记录 IP、设备、动作)
 CREATE TABLE IF NOT EXISTS access_log (
     id            BIGINT PRIMARY KEY AUTO_INCREMENT,

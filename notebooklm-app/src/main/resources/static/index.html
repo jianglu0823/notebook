@@ -51,7 +51,7 @@
   #authBar .who { color:var(--mut); }
   #authBar button { padding:6px 11px; font-size:12px; }
   /* body: nav + list + editor */
-  #body { flex:1; display:grid; grid-template-columns:220px minmax(340px,1fr) minmax(420px,1.5fr); overflow:hidden; }
+  #body { flex:1; display:grid; grid-template-columns:200px minmax(280px,0.9fr) minmax(360px,1.3fr) minmax(360px,1.1fr); overflow:hidden; }
   /* left nav */
   #nav { background:var(--panel); border-right:1px solid var(--line); display:flex; flex-direction:column; overflow-y:auto; padding:var(--sp-2) 10px; gap:6px; }
   #nav .primary { display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
@@ -152,12 +152,45 @@
   .skel { border-radius:var(--radius-sm); background:linear-gradient(90deg, var(--panel2) 25%, var(--line) 37%, var(--panel2) 63%); background-size:400% 100%; animation:shimmer 1.4s ease infinite; }
   @keyframes shimmer { 0% { background-position:100% 0; } 100% { background-position:-100% 0; } }
   .skel-card { height:78px; margin-bottom:10px; }
+  /* ---- 首页 / 仪表盘 ---- */
+  #homeView { display:none; grid-column:2 / -1; overflow-y:auto; background:var(--bg); padding:0 0 var(--sp-4); }
+  body.home #listCol, body.home #editorCol, body.home #aiPanel { display:none !important; }
+  body.home #aiFab { display:none !important; }
+  body.home #homeView { display:block; }
+  .home-hero { position:relative; overflow:hidden; padding:38px var(--sp-4) 30px; border-bottom:1px solid var(--line);
+    background:
+      radial-gradient(1200px 300px at 12% -40%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+      radial-gradient(900px 260px at 88% -30%, color-mix(in srgb, var(--warn) 16%, transparent), transparent 70%); }
+  .home-hero .hi { font-size:13px; color:var(--accent); font-weight:700; letter-spacing:.6px; text-transform:uppercase; margin-bottom:8px; }
+  .home-hero h1 { font-size:30px; font-weight:850; letter-spacing:-.5px; line-height:1.2; }
+  .home-hero .sub { margin-top:8px; color:var(--mut); font-size:14px; }
+  .home-wrap { max-width:1040px; margin:0 auto; padding:var(--sp-3) var(--sp-4) 0; }
+  .home-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:var(--sp-2); margin-bottom:var(--sp-3); }
+  .stat { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-lg); padding:18px 20px; display:flex; flex-direction:column; gap:6px; transition:border-color .15s ease, transform .05s ease; }
+  .stat:hover { border-color:var(--line-strong); }
+  .stat .k { font-size:12px; color:var(--mut); font-weight:600; display:flex; align-items:center; gap:7px; }
+  .stat .v { font-size:26px; font-weight:800; }
+  .stat.clk { cursor:pointer; } .stat.clk:hover { transform:translateY(-2px); box-shadow:var(--shadow-sm); }
+  .widget { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-lg); padding:22px 24px; margin-bottom:var(--sp-3); }
+  .widget .wt { font-size:16px; font-weight:800; display:flex; align-items:center; gap:9px; margin-bottom:4px; }
+  .widget .wd { font-size:13px; color:var(--mut); margin-bottom:16px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .chip { padding:7px 15px; border-radius:22px; border:1px solid var(--line); background:var(--panel2); color:var(--fg); font-size:13px; cursor:pointer; font-weight:500; transition:all .15s ease; }
+  .chip:hover { border-color:var(--line-strong); }
+  .chip.on { background:var(--accent-weak); border-color:color-mix(in srgb,var(--accent) 55%,transparent); color:var(--accent); font-weight:700; }
+  .news-run { display:flex; gap:10px; align-items:stretch; flex-wrap:wrap; }
+  .news-run input { flex:1; min-width:200px; }
+  #newsJobs { display:flex; flex-direction:column; gap:10px; margin-top:18px; }
+  .njob { background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:12px 15px; display:flex; align-items:center; gap:12px; }
+  .njob .nt { font-weight:700; font-size:14px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .njob .nd { font-size:11px; color:var(--mut); flex:none; }
+  .njob button { padding:6px 12px; font-size:12px; flex:none; }
   /* AI fab + drawer */
-  #aiFab { position:fixed; right:26px; bottom:26px; width:56px; height:56px; border-radius:50%; z-index:90; font-size:22px; padding:0; justify-content:center; box-shadow:var(--shadow), var(--shadow-accent); }
-  #aiFab:hover { transform:translateY(-2px); }
+  /* AI 面板:桌面常驻第四栏 */
+  #aiFab { display:none; }
   #aiMask { position:fixed; inset:0; background:rgba(4,10,12,.5); backdrop-filter:blur(2px); z-index:95; animation:fadeIn .2s ease; }
-  #aiPanel { position:fixed; top:0; right:0; height:100vh; width:min(480px,94vw); background:var(--panel); border-left:1px solid var(--line-strong); box-shadow:var(--shadow); z-index:96; display:flex; flex-direction:column; transform:translateX(100%); transition:transform .28s cubic-bezier(.2,.8,.3,1); }
-  #aiPanel.open { transform:none; }
+  #aiPanel { grid-column:4; background:var(--panel); border-left:1px solid var(--line); display:flex; flex-direction:column; overflow:hidden; }
+  #aiPanel .x { display:none; }
   #aiHd { display:flex; align-items:center; gap:10px; padding:14px var(--sp-2); border-bottom:1px solid var(--line); flex:none; }
   #aiHd .t { font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px; }
   #aiHd .x { margin-left:auto; }
@@ -194,12 +227,59 @@
   @keyframes toastOut { to { opacity:0; transform:translateY(-14px); } }
   #themeBtn { background:transparent; border:1px solid var(--line); color:var(--mut); padding:6px 9px; border-radius:var(--radius-sm); font-weight:500; }
   #themeBtn:hover { color:var(--fg); border-color:var(--line-strong); box-shadow:none; filter:none; }
+  /* 桌面默认隐藏移动端控件 */
+  #menuBtn { display:none; padding:6px 10px; }
+  #navMask { display:none; }
+  #mobileEditorTop { display:none; }
+  /* ---- 中屏(≤1100px):四栏太挤 → AI 回退为悬浮抽屉 ---- */
+  @media (max-width:1100px) {
+    #body { grid-template-columns:200px minmax(280px,0.9fr) minmax(360px,1.3fr); }
+    #aiFab { display:inline-flex; position:fixed; right:26px; bottom:26px; width:56px; height:56px;
+      border-radius:50%; z-index:90; font-size:22px; padding:0; justify-content:center;
+      box-shadow:var(--shadow), var(--shadow-accent); }
+    #aiFab:hover { transform:translateY(-2px); }
+    #aiPanel { position:fixed; top:0; right:0; height:100vh; width:min(480px,94vw); grid-column:auto;
+      border-left:1px solid var(--line-strong); box-shadow:var(--shadow); z-index:96;
+      transform:translateX(100%); transition:transform .28s cubic-bezier(.2,.8,.3,1); }
+    #aiPanel.open { transform:none; }
+    #aiPanel .x { display:block; }
+  }
+  /* ---- 移动端适配 ---- */
+  @media (max-width:768px) {
+    #topbar { gap:10px; padding:0 12px; }
+    #menuBtn { display:inline-flex; }
+    .brand .brand-name { display:none; }
+    #searchWrap { max-width:none; margin:0; }
+    #authBar .who { display:none; }
+    #authBar #loginBtn, #authBar #registerBtn { padding:6px 9px; }
+    /* 单栏;nav 变抽屉 */
+    #body { grid-template-columns:1fr; }
+    #homeView { grid-column:1 / -1; }
+    .home-hero { padding:26px var(--sp-2) 22px; }
+    .home-hero h1 { font-size:24px; }
+    .home-wrap { padding:var(--sp-2); }
+    #nav { position:fixed; top:56px; bottom:0; left:0; width:min(280px,82vw); z-index:80;
+      transform:translateX(-100%); transition:transform .28s cubic-bezier(.2,.8,.3,1); box-shadow:var(--shadow); }
+    body.nav-open #nav { transform:none; }
+    #navMask { position:fixed; inset:56px 0 0 0; background:rgba(4,10,12,.5); z-index:79; animation:fadeIn .2s ease; }
+    body.nav-open #navMask { display:block; }
+    /* 列表 ↔ 编辑器 互斥全屏 */
+    #listCol { border-right:none; }
+    #editorCol { display:none; }
+    body.mobile-editor #listCol { display:none; }
+    body.mobile-editor #editorCol { display:flex; }
+    #mobileEditorTop { display:flex; align-items:center; padding:8px 12px; border-bottom:1px solid var(--line); background:var(--panel); flex:none; }
+    #editorScroll { padding:var(--sp-2); }
+    #listHead { padding:12px var(--sp-2) 8px; }
+    #aiFab { right:16px; bottom:16px; }
+  }
   @media (prefers-reduced-motion: reduce) { * { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 </style>
 </head>
 <body>
 <div id="app">
   <header id="topbar">
+    <button id="menuBtn" class="sec" onclick="toggleNav()" aria-label="菜单">☰</button>
     <span class="brand">
       <svg class="logo" viewBox="0 0 32 32" width="26" height="26" fill="none" aria-hidden="true">
         <text x="2" y="24" font-size="20" font-family="Arial Black,Helvetica,sans-serif" font-weight="900" fill="var(--accent)">J</text>
@@ -225,6 +305,41 @@
   </header>
 
   <div id="body">
+    <div id="navMask" onclick="closeNav()"></div>
+
+    <!-- 首页 / 仪表盘 -->
+    <section id="homeView">
+      <div class="home-hero">
+        <div class="hi">鹿匠笔记</div>
+        <h1 id="homeGreet">欢迎回来</h1>
+        <div class="sub">选择一个方向,让 AI 联网收集最新动态,自动整理成一条笔记。</div>
+      </div>
+      <div class="home-wrap">
+        <div class="home-grid">
+          <div class="stat clk" onclick="selectAll()">
+            <span class="k">📝 全部笔记</span><span class="v" id="statNotes">–</span>
+          </div>
+          <div class="stat clk" onclick="selectAll()">
+            <span class="k">📓 笔记本</span><span class="v" id="statNbs">–</span>
+          </div>
+          <div class="stat">
+            <span class="k">📰 新闻收集</span><span class="v" id="statNews">–</span>
+          </div>
+        </div>
+
+        <div class="widget">
+          <div class="wt">📰 最新新闻动态</div>
+          <div class="wd">选一个预设方向,或自己输入关键词;AI 会联网检索近期要闻并整理进「新闻动态」笔记本。</div>
+          <div class="chips" id="newsChips"></div>
+          <div class="news-run">
+            <input id="newsTopic" placeholder="自定义方向 / 关键词,如「人工智能」「A股」…" onkeydown="if(event.key==='Enter')runNews()">
+            <button id="newsBtn" onclick="runNews()">✦ 收集最新动态</button>
+          </div>
+          <div id="newsJobs"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- left nav -->
     <nav id="nav">
       <div class="primary">
@@ -235,7 +350,8 @@
 
       <div class="navgrp">
         <div class="ghd">视图</div>
-        <div class="navitem active" id="view-all" onclick="selectAll()"><span class="ic">📝</span><span class="lbl">全部笔记</span></div>
+        <div class="navitem active" id="view-home" onclick="selectHome()"><span class="ic">🏠</span><span class="lbl">首页</span></div>
+        <div class="navitem" id="view-all" onclick="selectAll()"><span class="ic">📝</span><span class="lbl">全部笔记</span></div>
         <div class="navitem muted" onclick="soon()"><span class="ic">🕐</span><span class="lbl">最近</span></div>
         <div class="navitem muted" onclick="soon()"><span class="ic">⭐</span><span class="lbl">快捷方式</span></div>
       </div>
@@ -272,6 +388,9 @@
 
     <!-- right: editor -->
     <section id="editorCol">
+      <div id="mobileEditorTop">
+        <button class="sec" onclick="backToList()" style="padding:6px 12px">← 返回列表</button>
+      </div>
       <div id="editorScroll">
         <div class="empty" id="noteEmpty">
           <span class="ico">📄</span>
@@ -307,13 +426,9 @@
         <button class="danger" onclick="deleteNote()">删除</button>
       </div>
     </section>
-  </div>
-</div>
 
-<!-- AI fab + drawer -->
-<button id="aiFab" onclick="openAI()" title="AI 助手" aria-label="打开 AI 助手">✦</button>
-<div id="aiMask" class="hidden" onclick="closeAI()"></div>
-<aside id="aiPanel" aria-hidden="true">
+    <!-- AI: 桌面常驻第四栏 / 移动端抽屉 -->
+    <aside id="aiPanel" aria-hidden="true">
   <div id="aiHd">
     <span class="t">✦ AI 助手</span>
     <span class="x"><button onclick="closeAI()">✕</button></span>
@@ -366,6 +481,12 @@
     </div>
   </div>
 </aside>
+  </div><!-- /#body -->
+</div><!-- /#app -->
+
+<!-- AI fab + mask(移动端) -->
+<button id="aiFab" onclick="openAI()" title="AI 助手" aria-label="打开 AI 助手">✦</button>
+<div id="aiMask" class="hidden" onclick="closeAI()"></div>
 
 <div id="authModal" class="modal hidden">
   <div class="box">
@@ -400,10 +521,19 @@ let currentNb = null;          // 左侧选中的笔记本;null = 全部笔记�
 let cards = [];                // 中栏卡片(跨/单笔记本)
 let currentNote = null;        // 右栏打开的笔记(含 notebookId/content)
 let qaSession = null, aiTab = 'qa', pollTimer = null, authMode = 'login';
+let newsPreset = '';           // 选中的预设方向;空 = 用自定义输入
+let newsTimer = null;          // 新闻任务轮询
+const NEWS_PRESETS = ['国际', '国内', '科技', '财经', '体育'];
 
 function nbById(id) { return notebooks.find(n => n.id === id); }
 function isSystemNb(nb) { return !!nb && nb.ownerId === 'system'; }
 function isSystemNbId(id) { return isSystemNb(nbById(id)); }
+
+// ---- 移动端 ----
+function isMobile() { return window.matchMedia('(max-width:768px)').matches; }
+function toggleNav() { document.body.classList.toggle('nav-open'); }
+function closeNav() { document.body.classList.remove('nav-open'); }
+function backToList() { document.body.classList.remove('mobile-editor'); }
 
 // ---- theme ----
 function applyThemeIcon() {
@@ -548,6 +678,81 @@ async function createNb() {
 }
 
 // ---- views / cards ----
+function setActiveNav(elId) {
+  ['view-home','view-all'].forEach(id => {
+    const e = document.getElementById(id); if (e) e.classList.toggle('active', id === elId);
+  });
+}
+// ---- 首页 ----
+function selectHome() {
+  document.body.classList.remove('home');
+  document.body.classList.add('home');
+  setActiveNav('view-home');
+  currentNb = null;
+  document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
+  renderHome();
+  closeNav();
+}
+function renderHome() {
+  const notes = cards ? cards.length : 0;
+  document.getElementById('statNotes').textContent = notes;
+  document.getElementById('statNbs').textContent = notebooks.filter(n => !isSystemNb(n)).length;
+  document.getElementById('homeGreet').textContent =
+    (new Date().getHours() < 6 ? '夜深了' : new Date().getHours() < 12 ? '早上好' : new Date().getHours() < 18 ? '下午好' : '晚上好') + ',欢迎回来';
+  renderNewsChips();
+  loadNews();
+}
+function renderNewsChips() {
+  document.getElementById('newsChips').innerHTML = NEWS_PRESETS.map(p =>
+    `<span class="chip ${newsPreset===p?'on':''}" onclick="pickNews('${p}')">${p}</span>`).join('');
+}
+function pickNews(p) {
+  newsPreset = (newsPreset === p) ? '' : p;
+  if (newsPreset) document.getElementById('newsTopic').value = '';
+  renderNewsChips();
+}
+async function runNews() {
+  const custom = document.getElementById('newsTopic').value.trim();
+  const topic = custom || newsPreset;
+  if (!topic) { toast('请选择一个方向或输入关键词', 'info'); return; }
+  const btn = document.getElementById('newsBtn'); btn.disabled = true;
+  try {
+    await j(`${API}/news`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({topic})});
+    document.getElementById('newsTopic').value = ''; newsPreset = ''; renderNewsChips();
+    toast('已提交,AI 正在联网收集…', 'ok');
+    loadNews();
+  } catch (e) { toast('提交失败:' + errText(e), 'err'); }
+  finally { btn.disabled = false; }
+}
+async function loadNews() {
+  let list;
+  try { list = await j(`${API}/news`); } catch (e) { return; }
+  const el = document.getElementById('newsJobs');
+  document.getElementById('statNews').textContent = list.filter(n => n.status === 'DONE').length;
+  el.innerHTML = list.length ? list.slice(0, 8).map(n => `
+    <div class="njob">
+      <span class="badge ${n.status}">${newsStatusLabel(n.status)}</span>
+      <span class="nt">${esc(n.topic)}</span>
+      <span class="nd">${fmtDate(n.createdAt)}</span>
+      ${n.status==='DONE'&&n.noteId?`<button class="sec" onclick="openNewsNote(${n.notebookId},${n.noteId})">查看笔记</button>`:''}
+      ${n.status==='FAILED'?`<span class="nd" style="color:var(--err)" title="${esc(n.errorMsg||'')}">失败</span>`:''}
+    </div>`).join('') : '<div class="mut">还没有新闻收集任务</div>';
+  const anyPending = list.some(n => !['DONE','FAILED'].includes(n.status));
+  if (newsTimer) { clearTimeout(newsTimer); newsTimer = null; }
+  if (anyPending && document.body.classList.contains('home')) newsTimer = setTimeout(loadNews, 3000);
+}
+function newsStatusLabel(s) { return {PENDING:'排队中',GENERATING:'收集中',DONE:'完成',FAILED:'失败'}[s]||s; }
+async function openNewsNote(notebookId, noteId) {
+  document.body.classList.remove('home');
+  await loadNotebooks();
+  currentNb = nbById(notebookId) || null;
+  setActiveNav('');
+  renderNbList();
+  document.getElementById('viewTitle').textContent = currentNb ? currentNb.name : '笔记';
+  if (!aiDrawerMode()) document.getElementById('aiPanel').setAttribute('aria-hidden','false');
+  await loadCards();
+  await openNote(notebookId, noteId);
+}
 function setActiveView(elId) {
   document.querySelectorAll('#nav .navitem').forEach(x => x.classList.remove('active'));
   const e = document.getElementById(elId); if (e) e.classList.add('active');
@@ -555,18 +760,25 @@ function setActiveView(elId) {
   if (currentNb) { const active = document.querySelector(`#nbList .navitem[onclick="selectNb(${currentNb.id})"]`); if (active) active.classList.add('active'); }
 }
 async function selectAll() {
+  document.body.classList.remove('home');
   currentNb = null;
-  document.getElementById('view-all').classList.add('active');
+  setActiveNav('view-all');
   document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
   document.getElementById('viewTitle').textContent = '全部笔记';
+  if (!aiDrawerMode()) document.getElementById('aiPanel').setAttribute('aria-hidden','false');
   await loadCards();
+  closeNav();
 }
 async function selectNb(id) {
+  document.body.classList.remove('home');
   currentNb = nbById(id) || null;
+  document.getElementById('view-home').classList.remove('active');
   document.getElementById('view-all').classList.remove('active');
   renderNbList();
   document.getElementById('viewTitle').textContent = currentNb ? currentNb.name : '笔记';
+  if (!aiDrawerMode()) document.getElementById('aiPanel').setAttribute('aria-hidden','false');
   await loadCards();
+  closeNav();
 }
 async function loadCards() {
   const el = document.getElementById('cards');
@@ -638,6 +850,8 @@ async function openNote(notebookId, noteId) {
   document.getElementById('noteSaveState').textContent = '';
   renderCards();
   loadSources();
+  refreshAiScopeOption();
+  if (isMobile()) document.body.classList.add('mobile-editor');
 }
 async function createNote() {
   let nb = currentNb;
@@ -684,6 +898,7 @@ async function deleteNote() {
   try {
     await j(`${API}/notebooks/${currentNote.notebookId}/notes/${currentNote.id}`, {method:'DELETE'});
     closeEditor();
+    backToList();
     await loadCards();
     toast('笔记已删除', 'ok');
   } catch (e) { toast('删除失败:' + errText(e), 'err'); }
@@ -728,22 +943,32 @@ async function loadSources() {
   if (anyPending) schedulePoll(true, loadSources);
 }
 
-// ---- AI drawer ----
-function openAI() {
+// ---- AI panel ----
+function aiDrawerMode() { return window.matchMedia('(max-width:1100px)').matches; }
+function populateAi(forceDefault) {
   const sel = document.getElementById('aiNb');
+  if (!notebooks.length) { sel.innerHTML = ''; return; }
+  const prev = sel.value;
   sel.innerHTML = notebooks.map(n => `<option value="${n.id}">${esc(n.name)}${isSystemNb(n)?' (系统)':''}</option>`).join('');
-  const def = (currentNote && currentNote.notebookId) || (currentNb && currentNb.id) || (notebooks[0] && notebooks[0].id);
-  if (def) sel.value = def;
+  const def = forceDefault
+    ? ((currentNote && currentNote.notebookId) || (currentNb && currentNb.id) || notebooks[0].id)
+    : (prev || (currentNb && currentNb.id) || notebooks[0].id);
+  if (def && sel.querySelector(`option[value="${def}"]`)) sel.value = def;
   onAiNbChange();
-  document.getElementById('aiMask').classList.remove('hidden');
-  document.getElementById('aiPanel').classList.add('open');
+}
+function openAI() {
+  populateAi(true);
+  if (aiDrawerMode()) {
+    document.getElementById('aiMask').classList.remove('hidden');
+    document.getElementById('aiPanel').classList.add('open');
+  }
   document.getElementById('aiPanel').setAttribute('aria-hidden','false');
   aiSwitch(aiTab);
 }
 function closeAI() {
   document.getElementById('aiMask').classList.add('hidden');
   document.getElementById('aiPanel').classList.remove('open');
-  document.getElementById('aiPanel').setAttribute('aria-hidden','true');
+  document.getElementById('aiPanel').setAttribute('aria-hidden', aiDrawerMode() ? 'true' : 'false');
 }
 function aiNbId() { return Number(document.getElementById('aiNb').value); }
 function onAiNbChange() {
@@ -764,6 +989,15 @@ function onAiNbChange() {
 function renderScope() {
   document.getElementById('qaInput').placeholder =
     document.getElementById('aiScope').value === 'current' ? '基于当前这条笔记提问…' : '基于该笔记本全部笔记提问…';
+}
+/** 打开笔记后刷新「仅当前笔记」选项可用性(不重置问答会话)。 */
+function refreshAiScopeOption() {
+  const sel = document.getElementById('aiNb'); if (!sel || !sel.value) return;
+  const opt = document.querySelector('#aiScope option[value="current"]');
+  const usable = currentNote && currentNote.notebookId === aiNbId();
+  opt.disabled = !usable;
+  if (!usable && document.getElementById('aiScope').value === 'current') document.getElementById('aiScope').value = 'all';
+  renderScope();
 }
 function noteIdsForAI() {
   if (document.getElementById('aiScope').value === 'current' && currentNote && currentNote.notebookId === aiNbId())
@@ -916,7 +1150,19 @@ function fmtDate(s){
 
 applyThemeIcon();
 loadMe();
-loadNotebooks().then(selectAll);
+loadNotebooks().then(async () => {
+  await loadCards();                                  // 预取卡片用于首页统计
+  if (!aiDrawerMode()) { populateAi(true); aiSwitch('qa'); }  // 桌面常驻:直接呈现
+  selectHome();                                       // 默认进入首页
+});
+// 断点跨越时,退出抽屉的临时状态,保持面板正确形态
+window.addEventListener('resize', () => {
+  if (!aiDrawerMode()) {
+    document.getElementById('aiMask').classList.add('hidden');
+    document.getElementById('aiPanel').classList.remove('open');
+    document.getElementById('aiPanel').setAttribute('aria-hidden','false');
+  }
+});
 </script>
 </body>
 </html>
