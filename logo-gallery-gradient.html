@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鹿匠笔记 · 渐变鹿头 Logo(参考风格)</title>
+<style>
+  :root{
+    --bg:#0e1417; --panel:#151d21; --panel2:#1d272c; --line:#2a373d; --line-strong:#3a4a52;
+    --fg:#e8edef; --mut:#8a9ba3; --accent:#2dd4bf; --accent2:#22a3d6; --violet:#8b5cf6;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;padding:40px 24px 80px;}
+  h1{font-size:26px;font-weight:800;margin:0 0 6px;}
+  .sub{color:var(--mut);font-size:14px;margin-bottom:8px;}
+  .hint{color:var(--mut);font-size:13px;margin-bottom:8px;line-height:1.7;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:760px;}
+  .hint b{color:var(--accent);}
+  .toggle{margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap;}
+  .toggle button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+  .toggle button.on{background:var(--accent);color:#04231f;border-color:transparent;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;max-width:1200px;margin-top:12px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px 20px 18px;display:flex;flex-direction:column;align-items:center;gap:16px;transition:border-color .2s,transform .2s;}
+  .card:hover{border-color:var(--accent);transform:translateY(-3px);}
+  .stage{height:130px;display:flex;align-items:center;justify-content:center;width:100%;}
+  .brandrow{display:flex;align-items:center;gap:12px;}
+  .brandrow .name{font-size:22px;font-weight:800;white-space:nowrap;}
+  .meta{text-align:center;}
+  .meta .tag{display:inline-block;background:var(--panel2);border:1px solid var(--line);color:var(--accent);font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:8px;letter-spacing:.4px;}
+  .meta .t{font-size:15px;font-weight:700;margin-bottom:4px;}
+  .meta .d{font-size:12px;color:var(--mut);line-height:1.6;}
+  body.light{--bg:#f6f8f9;--panel:#fff;--panel2:#eef2f4;--line:#dce3e6;--line-strong:#c3cdd2;--fg:#16232a;--mut:#5f7079;}
+  .gname{background:linear-gradient(92deg,var(--fg),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  body.iconly .brandrow .name{display:none;}
+</style>
+</head>
+<body>
+<h1>鹿匠笔记 · 渐变鹿头 Logo</h1>
+<div class="sub">按你给的参考图风格:青绿→蓝渐变、面塗、圆润的鹿头+枝角。全部内联 SVG,可直接进项目。</div>
+<div class="hint">这批模仿你发来的<b>渐变立体鹿头</b>参考风格,做了 6 种变体(G1~G6)。挑中告诉我编号(可微调,如「G3 角再大一点」)。右上可切<b>明/暗背景</b>与<b>纯图标</b>预览。</div>
+<div class="toggle">
+  <button class="on" onclick="setTheme('dark',this)">暗色背景</button>
+  <button onclick="setTheme('light',this)">亮色背景</button>
+  <button onclick="toggleIcon(this)" style="margin-left:12px;">纯图标 / 带字</button>
+</div>
+<div class="grid" id="grid"></div>
+
+<script>
+function setTheme(t,btn){document.body.classList.toggle('light',t==='light');document.querySelectorAll('.toggle button')[0].classList.toggle('on',t==='dark');document.querySelectorAll('.toggle button')[1].classList.toggle('on',t==='light');}
+function toggleIcon(btn){document.body.classList.toggle('iconly');btn.classList.toggle('on');}
+
+// 公共渐变定义
+function defs(id){return `<defs>
+  <linearGradient id="tealB${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset=".55" stop-color="#2dd4bf"/><stop offset="1" stop-color="#22a3d6"/></linearGradient>
+  <linearGradient id="tealV${id}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#67e8f9"/><stop offset=".5" stop-color="#2dd4bf"/><stop offset="1" stop-color="#3b82f6"/></linearGradient>
+  <radialGradient id="glow${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+</defs>`;}
+
+const logos = [
+{tag:'圆润面塗',title:'G1 · 渐变鹿头(正面)',desc:'正面鹿头剪影 + 对称枝角,整体一块青绿→蓝渐变,右上加柔光高光。最贴近你的参考图气质。',svg:(id)=>`
+<svg viewBox="0 0 64 64" width="80" height="80">${defs(id)}
+  <g fill="url(#tealB${id})">
+    <path d="M32 20c-6 0-10 4.5-10 11 0 7 4.5 13 10 16 5.5-3 10-9 10-16 0-6.5-4-11-10-11Z"/>
+    <path d="M22 26c-5-1-8-5-9-11 3 2 6 2.5 9 1.5 1 3 .5 6-0 9.5Z"/>
+    <path d="M42 26c5-1 8-5 9-11-3 2-6 2.5-9 1.5-1 3-.5 6 0 9.5Z"/>
+    <path d="M13 15c-4-1-6-4-6-8 3 1 5 3 6 8ZM51 15c4-1 6-4 6-8-3 1-5 3-6 8Z"/>
+    <path d="M22 20c-4-3-6-7-6-12 3 3 5 6 6 12ZM42 20c4-3 6-7 6-12-3 3-5 6-6 12Z"/>
+  </g>
+  <path d="M32 20c-6 0-10 4.5-10 11 0 7 4.5 13 10 16 5.5-3 10-9 10-16 0-6.5-4-11-10-11Z" fill="url(#glow${id})"/>
+  <circle cx="27" cy="33" r="1.7" fill="#04231f" opacity=".55"/><circle cx="37" cy="33" r="1.7" fill="#04231f" opacity=".55"/>
+</svg>`},
+
+{tag:'枝角舒展',title:'G2 · 大枝角渐变鹿',desc:'鹿角更舒展多叉,头部略小,重心在角。华丽、有识别度,像高端徽标。',svg:(id)=>`
+<svg viewBox="0 0 64 64" width="80" height="80">${defs(id)}
+  <g fill="url(#tealV${id})">
+    <path d="M32 30c-5 0-8.5 4-8.5 9.5 0 6 4 11 8.5 13.5 4.5-2.5 8.5-7.5 8.5-13.5 0-5.5-3.5-9.5-8.5-9.5Z"/>
+    <path d="M24 34c-6-1-10-6-11-13 3 2 7 3 10 1.5.5 4 .8 8 1 11.5ZM40 34c6-1 10-6 11-13-3 2-7 3-10 1.5-.5 4-.8 8-1 11.5Z"/>
+    <path d="M13 21c-5-1-8-4-9-9 4 1 7 4 9 9ZM51 21c5-1 8-4 9-9-4 1-7 4-9 9Z"/>
+    <path d="M23 22c-4-4-6-8-6-14 4 4 6 8 6 14ZM41 22c4-4 6-8 6-14-4 4-6 8-6 14Z"/>
+    <path d="M18 14c-4-2-6-5-6-9 3 2 5 5 6 9ZM46 14c4-2 6-5 6-9-3 2-5 5-6 9Z"/>
+  </g>
+  <path d="M32 30c-5 0-8.5 4-8.5 9.5 0 6 4 11 8.5 13.5 4.5-2.5 8.5-7.5 8.5-13.5 0-5.5-3.5-9.5-8.5-9.5Z" fill="url(#glow${id})"/>
+</svg>`},
+
+{tag:'方块图标',title:'G3 · 圆角方块 + 鹿头',desc:'iOS 风圆角方块底(渐变)+ 白色鹿头线稿。适合做 App 图标 / favicon,辨识度极高。',svg:(id)=>`
+<svg viewBox="0 0 64 64" width="80" height="80">${defs(id)}
+  <rect x="5" y="5" width="54" height="54" rx="15" fill="url(#tealV${id})"/>
+  <rect x="5" y="5" width="54" height="54" rx="15" fill="url(#glow${id})"/>
+  <g fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 32 26 46h12z"/>
+    <path d="M27 32c-4-2-6-6-6-11M27 25c-4 0-7-2-9-5M20 22c-3 1-6 0-8-3"/>
+    <path d="M37 32c4-2 6-6 6-11M37 25c4 0 7-2 9-5M44 22c3 1 6 0 8-3"/>
+  </g>
+</svg>`},
+
+{tag:'双色分面',title:'G4 · 双色立体鹿头',desc:'鹿头左右两半分别用亮青 / 深蓝渐变,营造光影立体感,更接近参考图的「体积感」。',svg:(id)=>`
+<svg viewBox="0 0 64 64" width="80" height="80">
+  <defs>
+    <linearGradient id="l${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#67e8f9"/><stop offset="1" stop-color="#2dd4bf"/></linearGradient>
+    <linearGradient id="r${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22a3d6"/><stop offset="1" stop-color="#1e40af"/></linearGradient>
+  </defs>
+  <path d="M32 20c-6 0-10 4.5-10 11 0 7 4.5 13 10 16V20Z" fill="url(#l${id})"/>
+  <path d="M32 20c6 0 10 4.5 10 11 0 7-4.5 13-10 16V20Z" fill="url(#r${id})"/>
+  <path d="M22 26c-5-1-8-5-9-11 3 2 6 2.5 9 1.5 1 3 .5 6 0 9.5ZM13 15c-4-1-6-4-6-8 3 1 5 3 6 8ZM22 20c-4-3-6-7-6-12 3 3 5 6 6 12Z" fill="url(#l${id})"/>
+  <path d="M42 26c5-1 8-5 9-11-3 2-6 2.5-9 1.5-1 3-.5 6 0 9.5ZM51 15c4-1 6-4 6-8-3 1-5 3-6 8ZM42 20c4-3 6-7 6-12-3 3-5 6-6 12Z" fill="url(#r${id})"/>
+</svg>`},
+
+{tag:'鹿角托书',title:'G5 · 渐变角 + 书',desc:'把参考风格的渐变面塗用到「鹿角托书」上:枝角面塗渐变,中间一本渐变小书。主题呼应最强。',svg:(id)=>`
+<svg viewBox="0 0 64 64" width="80" height="80">${defs(id)}
+  <g fill="url(#tealB${id})">
+    <path d="M22 38c-6-2-10-7-11-14 3 2 7 3 10 1.5 1 5 1.2 9 1 12.5ZM42 38c6-2 10-7 11-14-3 2-7 3-10 1.5-1 5-1.2 9-1 12.5Z"/>
+    <path d="M13 20c-5-1-8-4-9-9 4 1 7 4 9 9ZM51 20c5-1 8-4 9-9-4 1-7 4-9 9Z"/>
+    <path d="M22 22c-4-4-6-8-6-14 4 4 6 8 6 14ZM42 22c4-4 6-8 6-14-4 4-6 8-6 14Z"/>
+  </g>
+  <path d="M32 36c-4-3-9-3-13-1v18c4-2 9-2 13 1 4-3 9-3 13-1V35c-4-2-9-2-13 1Z" fill="url(#tealV${id})"/>
+  <path d="M32 36v18" stroke="#04231f" stroke-width="1.5" opacity=".4"/>
+</svg>`},
+
+{tag:'极简单色也可',title:'G6 · 渐变鹿头(侧脸)',desc:'四分之三侧脸鹿头,一只角向后延伸,姿态更灵动优雅,渐变面塗。气质偏文艺高级。',svg:(id)=>`
+<svg viewBox="0 0 64 64" width="80" height="80">${defs(id)}
+  <g fill="url(#tealB${id})">
+    <path d="M28 24c-6 1-9 6-8 13 1 8 6 14 13 15 3-4 4-9 3-15-1-8-5-14-11-13Z"/>
+    <path d="M24 22c-6-2-9-7-9-14 4 3 7 4 10 2 .5 4 .3 8-1 12ZM33 20c2-6 6-9 12-9-2 4-5 6-9 7 .3 2-1 2-3 2Z"/>
+    <path d="M16 11c-4-2-5-5-5-9 3 2 5 5 5 9ZM45 12c4-3 8-4 12-3-3 3-6 4-10 4-1 0-2 0-2-1Z"/>
+  </g>
+  <path d="M28 24c-6 1-9 6-8 13 1 8 6 14 13 15 3-4 4-9 3-15-1-8-5-14-11-13Z" fill="url(#glow${id})"/>
+  <circle cx="30" cy="35" r="1.7" fill="#04231f" opacity=".55"/>
+</svg>`},
+];
+
+const grid = document.getElementById('grid');
+grid.innerHTML = logos.map((l,i)=>`
+  <div class="card">
+    <div class="stage"><div class="brandrow">${l.svg(i)}<span class="name gname">鹿匠笔记</span></div></div>
+    <div class="meta"><span class="tag">${l.tag}</span><div class="t">${l.title}</div><div class="d">${l.desc}</div></div>
+  </div>`).join('');
+</script>
+</body>
+</html>

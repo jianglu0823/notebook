@@ -1,4 +1,4 @@
-# NotebookLM 自建版
+# Superbook
 
 一个类 Google **NotebookLM** 的应用:上传自己的资料(PDF / Word / 文本 / 图片 / 音频),基于这些资料做**带出处引用的问答**,并能一键生成**摘要 / 学习指南 / FAQ**,以及**音频概览播客**(两位 AI 主持人对话式讲解)。
 
@@ -16,40 +16,56 @@
 | RAG 问答 | 基于笔记本资料检索作答,SSE 流式返回,**带可点击出处引用** |
 | 文档生成 | 一键生成摘要 / 学习指南 / FAQ(Markdown) |
 | 音频概览 | qwen 生成双主持人对话脚本 → CosyVoice 逐句合成 → 拼接为 MP3 |
+| 账号与隔离 | 自研 JWT + 游客模式,`owner_id` 数据隔离;内置只读「系统公告」笔记本 |
+| 访问日志 | 记录登录 / 注册 / 写操作的 IP、设备类型、动作(见 `/api/logs`) |
+
+---
+
+## 系统架构
+
+浏览器请求经 **Spring Cloud Gateway** 打到应用;应用为**模块化单体**,大模型统一走 **DashScope**,元数据落 **MySQL**、向量落 **Milvus**,**Nacos** 提供配置与注册中心。
+
+```
+                      ┌─────────────┐
+                      │   浏览器 SPA │  原生 JS 单文件,应用直接托管
+                      └──────┬──────┘
+                             │ HTTP / SSE
+                      ┌──────▼───────────────┐
+                      │ Spring Cloud Gateway │  :9000  (lb:// 服务发现路由)
+                      └──────┬───────────────┘
+                             │ 服务发现
+         注册/配置    ┌───────▼────────────────────────────────┐
+      ┌──────────────┤        notebooklm-app  :8080           │
+      │   Nacos      │  模块化单体,JDK21 / Spring Boot 3.3    │
+      │  :8848       ├────────────────────────────────────────┤
+      └──────────────┤ auth │ notebook │ note │ ingest │ qa    │
+                     │      │  gen │ audio │ log(访问日志)      │
+                     └───┬──────────┬──────────┬───────────┬───┘
+                         │          │          │           │
+                向量检索 │   元数据 │   大模型  │   缓存/会话 │
+                   ┌─────▼───┐ ┌────▼────┐ ┌───▼──────┐ ┌──▼─────┐
+                   │ Milvus  │ │ MySQL 8 │ │ DashScope│ │ Redis 7│
+                   │(etcd+   │ │(notebook│ │ 通义千问  │ │        │
+                   │ minio)  │ │/note/…) │ │qwen/embed│ │        │
+                   └─────────┘ └─────────┘ │/asr/tts) │ └────────┘
+                                           └──────────┘
+```
+
+- **摄取链路**:上传文件 / 笔记正文 → 解析(TikaReader,图片走 `qwen-vl-max`、音频走 Paraformer)→ 分块 → `text-embedding-v3` 向量化 → 写 Milvus(payload 带 `notebook_id / note_id / source_id / seq`)。
+- **问答链路**:检索 Milvus(按所选笔记过滤)→ 拼上下文 → `qwen-plus` 生成 → SSE 流式返回并回填引用。
 
 ---
 
 ## 技术栈
 
-### 应用层
-- **JDK 21**、**Maven 3.9+**
-- **Spring Boot 3.3.5**
-- **Spring Cloud 2023.0.3** + **Spring Cloud Alibaba 2023.0.1.3**(Nacos 配置 + 注册)
-- **Spring Cloud Gateway**(网关,`lb://` 服务发现路由)
-- **JPA / Hibernate**(元数据持久化)
-
-### 智能体与大模型(AgentScope Java v2 + DashScope)
-- **AgentScope Java `2.0.0-RC4`**(`io.agentscope`)
-  - `SimpleKnowledge` + `MilvusStore` + `TikaReader`(RAG 检索/解析)
-  - `DashScopeChatModel`(对话 / 视觉)、`DashScopeTextEmbedding`(向量化)
-- **DashScope SDK `2.22.9`**:Paraformer(ASR)、CosyVoice / `ttsv2`(TTS)
-- 模型清单:
-  | 用途 | 模型 |
-  |---|---|
-  | 文本对话 | `qwen-plus` |
-  | 图像理解 | `qwen-vl-max` |
-  | 文本向量 | `text-embedding-v3`(1024 维) |
-  | 语音识别 | `paraformer-realtime-v2` |
-  | 语音合成 | `cosyvoice-v1`(音色 A `longwan` / B `longcheng`) |
-
-### 存储与基础设施(全部 Docker)
-- **MySQL 8**:元数据(notebook / source / chunk / qa_history / generated_doc / podcast)
-- **Redis 7**:缓存 / 会话
-- **Milvus 2.x**:向量库(伴生 etcd + minio)
-- **Nacos 2.4.3**:配置中心 + 注册中心
-
-### 前端
-- 单文件 **原生 JS SPA**(`notebooklm-app/src/main/resources/static/index.html`),由应用直接托管,无独立构建步骤。
+| 层次 | 技术选型 |
+|---|---|
+| 应用层 | **JDK 21**、**Maven 3.9+**、**Spring Boot 3.3.5**、**Spring Cloud 2023.0.3** + **Spring Cloud Alibaba 2023.0.1.3**(Nacos 配置 + 注册)、**Spring Cloud Gateway**(`lb://` 路由)、**JPA / Hibernate** |
+| 智能体框架 | **AgentScope Java `2.0.0-RC4`**(`io.agentscope`):`SimpleKnowledge` + `MilvusStore` + `TikaReader`(RAG 检索/解析)、`DashScopeChatModel`(对话/视觉)、`DashScopeTextEmbedding`(向量化) |
+| 大模型 / SDK | **DashScope SDK `2.22.9`**:文本对话 `qwen-plus`、图像理解 `qwen-vl-max`、文本向量 `text-embedding-v3`(1024 维)、语音识别 `paraformer-realtime-v2`、语音合成 `cosyvoice-v1`(双音色 `longwan` / `longcheng`) |
+| 存储 / 基础设施 | **MySQL 8**(元数据)、**Redis 7**(缓存/会话)、**Milvus 2.x**(向量库,伴生 etcd + minio)、**Nacos 2.4.3**(配置 + 注册中心)—— 全部 Docker |
+| 鉴权 / 日志 | 自研 **JWT**(jjwt + BCrypt)+ 游客模式,`owner_id` 账号隔离;登录 / 操作访问日志(IP / 设备类型 / 动作) |
+| 前端 | 单文件 **原生 JS SPA**(`notebooklm-app/src/main/resources/static/index.html`),应用直接托管,无独立构建步骤 |
 
 ---
 
@@ -71,15 +87,19 @@ LLM-note/
     ├── Dockerfile              # 多阶段构建
     └── src/main/java/io/llmnote/
         ├── config/             # AgentScope/DashScope/Milvus/CORS 配置
-        ├── notebook/           # 笔记本 & 资料 CRUD
+        ├── auth/               # 自研 JWT + 游客模式,owner_id 账号隔离
+        ├── notebook/           # 笔记本 CRUD
+        ├── note/               # 笔记层(富文本正文 + 上传文件)
         ├── ingest/             # 上传→解析→分块→向量化;图像理解;音频转写
         ├── qa/                 # RAG 问答 + 引用(SSE 流式)
         ├── gen/                # 摘要 / 学习指南 / FAQ 生成
         ├── audio/              # 播客脚本生成 + TTS 合成
+        ├── log/                # 登录 / 操作访问日志
+        ├── bootstrap/          # 启动时植入内置「系统公告」笔记本
         └── llm/                # DashScopeChatModel 阻塞式封装
 ```
 
-> 架构演进:当前为**模块化单体**,但从第一天即接入 Nacos。后续可按 `notebook / ingest / qa / gen / audio` 五个内部模块平滑拆成独立微服务,网关与注册中心已就位。
+> 架构演进:当前为**模块化单体**,但从第一天即接入 Nacos。后续可按 `notebook / note / ingest / qa / gen / audio` 等内部模块平滑拆成独立微服务,网关与注册中心已就位。
 
 ---
 

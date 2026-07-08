@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鹿匠笔记 · 100个Logo合集(全新风格)</title>
+<style>
+  :root{--bg:#0e1417;--panel:#151d21;--panel2:#1d272c;--line:#2a373d;--fg:#e8edef;--mut:#8a9ba3;--accent:#2dd4bf;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;padding:40px 24px 120px;}
+  h1{font-size:26px;font-weight:800;margin:0 0 6px;}
+  h2{font-size:17px;color:var(--accent);margin:60px 0 16px;border-bottom:1px solid var(--line);padding-bottom:8px;max-width:1400px;font-weight:700;}
+  h2 span{color:var(--mut);font-weight:500;font-size:13px;margin-left:10px;}
+  .sub{color:var(--mut);font-size:14px;margin-bottom:8px;}
+  .hint{color:var(--mut);font-size:13px;margin-bottom:16px;line-height:1.7;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:800px;}
+  .hint b{color:var(--accent);}
+  .toggle{margin:0 0 16px;display:flex;gap:8px;position:sticky;top:0;background:var(--bg);z-index:10;padding:10px 0;border-bottom:1px solid var(--line);}
+  .toggle button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+  .toggle button.on{background:var(--accent);color:#04231f;border-color:transparent;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;max-width:1400px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 12px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;transition:border-color .2s,transform .2s;}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .stage{height:80px;display:flex;align-items:center;justify-content:center;width:100%;}
+  .brandrow{display:flex;align-items:center;gap:8px;}
+  .brandrow .name{font-size:15px;font-weight:800;white-space:nowrap;}
+  .meta{text-align:center;}
+  .meta .tag{display:inline-block;background:var(--panel2);border:1px solid var(--line);color:var(--accent);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:5px;letter-spacing:.3px;}
+  .meta .t{font-size:12px;font-weight:700;margin-bottom:2px;}
+  .meta .d{font-size:11px;color:var(--mut);line-height:1.4;}
+  body.light{--bg:#f6f8f9;--panel:#fff;--panel2:#eef2f4;--line:#dce3e6;--fg:#16232a;--mut:#5f7079;}
+  .gname{background:linear-gradient(92deg,var(--fg),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  body.iconly .brandrow .name{display:none;}
+</style>
+</head>
+<body>
+<h1>鹿匠笔记 · 100个Logo合集(全新风格)</h1>
+<div class="sub">10大类×10个,涵盖一笔画/抽象/复古印刷/东西方美学/数字科技/现代艺术/自然有机/节日主题等</div>
+<div class="hint">共100个,前面50个基础上全新拓展风格。右上切<b>明/暗背景</b>+<b>纯图标</b>预览。挑中告诉我编号(如G73、Q12等),配色/细节随便改。</div>
+<div class="toggle">
+  <button class="on" onclick="setTheme('dark',this)">暗色背景</button>
+  <button onclick="setTheme('light',this)">亮色背景</button>
+  <button onclick="toggleIcon(this)" style="margin-left:12px;">纯图标 / 带字</button>
+</div>
+
+<!-- ⑥ 一笔成型 -->
+<h2>⑥ 一笔成型/连续线 <span>10个 · 极简艺术</span></h2>
+<div class="grid" id="g51"></div>
+
+<!-- ⑦ 抽象构成 -->
+<h2>⑦ 抽象几何构成 <span>10个 · 现代构成主义</span></h2>
+<div class="grid" id="g61"></div>
+
+<!-- ⑧ 复古印刷 -->
+<h2>⑧ 复古印刷风 <span>10个 · 雕版/招牌/旧印刷</span></h2>
+<div class="grid" id="g71"></div>
+
+<!-- ⑨ 东方美学 -->
+<h2>⑨ 东方美学 <span>10个 · 印章/水墨/剪纸/青花</span></h2>
+<div class="grid" id="g81"></div>
+
+<!-- ⑩ 西方古典 -->
+<h2>⑩ 西方古典 <span>10个 · 纹章/罗马/哥特/巴洛克</span></h2>
+<div class="grid" id="g91"></div>
+
+<!-- ⑪ 数字科技 -->
+<h2>⑪ 数字科技 <span>10个 · 像素/电路/全息/AI节点</span></h2>
+<div class="grid" id="g101"></div>
+
+<!-- ⑫ 现代艺术 -->
+<h2>⑫ 现代艺术派 <span>10个 · 孟菲斯/包豪斯/构成</span></h2>
+<div class="grid" id="g111"></div>
+
+<!-- ⑬ 自然有机 -->
+<h2>⑬ 自然有机 <span>10个 · 树叶/水波/云/羽毛</span></h2>
+<div class="grid" id="g121"></div>
+
+<!-- ⑭ 字符变形 -->
+<h2>⑭ 字符字形 <span>10个 · 字符里藏鹿</span></h2>
+<div class="grid" id="g131"></div>
+
+<!-- ⑮ 节日主题 -->
+<h2>⑮ 节日主题配色 <span>10个 · 春节/圣诞/中秋等</span></h2>
+<div class="grid" id="g141"></div>
+
+<script>
+function setTheme(t,btn){document.body.classList.toggle('light',t==='light');document.querySelectorAll('.toggle button')[0].classList.toggle('on',t==='dark');document.querySelectorAll('.toggle button')[1].classList.toggle('on',t==='light');}
+function toggleIcon(btn){document.body.classList.toggle('iconly');btn.classList.toggle('on');}
+
+const A='#2dd4bf',B='#22a3d6',G='#fbbf24',V='#8b5cf6',P='#ec4899',O='#f97316',R='#ef4444',K='#1f2937',W='#fff',M='#94a3b8',EM='#0e1417';
+function deerFill(c){return `<path fill="${c}" d="M32 20c-6 0-10 4.5-10 11 0 7 4.5 13 10 16 5.5-3 10-9 10-16 0-6.5-4-11-10-11Z"/>
+<path fill="${c}" d="M22 26c-5-1-8-5-9-11 3 2 6 2.5 9 1.5 1 3 .5 6-0 9.5Z"/>
+<path fill="${c}" d="M42 26c5-1 8-5 9-11-3 2-6 2.5-9 1.5-1 3-.5 6 0 9.5Z"/>
+<path fill="${c}" d="M13 15c-4-1-6-4-6-8 3 1 5 3 6 8ZM51 15c4-1 6-4 6-8-3 1-5 3-6 8Z"/>
+<path fill="${c}" d="M22 20c-4-3-6-7-6-12 3 3 5 6 6 12ZM42 20c4-3 6-7 6-12-3 3-5 6-6 12Z"/>`;}
+function deerLine(c,w=2.4){return `<g fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M32 30 24 46h16z"/><path d="M26 30c-4-2-6-6-6-10M26 22c-4 0-7-2-9-5M20 20c-3 1-6 0-8-3"/>
+  <path d="M38 30c4-2 6-6 6-10M38 22c4 0 7-2 9-5M44 20c3 1 6 0 8-3"/></g>`;}
+function antlers(c,w=2.4){return `<g fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M20 40c-5-3-8-9-8-16M20 32c-5-1-9-5-11-11M12 26c-4 0-7-3-8-7"/>
+  <path d="M44 40c5-3 8-9 8-16M44 32c5-1 9-5 11-11M52 26c4 0 7-3 8-7"/></g>`;}
+
+/* ⑥ 一笔成型 */
+const cat6=[
+{tag:'一笔画',t:'G51 · 一笔鹿头',d:'一笔连续线条,极简艺术',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M16 18c-2-4-2-8 2-10 4 2 8 6 8 12v8c4 0 8 4 8 10s-4 12-8 14c-2 0-4-2-4-4v-8c0-4 4-6 6-6" fill="none" stroke="${A}" stroke-width="2.6" stroke-linecap="round"/></svg>`},
+{tag:'一笔画',t:'G52 · 一笔鹿角',d:'连续线画一对鹿角',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M32 56c-2-8-2-16 0-24 0-8 2-16 4-24 2 8 4 16 4 24 2 8 2 16 0 24M16 32c-4-4-6-10-6-16 4 4 6 8 8 14M48 32c4-4 6-10 6-16-4 4-6 8-8 14" fill="none" stroke="${A}" stroke-width="2.6" stroke-linecap="round"/></svg>`},
+{tag:'一笔画',t:'G53 · 一笔鹿身',d:'连续线画完整跃鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M10 48c4-4 8-8 10-14 2-4 4-8 8-8 4 0 6-4 6-8 0 4 2 8 6 8l-2 4c4 4 6 8 8 14M30 22c2-4 4-6 8-6 4 0 6 2 6 6" fill="none" stroke="${A}" stroke-width="2.4" stroke-linecap="round"/></svg>`},
+{tag:'一笔画',t:'G54 · 螺旋角',d:'螺旋式鹿角,极简艺术',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M16 16c-2 4 0 8 4 8 4 0 6-4 4-8M48 16c2 4 0 8-4 8-4 0-6-4-4-8M22 30c0 12 4 20 10 24 6-4 10-12 10-24" fill="none" stroke="${A}" stroke-width="2.6" stroke-linecap="round"/><circle cx="32" cy="42" r="2" fill="${A}"/></svg>`},
+{tag:'一笔画',t:'G55 · 折线鹿',d:'折线式鹿,几何感',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M8 16l8 8 8-8 8 16 8-8 8 8 8-16" fill="none" stroke="${A}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 32c4 8 8 16 16 16 8 0 12-8 16-16" fill="none" stroke="${A}" stroke-width="2.6" stroke-linecap="round"/></svg>`},
+{tag:'一笔画',t:'G56 · 书法笔',d:'书法笔意,东方一笔',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M8 12c4 0 8 4 12 12s4 16 4 24c0 8 4 12 12 12s12-4 12-12 0-16 4-24 8-12 12-12" fill="none" stroke="${K}" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 4"/></svg>`},
+{tag:'一笔画',t:'G57 · 流线',d:'流线型鹿头,速度感',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M52 12c-8 4-12 12-12 24 0 8-4 16-8 20H16c4-4 8-12 8-20 0-12-4-20-12-24" fill="${A}"/><circle cx="36" cy="28" r="1.8" fill="${K}"/></svg>`},
+{tag:'一笔画',t:'G58 · 双勾',d:'双勾线鹿头,工笔感',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M22 18c-2-4-2-8 0-12 2 4 2 8 0 12M42 18c2-4 2-8 0-12-2 4-2 8 0 12M16 30c0 12 6 22 16 26 10-4 16-14 16-26" fill="none" stroke="${A}" stroke-width="2.4" stroke-linecap="round"/><path d="M22 18c-2-4-2-8 0-12 2 4 2 8 0 12" fill="none" stroke="${A}" stroke-width="1" opacity=".5"/></svg>`},
+{tag:'一笔画',t:'G59 · 减笔',d:'极减笔,只留神韵',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M20 20c-2-4-2-8 4-8M44 20c2-4 2-8-4-8M16 32l8-2 8 6 8-6 8 2c0 14-6 24-16 26-10-2-16-12-16-26Z" fill="none" stroke="${A}" stroke-width="2.8" stroke-linejoin="round"/></svg>`},
+{tag:'一笔画',t:'G60 · 飞白',d:'书法飞白笔意',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M20 16c-2 4 0 6 4 6M44 16c2 4 0 6-4 6M14 30c0 14 8 24 18 26 10-2 18-12 18-26" fill="none" stroke="${K}" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="3 2"/></svg>`},
+];
+
+/* ⑦ 抽象构成 */
+const cat7=[
+{tag:'圆构成',t:'G61 · 圆中角',d:'圆形里藏鹿角,蒙德里安式',s:`<svg viewBox="0 0 64 64" width="60" height="60"><circle cx="32" cy="32" r="26" fill="${A}"/><g fill="${K}"><rect x="20" y="18" width="4" height="14"/><rect x="14" y="14" width="4" height="10"/><rect x="44" y="18" width="4" height="14"/><rect x="46" y="14" width="4" height="10"/><path d="M26 28v18h12V28c-2 4-4 6-6 6s-4-2-6-6Z"/></g></svg>`},
+{tag:'方构成',t:'G62 · 矩阵鹿',d:'矩阵方块拼鹿头',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="${A}"><rect x="20" y="14" width="6" height="6"/><rect x="38" y="14" width="6" height="6"/><rect x="14" y="20" width="6" height="6"/><rect x="44" y="20" width="6" height="6"/><rect x="20" y="26" width="24" height="6"/><rect x="20" y="32" width="24" height="14"/><rect x="26" y="38" width="4" height="4" fill="${K}"/><rect x="34" y="38" width="4" height="4" fill="${K}"/><rect x="14" y="46" width="6" height="6"/><rect x="44" y="46" width="6" height="6"/></g></svg>`},
+{tag:'三角构成',t:'G63 · 三角切面',d:'三角切面构成鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="${A}"><polygon points="32,16 16,32 32,32"/><polygon points="32,16 48,32 32,32"/><polygon points="16,32 32,32 32,48"/><polygon points="48,32 32,32 32,48"/><polygon points="32,48 22,54 32,54"/><polygon points="32,48 42,54 32,54"/></g><g fill="${B}"><polygon points="32,16 24,24 32,24"/><polygon points="32,16 40,24 32,24"/><polygon points="32,24 24,32 32,32"/><polygon points="32,24 40,32 32,32"/></g></svg>`},
+{tag:'点构成',t:'G64 · 网格点',d:'网格点构成鹿侧影',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="${A}"><circle cx="20" cy="20" r="2"/><circle cx="28" cy="20" r="2"/><circle cx="36" cy="20" r="2"/><circle cx="44" cy="20" r="2"/><circle cx="20" cy="28" r="2"/><circle cx="28" cy="28" r="2"/><circle cx="36" cy="28" r="2"/><circle cx="44" cy="28" r="2"/><circle cx="20" cy="36" r="2"/><circle cx="28" cy="36" r="2"/><circle cx="36" cy="36" r="2"/><circle cx="44" cy="36" r="2"/><circle cx="20" cy="44" r="2"/><circle cx="28" cy="44" r="2"/><circle cx="36" cy="44" r="2"/><circle cx="44" cy="44" r="2"/><circle cx="28" cy="52" r="2"/><circle cx="36" cy="52" r="2"/></g><g fill="${K}"><circle cx="32" cy="28" r="1.5"/><circle cx="40" cy="28" r="1.5"/></g></svg>`},
+{tag:'线构成',t:'G65 · 经纬线',d:'经纬线鹿头,科技感',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g stroke="${A}" stroke-width=".8" fill="none"><line x1="8" y1="20" x2="56" y2="20"/><line x1="8" y1="28" x2="56" y2="28"/><line x1="8" y1="36" x2="56" y2="36"/><line x1="8" y1="44" x2="56" y2="44"/><line x1="20" y1="8" x2="20" y2="56"/><line x1="32" y1="8" x2="32" y2="56"/><line x1="44" y1="8" x2="44" y2="56"/></g><path d="M22 20c-2-4-2-8 0-12 2 4 2 8 0 12M42 20c2-4 2-8 0-12-2 4-2 8 0 12M16 30v22h32V30" fill="none" stroke="${A}" stroke-width="2.4"/></svg>`},
+{tag:'旋转',t:'G66 · 旋转对称',d:'旋转对称,万花筒',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="${A}" transform="rotate(0 32 32)"><path d="M32 8l-3 8 3 3 3-3z"/><path d="M32 56l-3-8 3-3 3 3z"/><path d="M8 32l8-3 3 3-3 3z"/><path d="M56 32l-8-3-3 3 3 3z"/></g><circle cx="32" cy="32" r="6" fill="${A}"/></svg>`},
+{tag:'分形',t:'G67 · 鹿角分形',d:'鹿角分形生长,数学美',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="none" stroke="${A}" stroke-width="2" stroke-linecap="round"><path d="M16 48l-4-8 4-2 2-6-2-2 4-2"/><path d="M48 48l4-8-4-2-2-6 2-2-4-2"/><path d="M32 48V32"/></g><circle cx="32" cy="40" r="3" fill="${A}"/></svg>`},
+{tag:'万花筒',t:'G68 · 几何拼贴',d:'几何拼贴构成',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="24" height="24" fill="${A}"/><circle cx="48" cy="20" r="12" fill="${B}"/><polygon points="20,30 44,30 32,58" fill="${G}"/><rect x="32" y="44" width="20" height="14" fill="${V}"/></svg>`},
+{tag:'波纹',t:'G69 · 波纹构成',d:'波纹同心圆构成',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="none" stroke="${A}" stroke-width="2"><circle cx="32" cy="32" r="6"/><circle cx="32" cy="32" r="12"/><circle cx="32" cy="32" r="18"/><circle cx="32" cy="32" r="24"/></g><path d="M22 20c-2-4-2-8 0-12 2 4 2 8 0 12M42 20c2-4 2-8 0-12-2 4-2 8 0 12" fill="${A}"/></svg>`},
+{tag:'多边形',t:'G70 · 多边形面',d:'多边形切面鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="${A}"><polygon points="32,8 22,20 42,20"/><polygon points="22,20 12,32 32,32"/><polygon points="42,20 52,32 32,32"/><polygon points="12,32 22,48 32,32"/><polygon points="52,32 42,48 32,32"/><polygon points="22,48 32,56 32,32"/><polygon points="42,48 32,56 32,32"/></g></svg>`},
+];
+
+/* ⑧ 复古印刷 */
+const cat8=[
+{tag:'雕版',t:'G71 · 雕版印刷',d:'木刻雕版印刷感,粗犷',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${K}"/><g fill="${W}">${deerFill(W).replace(/fill="[^"]*"/g,'fill="#fff"')}<circle cx="27" cy="30" r="2"/><circle cx="37" cy="30" r="2"/></g><rect x="6" y="6" width="52" height="52" fill="none" stroke="${W}" stroke-width="1"/></svg>`},
+{tag:'老招牌',t:'G72 · 维多利亚招牌',d:'维多利亚老招牌风',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="14" width="52" height="36" fill="#7c2d12"/><rect x="6" y="14" width="52" height="36" fill="none" stroke="${G}" stroke-width="2"/><g fill="${G}">${deerFill(G).replace(/fill="[^"]*"/g,'fill="#fbbf24"')}</g><text x="32" y="11" text-anchor="middle" font-size="8" font-weight="800" fill="${G}" font-family="serif">SINCE 1892</text></svg>`},
+{tag:'邮票',t:'G73 · 复古邮票',d:'齿孔邮票边+鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="10" y="10" width="44" height="44" fill="#fef3c7"/><g fill="${K}"><rect x="10" y="10" width="3" height="3"/><rect x="17" y="10" width="3" height="3"/><rect x="24" y="10" width="3" height="3"/><rect x="31" y="10" width="3" height="3"/><rect x="38" y="10" width="3" height="3"/><rect x="45" y="10" width="3" height="3"/><rect x="52" y="10" width="3" height="3"/><rect x="10" y="17" width="3" height="3"/><rect x="52" y="17" width="3" height="3"/><rect x="10" y="24" width="3" height="3"/><rect x="52" y="24" width="3" height="3"/><rect x="10" y="31" width="3" height="3"/><rect x="52" y="31" width="3" height="3"/><rect x="10" y="38" width="3" height="3"/><rect x="52" y="38" width="3" height="3"/><rect x="10" y="45" width="3" height="3"/><rect x="52" y="45" width="3" height="3"/><rect x="10" y="52" width="3" height="3"/><rect x="17" y="52" width="3" height="3"/><rect x="24" y="52" width="3" height="3"/><rect x="31" y="52" width="3" height="3"/><rect x="38" y="52" width="3" height="3"/><rect x="45" y="52" width="3" height="3"/><rect x="52" y="52" width="3" height="3"/></g>${deerFill(K)}</svg>`},
+{tag:'老海报',t:'G74 · 旧海报',d:'Art Deco 旧海报',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#dc2626"/><g fill="${G}"><path d="M6 6l8 8h-8zM58 6l-8 8h8zM6 58l8-8h-8zM58 58l-8-8h8z"/></g>${deerFill(G)}<text x="32" y="11" text-anchor="middle" font-size="6" font-weight="800" fill="${G}">★ SUPERBOOK ★</text></svg>`},
+{tag:'旧书封面',t:'G75 · 皮革书封面',d:'旧皮装书封面质感',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="8" y="6" width="48" height="52" fill="#78350f"/><rect x="8" y="6" width="48" height="52" fill="none" stroke="#451a03" stroke-width="1.5"/><rect x="12" y="10" width="40" height="44" fill="none" stroke="${G}" stroke-width=".5"/><g fill="${G}">${deerFill(G)}</g><text x="32" y="58" text-anchor="middle" font-size="5" font-weight="800" fill="${G}">DEER ARTISAN</text></svg>`},
+{tag:'古币',t:'G76 · 古罗马币',d:'古币浮雕感',s:`<svg viewBox="0 0 64 64" width="60" height="60"><circle cx="32" cy="32" r="28" fill="#a16207"/><circle cx="32" cy="32" r="24" fill="#ca8a04"/><circle cx="32" cy="32" r="20" fill="none" stroke="#a16207" stroke-width=".8"/><g fill="#78350f">${deerFill('#78350f')}</g><text x="32" y="11" text-anchor="middle" font-size="4" fill="#78350f">DEER NOTE</text><text x="32" y="58" text-anchor="middle" font-size="4" fill="#78350f">EST MMXXVI</text></svg>`},
+{tag:'绣章',t:'G77 · 刺绣章',d:'刺绣徽章,布料感',s:`<svg viewBox="0 0 64 64" width="60" height="60"><circle cx="32" cy="32" r="26" fill="#1e40af"/><circle cx="32" cy="32" r="22" fill="#3b82f6"/><circle cx="32" cy="32" r="20" fill="none" stroke="${G}" stroke-width="1" stroke-dasharray="2 2"/><g fill="${W}">${deerFill(W)}</g></svg>`},
+{tag:'皮革印',t:'G78 · 烫金皮革',d:'烫金皮革压印',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#451a03"/><g fill="${G}">${deerFill(G)}<text x="32" y="58" text-anchor="middle" font-size="5" font-weight="800">★ DEER ARTISAN ★</text></g></svg>`},
+{tag:'锡箔',t:'G79 · 锡箔印刷',d:'复古锡箔烫印',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${K}"/><g fill="#fef3c7">${deerFill('#fef3c7')}</g><rect x="6" y="6" width="52" height="52" fill="none" stroke="#fef3c7" stroke-width=".5"/></svg>`},
+{tag:'打字机',t:'G80 · 打字机字体',d:'打字机风格,等宽字体',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="20" width="52" height="24" fill="#9ca3af"/><g fill="${K}">${deerLine(K,2.4)}<circle cx="32" cy="34" r="1.4" fill="${K}"/></g><rect x="6" y="14" width="52" height="6" fill="#d1d5db"/></svg>`},
+];
+
+/* ⑨ 东方美学 */
+const cat9=[
+{tag:'印章',t:'G81 · 篆刻朱印',d:'传统篆刻朱砂印',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="8" y="8" width="48" height="48" rx="2" fill="${R}"/><g fill="${W}"><path d="M32 24c-4 0-7 3-7 8s3 12 7 14c4-2 7-9 7-14s-3-8-7-8Z"/><path d="M24 22c-2-2-2-6 0-8 2 0 4 2 4 4zM40 22c2-2 2-6 0-8-2 0-4 2-4 4z"/><path d="M22 18c-2-2-2-4 0-6 1 1 2 2 2 4zM42 18c2-2 2-4 0-6-1 1-2 2-2 4z"/></g></svg>`},
+{tag:'水墨',t:'G82 · 水墨鹿',d:'水墨写意,留白',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#f5f5dc"/><g fill="${K}" opacity=".7"><path d="M16 32c0 12 6 22 16 24v-4c-8-2-14-10-14-20z"/><path d="M48 32c0 12-6 22-16 24v-4c8-2 14-10 14-20z" opacity=".3"/><g fill="none" stroke="${K}" stroke-width="2.4" stroke-linecap="round"><path d="M16 18c-2-4-2-8 0-12 2 4 2 8 0 12M48 18c2-4 2-8 0-12-2 4-2 8 0 12"/></g></g><circle cx="32" cy="38" r="1.5" fill="${K}"/></svg>`},
+{tag:'剪纸',t:'G83 · 红色剪纸',d:'传统剪纸,镂空',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${R}"/><g fill="#fef2f2">${deerFill('#fef2f2')}<circle cx="27" cy="30" r="2" fill="${R}"/><circle cx="37" cy="30" r="2" fill="${R}"/></g></svg>`},
+{tag:'青花',t:'G84 · 青花瓷',d:'青花瓷纹样,蓝白',s:`<svg viewBox="0 0 64 64" width="60" height="60"><circle cx="32" cy="32" r="28" fill="${W}"/><circle cx="32" cy="32" r="26" fill="none" stroke="#1e3a8a" stroke-width="1"/><g fill="#1e3a8a">${deerFill('#1e3a8a')}</g><circle cx="32" cy="32" r="20" fill="none" stroke="#1e3a8a" stroke-width=".5" stroke-dasharray="2 2"/></svg>`},
+{tag:'漆器',t:'G85 · 朱漆金纹',d:'传统漆器质感',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" rx="4" fill="#7f1d1d"/><rect x="6" y="6" width="52" height="52" rx="4" fill="none" stroke="${G}" stroke-width="1.5"/><g fill="${G}">${deerFill(G)}</g></svg>`},
+{tag:'玉雕',t:'G86 · 玉雕质感',d:'青白玉雕,温润',s:`<svg viewBox="0 0 64 64" width="60" height="60"><circle cx="32" cy="32" r="26" fill="#a7f3d0"/><circle cx="32" cy="32" r="22" fill="#6ee7b7"/><g fill="#047857">${deerFill('#047857')}</g></svg>`},
+{tag:'敦煌色',t:'G87 · 敦煌壁画',d:'敦煌色系,矿物颜料',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#0c4a6e"/><g fill="#fbbf24">${deerFill(G)}</g><circle cx="32" cy="32" r="22" fill="none" stroke="#dc2626" stroke-width="1"/></svg>`},
+{tag:'白描',t:'G88 · 国画白描',d:'国画白描线稿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><g fill="none" stroke="${K}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${deerLine(K,1.4).replace(/stroke-width="[^"]*"/g,'stroke-width="1.4"')}</g><circle cx="32" cy="34" r="1" fill="${K}"/></svg>`},
+{tag:'书法',t:'G89 · 书法鹿',d:'书法笔意,狂草',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><path d="M16 14c-2 4 0 8 4 10M48 14c2 4 0 8-4 10M14 28c0 16 8 26 18 28 10-2 18-12 18-28" fill="none" stroke="${K}" stroke-width="3" stroke-linecap="round"/><text x="32" y="58" text-anchor="middle" font-size="8" font-weight="800" fill="${K}">鹿</text></svg>`},
+{tag:'窗棂',t:'G90 · 窗棂格',d:'传统窗棂格纹',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#7c2d12"/><g fill="none" stroke="${G}" stroke-width="1.5"><rect x="12" y="12" width="40" height="40"/><line x1="12" y1="32" x2="52" y2="32"/><line x1="32" y1="12" x2="32" y2="52"/><circle cx="22" cy="22" r="4"/><circle cx="42" cy="22" r="4"/><circle cx="22" cy="42" r="4"/><circle cx="42" cy="42" r="4"/></g>${deerFill(G)}</svg>`},
+];
+
+/* ⑩ 西方古典 */
+const cat10=[
+{tag:'罗马柱',t:'G91 · 罗马柱头',d:'罗马柱头涡卷装饰',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><g fill="${K}"><rect x="8" y="8" width="48" height="6"/><rect x="8" y="50" width="48" height="6"/><g><path d="M14 14c-2 8-2 16 0 22M50 14c2 8 2 16 0 22M16 22c2 2 6 2 8-2M48 22c-2 2-6 2-8-2"/></g>${deerFill(K)}</g></svg>`},
+{tag:'巴洛克',t:'G92 · 巴洛克卷草',d:'巴洛克卷草装饰',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><g fill="none" stroke="${G}" stroke-width="2" stroke-linecap="round"><path d="M8 8c4 4 8 8 12 8s8-4 12-4 8 4 12 4 8-4 12-8M8 56c4-4 8-8 12-8s8 4 12 4 8-4 12-4 8 4 12 8"/><circle cx="32" cy="32" r="10" fill="${G}"/></g>${deerFill(W)}</svg>`},
+{tag:'哥特',t:'G93 · 哥特尖顶',d:'哥特式尖拱',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#1e1b4b"/><path d="M8 56l24-44 24 44z" fill="${V}"/><g fill="${G}">${deerFill(G)}</g></svg>`},
+{tag:'洛可可',t:'G94 · 洛可可',d:'洛可可粉调装饰',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fce7f3"/><g fill="none" stroke="${P}" stroke-width="2" stroke-linecap="round"><path d="M12 12c4 4 4 8 0 12M52 12c-4 4-4 8 0 12M12 52c4-4 4-8 0-12M52 52c-4-4-4-8 0-12"/><circle cx="32" cy="32" r="12" fill="${P}"/></g>${deerFill(W)}</svg>`},
+{tag:'维多利亚',t:'G95 · 维多利亚',d:'维多利亚装饰风',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#1f2937"/><g fill="${G}"><circle cx="32" cy="32" r="20"/><g fill="${K}">${deerFill(K)}</g></g><g fill="none" stroke="${G}" stroke-width="1.5"><circle cx="32" cy="32" r="24"/><circle cx="32" cy="32" r="28"/></g></svg>`},
+{tag:'纹章',t:'G96 · 双狮纹章',d:'双侧护卫纹章',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M32 8v48M8 32h48" stroke="${G}" stroke-width="2"/><g fill="${A}">${deerFill(A)}</g><path d="M8 32c-2-4-2-8 0-12 2 2 4 6 4 10M56 32c2-4 2-8 0-12-2 2-4 6-4 10M8 32c-2 4-2 8 0 12 2-2 4-6 4-10M56 32c2 4 2 8 0 12-2-2-4-6-4-10" fill="${G}"/></svg>`},
+{tag:'浮雕',t:'G97 · 石浮雕',d:'石雕浮雕感',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#a8a29e"/><rect x="6" y="6" width="52" height="52" fill="${M}"/><g fill="${K}" opacity=".5">${deerFill(K)}</g><g fill="${W}" opacity=".3">${deerFill(W)}</g></svg>`},
+{tag:'教堂玻璃',t:'G98 · 彩绘玻璃',d:'教堂彩绘玻璃,色块',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#1e3a8a"/><g fill="${R}"><rect x="14" y="14" width="14" height="14"/></g><g fill="${G}"><rect x="36" y="14" width="14" height="14"/></g><g fill="${B}"><rect x="14" y="36" width="14" height="14"/></g><g fill="${P}"><rect x="36" y="36" width="14" height="14"/></g><g fill="none" stroke="${K}" stroke-width="1.5"><line x1="6" y1="32" x2="58" y2="32"/><line x1="32" y1="6" x2="32" y2="58"/></g></svg>`},
+{tag:'古典徽章',t:'G99 · 古典鹰徽',d:'古典鹰徽章,雄壮',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M32 4L56 14v20c0 14-10 22-24 26C18 56 8 48 8 34V14z" fill="${K}"/><path d="M32 4L56 14v20c0 14-10 22-24 26C18 56 8 48 8 34V14z" fill="none" stroke="${G}" stroke-width="2"/><g fill="${G}">${deerFill(G)}</g></svg>`},
+{tag:'卷草',t:'G100 · 卷草环绕',d:'卷草纹环绕鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><circle cx="32" cy="32" r="28" fill="none" stroke="${G}" stroke-width="2"/><g fill="none" stroke="${A}" stroke-width="1.5" stroke-linecap="round"><path d="M8 32c2-6 6-10 12-10s8 4 12 4 8-4 12-4 10 4 12 10M8 32c2 6 6 10 12 10s8-4 12-4 8 4 12 4 10-4 12-10"/></g>${deerFill(A)}</svg>`},
+];
+
+/* ⑪ 数字科技 */
+const cat11=[
+{tag:'像素',t:'G101 · 8位像素',d:'8位游戏像素风',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="${A}"><rect x="24" y="14" width="4" height="4"/><rect x="36" y="14" width="4" height="4"/><rect x="20" y="18" width="4" height="4"/><rect x="40" y="18" width="4" height="4"/><rect x="16" y="22" width="4" height="4"/><rect x="44" y="22" width="4" height="4"/><rect x="12" y="26" width="40" height="4"/><rect x="8" y="30" width="48" height="20"/><rect x="24" y="34" width="4" height="4" fill="${K}"/><rect x="36" y="34" width="4" height="4" fill="${K}"/></g></svg>`},
+{tag:'电路',t:'G102 · PCB电路',d:'印刷电路板风',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#0d9488"/><g fill="none" stroke="#04231f" stroke-width="1"><path d="M8 16h12v-4h8v8h-4v4h-8v8h-4M56 16h-12v-4h-8v8h4v4h8v8h4M8 48h12v4h8v-8h-4v-4h-8v-8h-4M56 48h-12v4h-8v-8h4v-4h8v-8h4"/></g><g fill="${G}"><circle cx="20" cy="20" r="2"/><circle cx="44" cy="20" r="2"/><circle cx="20" cy="44" r="2"/><circle cx="44" cy="44" r="2"/><circle cx="32" cy="32" r="2"/></g></svg>`},
+{tag:'全息',t:'G103 · 全息投影',d:'全息投影,彩虹光栅',s:`<svg viewBox="0 0 64 64" width="60" height="60"><defs><linearGradient id="g103" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${A}"/><stop offset=".33" stop-color="${V}"/><stop offset=".66" stop-color="${P}"/><stop offset="1" stop-color="${G}"/></linearGradient></defs><rect x="6" y="6" width="52" height="52" fill="url(#g103)" opacity=".8"/><g fill="${W}">${deerFill(W)}</g></svg>`},
+{tag:'数据流',t:'G104 · 数据流',d:'二进制数据流',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${K}"/><g fill="${A}" font-family="monospace" font-size="6"><text x="10" y="16">1010</text><text x="10" y="24">0110</text><text x="10" y="32">1001</text><text x="10" y="40">1100</text><text x="10" y="48">0011</text><text x="40" y="16">0101</text><text x="40" y="24">1101</text><text x="40" y="32">0010</text><text x="40" y="40">1011</text><text x="40" y="48">0111</text></g><g fill="${A}">${deerFill(A)}</g></svg>`},
+{tag:'神经网',t:'G105 · 神经网络',d:'神经网络节点',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#1e1b4b"/><g fill="${A}"><circle cx="12" cy="20" r="2"/><circle cx="20" cy="14" r="2"/><circle cx="14" cy="32" r="2"/><circle cx="8" cy="40" r="2"/><circle cx="52" cy="20" r="2"/><circle cx="44" cy="14" r="2"/><circle cx="50" cy="32" r="2"/><circle cx="56" cy="40" r="2"/><circle cx="32" cy="32" r="3"/></g><g stroke="${A}" stroke-width=".6" fill="none" opacity=".7"><line x1="12" y1="20" x2="20" y2="14"/><line x1="20" y1="14" x2="14" y2="32"/><line x1="14" y1="32" x2="8" y2="40"/><line x1="52" y1="20" x2="44" y2="14"/><line x1="44" y1="14" x2="50" y2="32"/><line x1="50" y1="32" x2="56" y2="40"/></g><g fill="${G}"><circle cx="32" cy="32" r="4"/></g></svg>`},
+{tag:'量子',t:'G106 · 量子原子',d:'量子原子轨道',s:`<svg viewBox="0 0 64 64" width="60" height="60"><circle cx="32" cy="32" r="28" fill="${K}"/><g fill="none" stroke="${A}" stroke-width="1.5"><ellipse cx="32" cy="32" rx="20" ry="8"/><ellipse cx="32" cy="32" rx="8" ry="20"/><ellipse cx="32" cy="32" rx="20" ry="20" transform="rotate(45 32 32)"/></g><g fill="${G}"><circle cx="32" cy="12" r="3"/><circle cx="52" cy="32" r="3"/><circle cx="32" cy="52" r="3"/><circle cx="12" cy="32" r="3"/></g><circle cx="32" cy="32" r="3" fill="${A}"/></svg>`},
+{tag:'区块链',t:'G107 · 区块链',d:'区块链立方体',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#1e1b4b"/><g fill="none" stroke="${A}" stroke-width="1.5"><rect x="16" y="16" width="14" height="14"/><rect x="34" y="16" width="14" height="14"/><rect x="16" y="34" width="14" height="14"/><rect x="34" y="34" width="14" height="14"/><line x1="30" y1="23" x2="34" y2="23"/><line x1="23" y1="30" x2="23" y2="34"/><line x1="30" y1="41" x2="34" y2="41"/><line x1="41" y1="30" x2="41" y2="34"/></g><g fill="${G}"><rect x="16" y="16" width="14" height="14" fill="${G}" opacity=".2"/><rect x="34" y="16" width="14" height="14" fill="${G}" opacity=".2"/><rect x="16" y="34" width="14" height="14" fill="${G}" opacity=".2"/><rect x="34" y="34" width="14" height="14" fill="${G}" opacity=".2"/></g></svg>`},
+{tag:'终端',t:'G108 · 终端机',d:'绿屏终端,黑客风',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${K}"/><rect x="10" y="10" width="44" height="44" fill="#0a1f1c"/><g fill="${A}" font-family="monospace" font-size="4"><text x="12" y="18">$ deer --note</text><text x="12" y="24">> loading...</text><text x="12" y="30">> done.</text><text x="12" y="36">$ _</text></g><g fill="${A}">${deerFill(A)}</g></svg>`},
+{tag:'矩阵',t:'G109 · 数字雨',d:'黑客帝国数字雨',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${K}"/><g fill="${A}" font-family="monospace" font-size="6" opacity=".7"><text x="10" y="14">1</text><text x="16" y="14">0</text><text x="22" y="14">1</text><text x="28" y="14">0</text><text x="34" y="14">1</text><text x="40" y="14">1</text><text x="46" y="14">0</text><text x="52" y="14">0</text><text x="10" y="22" opacity=".4">0</text><text x="16" y="22" opacity=".4">1</text><text x="22" y="22" opacity=".4">0</text><text x="28" y="22" opacity=".4">1</text><text x="34" y="22" opacity=".4">1</text><text x="40" y="22" opacity=".4">0</text><text x="46" y="22" opacity=".4">1</text><text x="52" y="22" opacity=".4">0</text><text x="10" y="30" opacity=".6">1</text><text x="16" y="30" opacity=".6">1</text><text x="22" y="30" opacity=".6">0</text><text x="28" y="30" opacity=".6">0</text><text x="34" y="30" opacity=".6">1</text><text x="40" y="30" opacity=".6">0</text><text x="46" y="30" opacity=".6">1</text><text x="52" y="30" opacity=".6">1</text></g><g fill="${A}">${deerFill(A)}</g></svg>`},
+{tag:'AI节点',t:'G110 · AI 节点图',d:'AI 知识图谱节点',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#1e1b4b"/><g stroke="${A}" stroke-width="1" fill="none" opacity=".5"><line x1="32" y1="32" x2="14" y2="18"/><line x1="32" y1="32" x2="50" y2="18"/><line x1="32" y1="32" x2="14" y2="46"/><line x1="32" y1="32" x2="50" y2="46"/><line x1="32" y1="32" x2="32" y2="14"/><line x1="32" y1="32" x2="32" y2="50"/></g><g fill="${A}"><circle cx="32" cy="32" r="6"/></g><g fill="${G}"><circle cx="14" cy="18" r="3"/><circle cx="50" cy="18" r="3"/><circle cx="14" cy="46" r="3"/><circle cx="50" cy="46" r="3"/><circle cx="32" cy="14" r="3"/><circle cx="32" cy="50" r="3"/></g><text x="32" y="34" text-anchor="middle" font-size="6" font-weight="800" fill="${K}">AI</text></svg>`},
+];
+
+/* ⑫ 现代艺术派 */
+const cat12=[
+{tag:'孟菲斯',t:'G111 · 孟菲斯',d:'孟菲斯派,撞色几何',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fef3c7"/><circle cx="20" cy="20" r="6" fill="${P}"/><rect x="36" y="12" width="12" height="12" fill="${B}"/><path d="M12 36l8 16 8-16z" fill="${G}"/><circle cx="44" cy="44" r="6" fill="${R}"/><g fill="${A}">${deerFill(A)}</g></svg>`},
+{tag:'包豪斯',t:'G112 · 包豪斯',d:'包豪斯红蓝黄',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><circle cx="32" cy="32" r="20" fill="${B}"/><rect x="14" y="14" width="14" height="14" fill="${R}"/><polygon points="36,50 50,50 50,36" fill="${G}"/></svg>`},
+{tag:'极简主义',t:'G113 · 极简',d:'极简主义,大量留白',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${W}"/><circle cx="32" cy="32" r="12" fill="${K}"/></svg>`},
+{tag:'立体主义',t:'G114 · 立体派',d:'立体派多视角',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><g fill="${A}"><polygon points="20,20 32,16 28,32"/><polygon points="32,16 44,20 36,32"/><polygon points="20,20 28,32 16,40"/><polygon points="44,20 48,40 36,32"/><polygon points="16,40 28,32 24,48"/><polygon points="48,40 36,32 40,48"/><polygon points="24,48 40,48 32,52"/></g></svg>`},
+{tag:'构成主义',t:'G115 · 构成主义',d:'苏联构成主义,红色几何',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${W}"/><polygon points="10,10 54,10 30,30" fill="${R}"/><polygon points="54,54 10,54 34,34" fill="${K}"/><circle cx="48" cy="48" r="6" fill="${B}"/></svg>`},
+{tag:'达达',t:'G116 · 达达',d:'达达主义,反传统',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${W}"/><text x="32" y="38" text-anchor="middle" font-size="14" font-weight="800" fill="${K}" font-family="serif" transform="rotate(-15 32 32)">DEER?</></text></svg>`},
+{tag:'普普',t:'G117 · 波普',d:'波普艺术,网点',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${P}"/><g fill="${W}"><circle cx="20" cy="20" r="2"/><circle cx="28" cy="20" r="2"/><circle cx="36" cy="20" r="2"/><circle cx="44" cy="20" r="2"/><circle cx="20" cy="28" r="2"/><circle cx="28" cy="28" r="2"/><circle cx="36" cy="28" r="2"/><circle cx="44" cy="28" r="2"/><circle cx="20" cy="36" r="2"/><circle cx="28" cy="36" r="2"/><circle cx="36" cy="36" r="2"/><circle cx="44" cy="36" r="2"/></g>${deerFill(W)}</svg>`},
+{tag:'抽象表现',t:'G118 · 抽象表现',d:'抽象表现泼洒',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><path d="M14 14c10 0 20 10 30 20s20 10 20 20" fill="none" stroke="${A}" stroke-width="6" stroke-linecap="round"/><circle cx="20" cy="40" r="8" fill="${P}" opacity=".6"/><circle cx="44" cy="20" r="6" fill="${G}" opacity=".6"/></svg>`},
+{tag:'极多主义',t:'G119 · 极多',d:'极多主义,密集元素',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fbbf24"/><g fill="${R}"><circle cx="14" cy="14" r="2"/><circle cx="20" cy="20" r="2"/><circle cx="26" cy="14" r="2"/><circle cx="32" cy="20" r="2"/><circle cx="38" cy="14" r="2"/><circle cx="44" cy="20" r="2"/><circle cx="50" cy="14" r="2"/><circle cx="14" cy="26" r="2"/><circle cx="20" cy="32" r="2"/><circle cx="26" cy="26" r="2"/><circle cx="32" cy="32" r="2"/><circle cx="38" cy="26" r="2"/><circle cx="44" cy="32" r="2"/><circle cx="50" cy="26" r="2"/><circle cx="14" cy="38" r="2"/><circle cx="20" cy="44" r="2"/><circle cx="26" cy="38" r="2"/><circle cx="32" cy="44" r="2"/><circle cx="38" cy="38" r="2"/><circle cx="44" cy="44" r="2"/><circle cx="50" cy="38" r="2"/><circle cx="14" cy="50" r="2"/><circle cx="20" cy="56" r="2"/><circle cx="26" cy="50" r="2"/><circle cx="38" cy="50" r="2"/><circle cx="44" cy="56" r="2"/><circle cx="50" cy="50" r="2"/></g></svg>`},
+{tag:'装饰艺术',t:'G120 · 装饰艺术',d:'Art Deco 装饰',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${K}"/><g fill="${G}"><polygon points="32,8 36,28 56,32 36,36 32,56 28,36 8,32 28,28"/><polygon points="32,16 34,28 46,32 34,36 32,48 30,36 18,32 30,28" fill="${K}"/></g></svg>`},
+];
+
+/* ⑬ 自然有机 */
+const cat13=[
+{tag:'树叶',t:'G121 · 树叶变形',d:'树叶形鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M32 8c-4 4-8 12-8 20s4 16 8 20c4-4 8-12 8-20s-4-16-8-20Z" fill="#16a34a"/><path d="M16 24c-4-4-6-8-6-12 4 2 6 4 8 8zM48 24c4-4 6-8 6-12-4 2-6 4-8 8z" fill="#16a34a"/><path d="M32 28v20" stroke="${W}" stroke-width="1" opacity=".5"/></svg>`},
+{tag:'树枝',t:'G122 · 树枝鹿',d:'鹿身由树枝构成',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="none" stroke="#78350f" stroke-width="3" stroke-linecap="round"><path d="M32 56V36M32 36c-4-4-8-8-8-14M32 36c4-4 8-8 8-14M24 22c-2-2-4-4-4-8M40 22c2-2 4-4 4-8"/></g><g fill="#16a34a"><circle cx="24" cy="14" r="3"/><circle cx="40" cy="14" r="3"/><circle cx="32" cy="36" r="3"/></g></svg>`},
+{tag:'花卉',t:'G123 · 花卉',d:'花卉形鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="${P}"><circle cx="32" cy="32" r="6"/><ellipse cx="32" cy="22" rx="4" ry="8"/><ellipse cx="32" cy="42" rx="4" ry="8"/><ellipse cx="22" cy="32" rx="8" ry="4"/><ellipse cx="42" cy="32" rx="8" ry="4"/></g><g fill="${G}"><ellipse cx="32" cy="14" rx="3" ry="6"/><ellipse cx="32" cy="50" rx="3" ry="6"/><ellipse cx="14" cy="32" rx="6" ry="3"/><ellipse cx="50" cy="32" rx="6" ry="3"/></g><circle cx="32" cy="32" r="3" fill="${G}"/></svg>`},
+{tag:'水波',t:'G124 · 水波',d:'水波涟漪鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#0c4a6e"/><g fill="none" stroke="${A}" stroke-width="2"><path d="M8 24c4-2 8-2 12 0s8 2 12 0 8-2 12 0 8 2 12 0M8 32c4-2 8-2 12 0s8 2 12 0 8-2 12 0 8 2 12 0M8 40c4-2 8-2 12 0s8 2 12 0 8-2 12 0 8 2 12 0M8 48c4-2 8-2 12 0s8 2 12 0 8-2 12 0 8 2 12 0"/></g><g fill="${W}">${deerFill(W)}</g></svg>`},
+{tag:'山脉',t:'G125 · 山脉',d:'山脉轮廓+鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#0c4a6e"/><circle cx="48" cy="14" r="6" fill="${G}"/><polygon points="6,58 20,30 34,58" fill="${K}"/><polygon points="30,58 44,20 58,58" fill="#374151"/><g fill="${W}">${deerFill(W)}</g></svg>`},
+{tag:'云朵',t:'G126 · 云朵',d:'云朵中藏鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#7dd3fc"/><g fill="${W}"><circle cx="20" cy="32" r="8"/><circle cx="32" cy="28" r="10"/><circle cx="44" cy="32" r="8"/><ellipse cx="32" cy="36" rx="20" ry="8"/></g>${deerFill(M)}</svg>`},
+{tag:'火苗',t:'G127 · 火苗',d:'火苗形鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${K}"/><path d="M32 10c-2 6-6 12-6 20s2 16 6 20c4-4 6-12 6-20s-4-14-6-20Z" fill="${O}"/><path d="M32 24c-1 4-3 8-3 12s1 10 3 12c2-2 3-8 3-12s-2-8-3-12Z" fill="${G}"/></svg>`},
+{tag:'羽毛',t:'G128 · 羽毛',d:'羽毛纹鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><g fill="none" stroke="${A}" stroke-width="1.5" stroke-linecap="round">${deerLine(A,1.5)}<line x1="32" y1="46" x2="32" y2="58"/></g><g fill="${A}" opacity=".5"><path d="M16 56c-2-2-2-4 0-6 2 1 2 3 0 6ZM22 58c-2-2-2-4 0-6 2 1 2 3 0 6ZM28 58c-2-2-2-4 0-6 2 1 2 3 0 6ZM36 58c-2-2-2-4 0-6 2 1 2 3 0 6ZM42 58c-2-2-2-4 0-6 2 1 2 3 0 6ZM48 56c-2-2-2-4 0-6 2 1 2 3 0 6Z"/></g></svg>`},
+{tag:'贝壳',t:'G129 · 贝壳',d:'贝壳扇形鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><g fill="${P}" opacity=".6"><path d="M32 12c-12 8-20 20-20 32h40c0-12-8-24-20-32Z"/></g><g fill="none" stroke="${A}" stroke-width="1"><path d="M32 12v32M22 24l20 16M42 24l-20 16M16 36l32-4M48 36l-32-4"/></g></svg>`},
+{tag:'种子',t:'G130 · 种子发芽',d:'种子发芽状',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><ellipse cx="32" cy="48" rx="14" ry="8" fill="#78350f"/><path d="M32 40c-4-4-4-8 0-12 0-8 0-16 0-16M32 28c-4 0-8-4-8-8 4 0 8 4 8 8M32 28c4 0 8-4 8-8-4 0-8 4-8 8" fill="none" stroke="#16a34a" stroke-width="2.4" stroke-linecap="round"/></svg>`},
+];
+
+/* ⑭ 字符字形 */
+const cat14=[
+{tag:'J+L组合',t:'G131 · J+L叠',d:'J和L重叠成鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M16 16v28c0 6 4 8 8 8 4 0 8-2 8-8V16" fill="none" stroke="${A}" stroke-width="4" stroke-linecap="round"/><path d="M32 16v28c0 6 4 8 8 8 4 0 8-2 8-8V16" fill="none" stroke="${A}" stroke-width="4" stroke-linecap="round" opacity=".5"/><circle cx="20" cy="24" r="2" fill="${K}"/><circle cx="36" cy="24" r="2" fill="${K}"/></svg>`},
+{tag:'鹿字',t:'G132 · 篆书鹿',d:'篆书鹿字',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><text x="32" y="44" text-anchor="middle" font-size="36" font-weight="800" fill="${K}" font-family="serif">鹿</text><text x="32" y="58" text-anchor="middle" font-size="8" font-weight="800" fill="${A}">ARTISAN NOTE</text></svg>`},
+{tag:'匠字',t:'G133 · 篆书匠',d:'篆书匠字',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fefae0"/><text x="32" y="44" text-anchor="middle" font-size="36" font-weight="800" fill="${A}" font-family="serif">匠</text></svg>`},
+{tag:'S曲线',t:'G134 · S形鹿',d:'S形鹿身曲线',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M48 14c-4-4-12-2-16 4-4 4-2 8 4 10l4 2c6 2 8 8 2 14-4 4-12 6-20 4" fill="none" stroke="${A}" stroke-width="4" stroke-linecap="round"/><g fill="none" stroke="${G}" stroke-width="2.4" stroke-linecap="round"><path d="M44 14c2-4 2-8 0-12M48 12c4-2 6-6 6-10"/></g><circle cx="38" cy="22" r="2" fill="${K}"/></svg>`},
+{tag:'J',t:'G135 · J首字母',d:'J首字母+鹿角',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M36 12v32c0 6-4 10-10 10s-10-4-10-10" fill="none" stroke="${A}" stroke-width="5" stroke-linecap="round"/><g fill="none" stroke="${G}" stroke-width="3" stroke-linecap="round"><path d="M36 12c2-4 6-6 10-6M36 16c4-2 8-4 10-8"/></g></svg>`},
+{tag:'L',t:'G136 · L首字母',d:'L首字母+鹿角',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M20 12v32h24" fill="none" stroke="${A}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><g fill="none" stroke="${G}" stroke-width="3" stroke-linecap="round"><path d="M20 12c2-4 6-6 10-6M20 16c4-2 8-4 10-8"/></g></svg>`},
+{tag:'S',t:'G137 · S首字母',d:'S首字母+鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M48 18c-2-4-8-6-14-4-6 2-8 8-2 12l8 4c6 4 4 12-2 14-6 2-14 0-16-6" fill="none" stroke="${A}" stroke-width="4" stroke-linecap="round"/><g fill="none" stroke="${G}" stroke-width="3" stroke-linecap="round"><path d="M44 16c2-4 2-8 0-12M48 14c4-2 6-6 6-10"/></g></svg>`},
+{tag:'D',t:'G138 · D首字母',d:'D首字母+鹿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><path d="M16 12h16c10 0 18 8 18 20s-8 20-18 20H16z" fill="none" stroke="${A}" stroke-width="4" stroke-linejoin="round"/><g fill="none" stroke="${G}" stroke-width="3" stroke-linecap="round"><path d="M32 12c2-4 6-6 10-6M32 16c4-2 8-4 10-8"/></g></svg>`},
+{tag:'鹿头+字',t:'G139 · 鹿+书',d:'鹿头+书字',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="${A}">${deerFill(A)}</g><text x="32" y="58" text-anchor="middle" font-size="14" font-weight="800" fill="${A}">书</text></svg>`},
+{tag:'鹿+注',t:'G140 · 鹿+注',d:'鹿头+注字(笔记)',s:`<svg viewBox="0 0 64 64" width="60" height="60"><g fill="${A}">${deerFill(A)}</g><text x="32" y="58" text-anchor="middle" font-size="14" font-weight="800" fill="${A}">注</text></svg>`},
+];
+
+/* ⑮ 节日主题 */
+const cat15=[
+{tag:'春节',t:'G141 · 春节红',d:'春节红金配色',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${R}"/><g fill="${G}">${deerFill(G)}<text x="32" y="14" text-anchor="middle" font-size="8" font-weight="800">2026</text><text x="32" y="58" text-anchor="middle" font-size="6" font-weight="800">★ 福 ★</text></g></svg>`},
+{tag:'圣诞',t:'G142 · 圣诞',d:'圣诞红绿金',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#16a34a"/><g fill="${R}">${deerFill(R)}</g><g fill="${G}"><circle cx="14" cy="14" r="2"/><circle cx="50" cy="14" r="2"/><circle cx="14" cy="50" r="2"/><circle cx="50" cy="50" r="2"/></g></svg>`},
+{tag:'万圣节',t:'G143 · 万圣节',d:'万圣节橙黑',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${K}"/><g fill="${O}">${deerFill(O)}</g><circle cx="27" cy="30" r="2" fill="${R}"/><circle cx="37" cy="30" r="2" fill="${R}"/></svg>`},
+{tag:'复活节',t:'G144 · 复活节',d:'复活节粉彩',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fbcfe8"/><g fill="${V}">${deerFill(V)}</g><g fill="${W}"><circle cx="20" cy="20" r="2"/><circle cx="44" cy="20" r="2"/><circle cx="20" cy="44" r="2"/><circle cx="44" cy="44" r="2"/></g></svg>`},
+{tag:'中秋',t:'G145 · 中秋',d:'中秋月亮色',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#1e1b4b"/><circle cx="48" cy="16" r="8" fill="#fef3c7"/><g fill="${G}">${deerFill(G)}</g></svg>`},
+{tag:'端午',t:'G146 · 端午',d:'端午青绿',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#0d9488"/><g fill="${G}">${deerFill(G)}</g><g fill="${R}"><path d="M52 50c-2-2-2-4 0-6 2 1 2 3 0 6ZM48 54c-2-2-2-4 0-6 2 1 2 3 0 6Z"/></g></svg>`},
+{tag:'情人节',t:'G147 · 情人节',d:'情人节粉红',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#fda4af"/><g fill="${R}">${deerFill(R)}</g><g fill="${W}"><path d="M14 14c-2 0-4 2-4 4s2 4 4 4 4-2 4-4 4 2 4 4 2 4 4 4 4-2 4-4-2-4-4-4-2 4-4 4-4-2-4-4-2-4-4-4Z"/></g></svg>`},
+{tag:'国庆',t:'G148 · 国庆',d:'国庆红金',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="${R}"/><g fill="${G}"><polygon points="14,14 16,18 20,18 17,21 18,25 14,23 10,25 11,21 8,18 12,18"/><polygon points="24,10 25,12 27,12 26,14 26,16 24,15 22,16 22,14 21,12 23,12"/><polygon points="32,8 33,10 35,10 34,12 34,14 32,13 30,14 30,12 29,10 31,10"/><polygon points="40,10 41,12 43,12 42,14 42,16 40,15 38,16 38,14 37,12 39,12"/><polygon points="48,14 49,16 51,16 50,18 50,20 48,19 46,20 46,18 45,16 47,16"/></g>${deerFill(G)}</svg>`},
+{tag:'儿童节',t:'G149 · 儿童节',d:'儿童节糖果色',s:`<svg viewBox="0 0 64 64" width="60" height="60"><defs><linearGradient id="g149" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${P}"/><stop offset=".5" stop-color="${G}"/><stop offset="1" stop-color="${B}"/></linearGradient></defs><rect x="6" y="6" width="52" height="52" fill="url(#g149)"/><g fill="${W}">${deerFill(W)}</g></svg>`},
+{tag:'教师节',t:'G150 · 教师节',d:'教师节书卷气',s:`<svg viewBox="0 0 64 64" width="60" height="60"><rect x="6" y="6" width="52" height="52" fill="#1e40af"/><g fill="${G}">${deerFill(G)}</g><text x="32" y="58" text-anchor="middle" font-size="6" font-weight="800" fill="${G}">★ 师道 ★</text></svg>`},
+];
+
+/* 渲染 */
+function render(elId, cat){
+  document.getElementById(elId).innerHTML = cat.map(l=>`
+    <div class="card">
+      <div class="stage"><div class="brandrow">${l.s}<span class="name gname">鹿匠笔记</span></div></div>
+      <div class="meta"><span class="tag">${l.tag}</span><div class="t">${l.t}</div><div class="d">${l.d}</div></div>
+    </div>`).join('');
+}
+render('g51',cat6);render('g61',cat7);render('g71',cat8);render('g81',cat9);render('g91',cat10);
+render('g101',cat11);render('g111',cat12);render('g121',cat13);render('g131',cat14);render('g141',cat15);
+</script>
+</body>
+</html>

@@ -111,3 +111,23 @@ CREATE TABLE IF NOT EXISTS podcast (
     updated_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_podcast_notebook (notebook_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 访问/操作日志(登录、注册及各类写操作;记录 IP、设备、动作)
+CREATE TABLE IF NOT EXISTS access_log (
+    id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+    owner_id      VARCHAR(64)   NULL COMMENT '主体:u:<id> / g:<uuid>,未鉴权为空',
+    user_id       BIGINT        NULL COMMENT '注册用户 id',
+    username      VARCHAR(64)   NULL COMMENT '登录/注册时的用户名',
+    guest         TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '是否游客',
+    action        VARCHAR(64)   NOT NULL COMMENT 'LOGIN/LOGIN_FAIL/REGISTER/操作名',
+    method        VARCHAR(8)    NULL COMMENT 'HTTP 方法',
+    path          VARCHAR(512)  NULL COMMENT '请求路径',
+    status        INT           NULL COMMENT 'HTTP 状态码',
+    ip            VARCHAR(64)   NULL COMMENT '客户端 IP(取 X-Forwarded-For 首段)',
+    device_type   VARCHAR(32)   NULL COMMENT 'Mobile/Tablet/Desktop/Bot/Unknown',
+    user_agent    VARCHAR(512)  NULL,
+    created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_alog_owner (owner_id),
+    INDEX idx_alog_action (action),
+    INDEX idx_alog_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

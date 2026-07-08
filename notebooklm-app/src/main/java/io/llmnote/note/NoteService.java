@@ -34,6 +34,11 @@ public class NoteService {
         return noteRepo.findByNotebookIdOrderByIdDesc(notebookId);
     }
 
+    /** 跨笔记本:列出该 owner 名下所有笔记本的全部笔记,按更新时间倒序。 */
+    public List<Note> listAllByOwner(String ownerId) {
+        return noteRepo.findAllByOwnerId(ownerId);
+    }
+
     /** 取笔记并校验归属(先校验笔记本归属,再校验笔记属于该笔记本)。用于修改类入口。 */
     public Note getOwnedNote(Long notebookId, Long noteId, String ownerId) {
         notebookService.getOwned(notebookId, ownerId);

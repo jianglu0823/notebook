@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G131 改 · JL + 鹿元素</title>
+<style>
+  :root{--bg:#0e1417;--panel:#151d21;--panel2:#1d272c;--line:#2a373d;--fg:#e8edef;--mut:#8a9ba3;--accent:#2dd4bf;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;padding:40px 24px 80px;}
+  h1{font-size:26px;font-weight:800;margin:0 0 6px;}
+  .sub{color:var(--mut);font-size:14px;margin-bottom:8px;}
+  .hint{color:var(--mut);font-size:13px;margin-bottom:24px;line-height:1.7;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:800px;}
+  .hint b{color:var(--accent);}
+  .toggle{margin:0 0 16px;display:flex;gap:8px;}
+  .toggle button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+  .toggle button.on{background:var(--accent);color:#04231f;border-color:transparent;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;max-width:1200px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px 20px 18px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+  .stage{height:130px;display:flex;align-items:center;justify-content:center;width:100%;}
+  .brandrow{display:flex;align-items:center;gap:12px;}
+  .brandrow .name{font-size:22px;font-weight:800;white-space:nowrap;}
+  .meta{text-align:center;}
+  .meta .tag{display:inline-block;background:var(--panel2);border:1px solid var(--line);color:var(--accent);font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:6px;}
+  .meta .t{font-size:15px;font-weight:700;margin-bottom:4px;}
+  .meta .d{font-size:12px;color:var(--mut);line-height:1.6;}
+  body.light{--bg:#f6f8f9;--panel:#fff;--panel2:#eef2f4;--line:#dce3e6;--fg:#16232a;--mut:#5f7079;}
+  .gname{background:linear-gradient(92deg,var(--fg),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  body.iconly .brandrow .name{display:none;}
+</style>
+</head>
+<body>
+<h1>G131 改 · JL 字母 + 鹿元素</h1>
+<div class="sub">字母 J 和 L 清晰可读,同时融入鹿角/鹿头/鹿身等元素。5 个变体可选。</div>
+<div class="hint">每个变体都让 <b>J 和 L 字母非常清晰</b>(粗体,可一眼认出),再叠加鹿元素。配色可再调(青蓝/金/紫等)。挑中告诉我编号(A~E),可以微调细节。</div>
+<div class="toggle">
+  <button class="on" onclick="setTheme('dark',this)">暗色背景</button>
+  <button onclick="setTheme('light',this)">亮色背景</button>
+  <button onclick="toggleIcon(this)" style="margin-left:12px;">纯图标 / 带字</button>
+</div>
+<div class="grid" id="grid"></div>
+
+<script>
+function setTheme(t,btn){document.body.classList.toggle('light',t==='light');document.querySelectorAll('.toggle button')[0].classList.toggle('on',t==='dark');document.querySelectorAll('.toggle button')[1].classList.toggle('on',t==='light');}
+function toggleIcon(btn){document.body.classList.toggle('iconly');btn.classList.toggle('on');}
+
+const A='#2dd4bf',G='#fbbf24',K='#1f2937',W='#fff';
+const fonts = `font-family:Arial Black,Helvetica,sans-serif;font-weight:900;`;
+
+const variants = [
+{tag:'A · 经典',title:'JL 加枝角',desc:'标准粗体 J 和 L 并排,L 的竖线顶端长出鹿角枝桠。最直接的字母+鹿角组合,JL 一眼可读,又有鹿的特征。',
+ svg:`<svg viewBox="0 0 64 64" width="96" height="96">
+  <text x="14" y="50" font-size="38" fill="${A}" style="${fonts}">J</text>
+  <text x="34" y="50" font-size="38" fill="${A}" style="${fonts}">L</text>
+  <g fill="none" stroke="${G}" stroke-width="2.4" stroke-linecap="round">
+    <path d="M42 28c-2-4-2-8 0-12M42 24c-3-2-5-5-5-8M48 30c2-2 5-2 8-1"/>
+  </g>
+  <circle cx="22" cy="34" r="1.6" fill="${K}"/>
+</svg>`},
+
+{tag:'B · 鹿头嵌字',title:'JL 框中鹿头',desc:'粗体 J 和 L 并排,中间用 J 的钩和 L 的竖线框出一个鹿头负空间。字母依然清晰,鹿头藏在中间。',
+ svg:`<svg viewBox="0 0 64 64" width="96" height="96">
+  <text x="8" y="54" font-size="42" fill="${A}" style="${fonts}">J</text>
+  <text x="32" y="54" font-size="42" fill="${A}" style="${fonts}">L</text>
+  <g fill="${K}">
+    <path d="M34 32c-3 0-5 2-5 5s2 6 5 7c3-1 5-3 5-7s-2-5-5-5Z"/>
+    <path d="M30 30c-1-2-1-4 0-6h8c1 2 1 4 0 6z"/>
+  </g>
+  <circle cx="32" cy="36" r="1" fill="${W}"/>
+</svg>`},
+
+{tag:'C · JL=鹿',title:'JL 组成跃鹿',desc:'粗体 J 形 = 鹿身+前腿,L 形 = 鹿头+后腿,字母与鹿身完全二合一。最巧妙的融合,需细看才能认出 JL。',
+ svg:`<svg viewBox="0 0 64 64" width="96" height="96">
+  <path d="M16 14v34c0 6 4 10 10 10h6" fill="none" stroke="${A}" stroke-width="6" stroke-linecap="round"/>
+  <path d="M32 58h16V24" fill="none" stroke="${A}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="20" r="3" fill="${A}"/>
+  <g fill="none" stroke="${G}" stroke-width="2.4" stroke-linecap="round">
+    <path d="M28 16c-1-3-1-6 0-8M32 12c2-2 4-4 4-7M36 16c1-3 1-6 0-8"/>
+  </g>
+</svg>`},
+
+{tag:'D · 方块JL',title:'圆角方块+白JL+鹿',desc:'iOS 圆角方块底,白色粗体 JL 居中,J 顶部是鹿角,L 竖线是鹿身。识别度最高,适合 App 图标。',
+ svg:`<svg viewBox="0 0 64 64" width="96" height="96">
+  <defs><linearGradient id="gD" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#gD)"/>
+  <text x="10" y="44" font-size="28" fill="${W}" style="${fonts}">J</text>
+  <text x="30" y="44" font-size="28" fill="${W}" style="${fonts}">L</text>
+  <g fill="none" stroke="${W}" stroke-width="2" stroke-linecap="round">
+    <path d="M22 24c-2-3-2-6 0-8M22 20c-2-1-4-3-4-6M26 24c2-3 2-6 0-8M26 20c2-1 4-3 4-6"/>
+  </g>
+  <circle cx="16" cy="30" r="1.2" fill="${K}"/>
+  <circle cx="36" cy="30" r="1.2" fill="${K}"/>
+</svg>`},
+
+{tag:'E · 印章风',title:'印章JL+鹿',desc:'传统印章造型,红色方框,内部 JL 字母+鹿头剪影叠加。东方美学+现代字母,有文化厚度。',
+ svg:`<svg viewBox="0 0 64 64" width="96" height="96">
+  <rect x="6" y="6" width="52" height="52" rx="2" fill="#ef4444"/>
+  <text x="10" y="40" font-size="20" fill="${W}" style="${fonts}">J</text>
+  <text x="34" y="40" font-size="20" fill="${W}" style="${fonts}">L</text>
+  <g fill="${W}">
+    <path d="M32 44c-2 0-3 1.5-3 4s1.5 4 3 5c2-1 3-2 3-5s-1-4-3-4Z"/>
+    <path d="M28 42c-1-2-1-3 0-5h8c1 2 1 3 0 5z"/>
+  </g>
+</svg>`},
+];
+
+const grid = document.getElementById('grid');
+grid.innerHTML = variants.map((l,i)=>`
+  <div class="card">
+    <div class="stage"><div class="brandrow">${l.svg}<span class="name gname">鹿匠笔记</span></div></div>
+    <div class="meta"><span class="tag">${l.tag}</span><div class="t">${l.title}</div><div class="d">${l.desc}</div></div>
+  </div>`).join('');
+</script>
+</body>
+</html>

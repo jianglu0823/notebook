@@ -75,7 +75,7 @@ public class SystemNotebookSeeder implements ApplicationRunner {
     }
 
     private static final String NOTE1_HTML = """
-            <h2>NotebookLM 自建版 —— 项目总览</h2>
+            <h2>鹿匠笔记 —— 项目总览</h2>
             <p>这是一个类 Google <b>NotebookLM</b> 的应用:上传自己的资料(PDF / Word / 文本 / 图片 / 音频),
             基于这些资料做<b>带出处引用的 RAG 问答</b>,并能一键生成<b>摘要 / 学习指南 / FAQ</b>,
             以及<b>音频概览播客</b>(两位 AI 主持人对话式讲解)。全部大模型能力统一走<b>通义千问 / DashScope</b>,
@@ -86,6 +86,38 @@ public class SystemNotebookSeeder implements ApplicationRunner {
             ① 富文本手写正文 与 ② 上传的文件。生成问答 / 文档 / 播客时,按前端<b>勾选的笔记</b>作为来源(默认全选);
             未勾选任何笔记时回退为整本笔记本。笔记正文本身被建模为一条 <code>NOTE_BODY</code> 类型的 source,
             从而复用统一的「解析→分块→向量化」摄取管线进入 RAG,并让引用出处能显示为笔记标题。</p>
+
+            <h3>系统架构图</h3>
+            <p>整体为<b>模块化单体 + 网关 + 注册中心</b>:浏览器请求经 Spring Cloud Gateway(<code>lb://</code> 服务发现路由)
+            打到应用,应用内部按模块协作,大模型统一走 DashScope,元数据落 MySQL、向量落 Milvus。</p>
+            <pre>
+                          ┌─────────────┐
+                          │   浏览器 SPA │  (原生 JS 单文件,应用直接托管)
+                          └──────┬──────┘
+                                 │ HTTP / SSE
+                          ┌──────▼───────────────┐
+                          │ Spring Cloud Gateway │  :9000  (lb:// 路由)
+                          └──────┬───────────────┘
+                                 │  服务发现
+             注册/配置    ┌───────▼────────────────────────────────┐
+          ┌──────────────┤        notebooklm-app  :8080           │
+          │   Nacos      │  (模块化单体,JDK21 / Spring Boot 3.3) │
+          │  :8848       ├────────────────────────────────────────┤
+          └──────────────┤ auth │ notebook │ note │ ingest │ qa   │
+                         │      │  gen │ audio │ log(访问日志)     │
+                         └───┬──────────┬──────────┬───────────┬───┘
+                             │          │          │           │
+                    向量检索 │   元数据 │  大模型   │   缓存/会话 │
+                       ┌─────▼───┐ ┌────▼────┐ ┌───▼──────┐ ┌──▼─────┐
+                       │ Milvus  │ │ MySQL 8 │ │ DashScope │ │ Redis 7│
+                       │(etcd+   │ │(notebook│ │ 通义千问   │ │        │
+                       │ minio)  │ │/note/…) │ │qwen/embed │ │        │
+                       └─────────┘ └─────────┘ │/asr/tts)  │ └────────┘
+                                               └───────────┘
+            </pre>
+            <p><b>摄取链路</b>:上传文件 / 笔记正文 → 解析(TikaReader,图片走 <code>qwen-vl-max</code>、音频走 Paraformer)
+            → 分块 → <code>text-embedding-v3</code> 向量化 → 写 Milvus(payload 带 notebook_id / note_id / source_id / seq)。
+            <b>问答链路</b>:检索 Milvus(按所选笔记过滤)→ 拼上下文 → <code>qwen-plus</code> 生成 → SSE 流式返回并回填引用。</p>
 
             <h3>功能一览</h3>
             <ul>
@@ -98,22 +130,21 @@ public class SystemNotebookSeeder implements ApplicationRunner {
             </ul>
 
             <h3>技术栈</h3>
-            <p><b>应用层</b>:JDK 21、Spring Boot 3.3.5、Spring Cloud 2023.0.3 + Spring Cloud Alibaba
-            (Nacos 配置 + 注册)、Spring Cloud Gateway(<code>lb://</code> 服务发现路由)、JPA / Hibernate。</p>
-            <p><b>智能体与大模型</b>:AgentScope Java v2(<code>io.agentscope</code>)—— <code>SimpleKnowledge</code> +
-            <code>MilvusStore</code> + <code>TikaReader</code> 负责 RAG 检索/解析,<code>DashScopeChatModel</code> 负责对话/视觉,
-            <code>DashScopeTextEmbedding</code> 负责向量化;DashScope SDK 提供 Paraformer(ASR)与 CosyVoice(TTS)。</p>
-            <p><b>模型清单</b>:文本对话 <code>qwen-plus</code>;图像理解 <code>qwen-vl-max</code>;文本向量 <code>text-embedding-v3</code>(1024 维);
-            语音识别 <code>paraformer-realtime-v2</code>;语音合成 <code>cosyvoice-v1</code>(双音色 longwan / longcheng)。</p>
-            <p><b>存储与基础设施(全部 Docker)</b>:MySQL 8(元数据 notebook / note / source / chunk / qa_history / generated_doc / podcast)、
-            Redis 7(缓存/会话)、Milvus 2.x(向量库,伴生 etcd + minio)、Nacos 2.4.3(配置 + 注册中心)。</p>
-            <p><b>前端</b>:单文件原生 JS SPA(<code>notebooklm-app/.../static/index.html</code>),由应用直接托管,无独立构建步骤。</p>
+            <table>
+              <tr><th>层次</th><th>技术选型</th></tr>
+              <tr><td>应用层</td><td>JDK 21、Spring Boot 3.3.5、Spring Cloud 2023.0.3 + Spring Cloud Alibaba(Nacos 配置 + 注册)、Spring Cloud Gateway(<code>lb://</code> 路由)、JPA / Hibernate</td></tr>
+              <tr><td>智能体框架</td><td>AgentScope Java v2 <code>2.0.0-RC4</code>:<code>SimpleKnowledge</code> + <code>MilvusStore</code> + <code>TikaReader</code>(RAG 检索/解析)、<code>DashScopeChatModel</code>(对话/视觉)、<code>DashScopeTextEmbedding</code>(向量化)</td></tr>
+              <tr><td>大模型 / SDK</td><td>DashScope SDK：文本对话 <code>qwen-plus</code>、图像理解 <code>qwen-vl-max</code>、文本向量 <code>text-embedding-v3</code>(1024 维)、语音识别 <code>paraformer-realtime-v2</code>、语音合成 <code>cosyvoice-v1</code>(双音色 longwan / longcheng)</td></tr>
+              <tr><td>存储 / 基础设施</td><td>MySQL 8(元数据)、Redis 7(缓存/会话)、Milvus 2.x(向量库,伴生 etcd + minio)、Nacos 2.4.3(配置 + 注册中心)—— 全部 Docker</td></tr>
+              <tr><td>鉴权 / 日志</td><td>自研 JWT(jjwt + BCrypt)+ 游客模式,<code>owner_id</code> 账号隔离;登录 / 操作访问日志(IP / 设备类型 / 动作)</td></tr>
+              <tr><td>前端</td><td>单文件原生 JS SPA(<code>notebooklm-app/.../static/index.html</code>),应用直接托管,无独立构建步骤</td></tr>
+            </table>
 
             <h3>模块与目录</h3>
             <p>后端按内部模块划分:<code>config</code>(AgentScope/DashScope/Milvus/CORS 配置)、<code>notebook</code>(笔记本&资料)、
             <code>note</code>(笔记层)、<code>ingest</code>(上传→解析→分块→向量化、图像理解、音频转写)、
             <code>qa</code>(RAG 问答 + 引用,SSE 流式)、<code>gen</code>(摘要/学习指南/FAQ)、<code>audio</code>(播客脚本 + TTS)、
-            <code>auth</code>(自研 JWT + 游客模式,账号隔离)。架构演进上当前为<b>模块化单体</b>,但从第一天即接入 Nacos,
+            <code>auth</code>(自研 JWT + 游客模式,账号隔离)、<code>log</code>(登录 / 操作访问日志)。架构演进上当前为<b>模块化单体</b>,但从第一天即接入 Nacos,
             后续可按五个内部模块平滑拆成独立微服务,网关与注册中心已就位。</p>
 
             <h3>账号与权限</h3>
@@ -186,7 +217,7 @@ public class SystemNotebookSeeder implements ApplicationRunner {
             <code>EventType</code>(如文本块增量 <code>TEXT_BLOCK_DELTA</code>)驱动 UI 更新。这正体现了「事件驱动 + 工具调用 + 流式呈现」的设计。</p>
 
             <h3>本项目如何使用 AgentScope</h3>
-            <p>本 NotebookLM 自建版使用 <b>AgentScope Java <code>2.0.0-RC4</code></b>:用 <code>SimpleKnowledge</code> 对接
+            <p>本 鹿匠笔记 使用 <b>AgentScope Java <code>2.0.0-RC4</code></b>:用 <code>SimpleKnowledge</code> 对接
             <code>MilvusStore</code> 做向量检索,用 <code>TikaReader</code> 解析并切分上传文档,用
             <code>DashScopeChatModel</code> 完成问答与文档生成,用 <code>DashScopeTextEmbedding</code> 做
             <code>text-embedding-v3</code> 向量化。检索层面在 payload 上带 <code>notebook_id</code> / <code>note_id</code> /

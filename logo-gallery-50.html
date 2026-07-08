@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鹿匠笔记 · 50个Logo合集(全风格)</title>
+<style>
+  :root{
+    --bg:#0e1417; --panel:#151d21; --panel2:#1d272c; --line:#2a373d; --line-strong:#3a4a52;
+    --fg:#e8edef; --mut:#8a9ba3; --accent:#2dd4bf;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;padding:40px 24px 120px;}
+  h1{font-size:26px;font-weight:800;margin:0 0 6px;}
+  h2{font-size:18px;color:var(--accent);margin:60px 0 20px;border-bottom:1px solid var(--line);padding-bottom:10px;max-width:1400px;font-weight:700;}
+  .sub{color:var(--mut);font-size:14px;margin-bottom:8px;}
+  .hint{color:var(--mut);font-size:13px;margin-bottom:24px;line-height:1.7;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:800px;}
+  .hint b{color:var(--accent);}
+  .toggle{margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);z-index:10;padding:10px 0;border-bottom:1px solid var(--line);}
+  .toggle button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+  .toggle button.on{background:var(--accent);color:#04231f;border-color:transparent;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;max-width:1400px;margin-top:12px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 14px 14px;display:flex;flex-direction:column;align-items:center;gap:12px;transition:border-color .2s,transform .2s;}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .stage{height:90px;display:flex;align-items:center;justify-content:center;width:100%;}
+  .brandrow{display:flex;align-items:center;gap:8px;}
+  .brandrow .name{font-size:16px;font-weight:800;white-space:nowrap;}
+  .meta{text-align:center;}
+  .meta .tag{display:inline-block;background:var(--panel2);border:1px solid var(--line);color:var(--accent);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px;letter-spacing:.3px;}
+  .meta .t{font-size:13px;font-weight:700;margin-bottom:3px;}
+  .meta .d{font-size:11px;color:var(--mut);line-height:1.4;}
+  body.light{--bg:#f6f8f9;--panel:#fff;--panel2:#eef2f4;--line:#dce3e6;--line-strong:#c3cdd2;--fg:#16232a;--mut:#5f7079;}
+  .gname{background:linear-gradient(92deg,var(--fg),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  body.iconly .brandrow .name{display:none;}
+</style>
+</head>
+<body>
+<h1>鹿匠笔记 · 50个Logo全风格合集</h1>
+<div class="sub">分五大类:极简几何/创意正负形/渐变弥散/徽章印章/字标融合,大胆保守都有,不同配色全覆盖。</div>
+<div class="hint">五大类共50个:<b>① 极简几何(10个,保守现代)</b> → ② 创意正负形(10个,有巧思设计感) → ③ 渐变弥散(10个,大胆视觉冲击力强) → ④ 徽章印章(10个,经典专业有质感) → ⑤ 字标融合(10个,JL/LJ/文字结合)。右上可切<b>明/暗背景</b>与<b>纯图标</b>预览。挑中告诉我编号,可以随便改配色/细节。</div>
+<div class="toggle">
+  <button class="on" onclick="setTheme('dark',this)">暗色背景</button>
+  <button onclick="setTheme('light',this)">亮色背景</button>
+  <button onclick="toggleIcon(this)" style="margin-left:12px;">纯图标 / 带字</button>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────────
+     第一类：极简几何风（10个，保守、现代、好识别）
+     ───────────────────────────────────────────────────────────────────── -->
+<h2>① 极简几何风 · 10个（保守、现代、识别度高）</h2>
+<div class="grid" id="grid1"></div>
+
+<!-- ─────────────────────────────────────────────────────────────────────
+     第二类：创意正负形 · 10个（有巧思、设计感强）
+     ───────────────────────────────────────────────────────────────────── -->
+<h2>② 创意正负形 · 10个（巧思、设计感、耐看）</h2>
+<div class="grid" id="grid2"></div>
+
+<!-- ─────────────────────────────────────────────────────────────────────
+     第三类：渐变弥散风 · 10个（大胆、现代、视觉冲击力强）
+     ───────────────────────────────────────────────────────────────────── -->
+<h2>③ 渐变弥散风 · 10个（大胆、潮流、视觉冲击力强）</h2>
+<div class="grid" id="grid3"></div>
+
+<!-- ─────────────────────────────────────────────────────────────────────
+     第四类：徽章印章风 · 10个（经典、专业、有质感）
+     ───────────────────────────────────────────────────────────────────── -->
+<h2>④ 徽章印章风 · 10个（经典、专业、有质感）</h2>
+<div class="grid" id="grid4"></div>
+
+<!-- ─────────────────────────────────────────────────────────────────────
+     第五类：字标融合风 · 10个（JL/LJ/文字结合）
+     ───────────────────────────────────────────────────────────────────── -->
+<h2>⑤ 字标融合风 · 10个（JL/LJ/鹿匠文字与图形结合）</h2>
+<div class="grid" id="grid5"></div>
+
+<script>
+function setTheme(t,btn){document.body.classList.toggle('light',t==='light');document.querySelectorAll('.toggle button')[0].classList.toggle('on',t==='dark');document.querySelectorAll('.toggle button')[1].classList.toggle('on',t==='light');}
+function toggleIcon(btn){document.body.classList.toggle('iconly');btn.classList.toggle('on');}
+
+/* 基础元素库 */
+function deerLine(stroke, w=2.4){return `<g fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M32 30 24 46h16z"/>
+  <path d="M26 30c-4-2-6-6-6-10M26 22c-4 0-7-2-9-5M20 20c-3 1-6 0-8-3"/>
+  <path d="M38 30c4-2 6-6 6-10M38 22c4 0 7-2 9-5M44 20c3 1 6 0 8-3"/>
+</g>`;}
+function deerFill(fill){return `<path fill="${fill}" d="M32 20c-6 0-10 4.5-10 11 0 7 4.5 13 10 16 5.5-3 10-9 10-16 0-6.5-4-11-10-11Z"/>
+<path fill="${fill}" d="M22 26c-5-1-8-5-9-11 3 2 6 2.5 9 1.5 1 3 .5 6-0 9.5Z"/>
+<path fill="${fill}" d="M42 26c5-1 8-5 9-11-3 2-6 2.5-9 1.5-1 3-.5 6 0 9.5Z"/>
+<path fill="${fill}" d="M13 15c-4-1-6-4-6-8 3 1 5 3 6 8ZM51 15c4-1 6-4 6-8-3 1-5 3-6 8Z"/>
+<path fill="${fill}" d="M22 20c-4-3-6-7-6-12 3 3 5 6 6 12ZM42 20c4-3 6-7 6-12-3 3-5 6-6 12Z"/>`;}
+function antlers(stroke, w=2.4){return `<g fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M20 40c-5-3-8-9-8-16M20 32c-5-1-9-5-11-11M12 26c-4 0-7-3-8-7"/>
+  <path d="M44 40c5-3 8-9 8-16M44 32c5-1 9-5 11-11M52 26c4 0 7-3 8-7"/>
+</g>`;}
+function book(fill){return `<path fill="${fill}" d="M32 34c-4-3-9-3-13-1v18c4-2 9-2 13 1 4-3 9-3 13-1V33c-4-2-9-2-13 1Z"/>
+<path d="M32 34v18" stroke="#04231f" stroke-width="1.4" opacity=".4"/>`;}
+function jl(stroke, w=4){return `<path d="M24 20v20c0 5 4 6 8 2l10-18" fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;}
+function lj(stroke, w=4){return `<path d="M40 44V24c0-5-4-6-8-2l-10 18" fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;}
+function circleBg(fill, r=28){return `<circle cx="32" cy="32" r="${r}" fill="${fill}"/>`;}
+function squareBg(fill, r=12){return `<rect x="6" y="6" width="52" height="52" rx="${r}" fill="${fill}"/>`;}
+function gradient(id, c1, c2, dir='0 0 1 1'){return `<defs><linearGradient id="${id}" x1="${dir.split(' ')[0]}" y1="${dir.split(' ')[1]}" x2="${dir.split(' ')[2]}" y2="${dir.split(' ')[3]}"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs>`;}
+function glow(id, cx=.3, cy=.25){return `<defs><radialGradient id="${id}" cx="${cx}" cy="${cy}" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".4"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>`;}
+
+/* ─────────────────────────────────────────────────────────────────────
+     第一类：极简几何风（10个）
+     ───────────────────────────────────────────────────────────────────── */
+const cat1 = [
+{tag:'极简线稿',title:'G1 · 鹿头线稿',desc:'纯线条正面鹿头,极简克制,适合专业工具',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${deerLine('#2dd4bf')}<circle cx="32" cy="34" r="1.4" fill="#2dd4bf"/></svg>`},
+
+{tag:'实心圆',title:'G2 · 圆底白鹿头',desc:'圆形青底+白色实心鹿头,醒目干净',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${circleBg('#2dd4bf')}${deerFill('#fff')}<circle cx="27" cy="30" r="1.6" fill="#16776a"/><circle cx="37" cy="30" r="1.6" fill="#16776a"/></svg>`},
+
+{tag:'三角几何',title:'G3 · 低面鹿头',desc:'低多边形三角拼接鹿头,硬朗科技感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><g stroke="#fff" stroke-width=".5">
+  <path d="M32 50 24 34l8-4 8 4z" fill="#2dd4bf"/>
+  <path d="M24 34l-2-10 10 6z" fill="#14b8a6"/>
+  <path d="M40 34l2-10-10 6z" fill="#5eead4"/>
+  <path d="M22 24l-4-10 6 4z" fill="#0d9488"/>
+  <path d="M42 24l4-10-6 4z" fill="#0d9488"/>
+  <path d="M32 30l-8 4 8 6 8-6z" fill="#2563eb"/>
+</g></svg>`},
+
+{tag:'圆角方块',title:'G4 · 方块线稿鹿',desc:'圆角蓝绿渐变方块+白鹿头线稿,iOS风App图标',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${gradient('g4'+id,'#5eead4','#2563eb')}<rect x="6" y="6" width="52" height="52" rx="14" fill="url(#g4${id})"/>${deerLine('#fff',2)}<circle cx="32" cy="34" r="1.4" fill="#fff"/></svg>`},
+
+{tag:'单鹿角',title:'G5 · 单角鹿',desc:'简化到只剩一只鹿角+鹿头侧脸,极致识别',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M24 22c0-8-4-14-12-14v10c5 0 7 3 7 8l7 14c1 2 1 4 0 6H38c2-3 3-7 3-12 0-8-5-12-13-12z" fill="#2dd4bf"/>
+<circle cx="33" cy="31" r="1.8" fill="#04231f" opacity=".5"/></svg>`},
+
+{tag:'鹿+书',title:'G6 · 鹿角托书',desc:'鹿角托一本小书,主题直接明了',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${antlers('#2dd4bf')}${book('#2dd4bf')}</svg>`},
+
+{tag:'字母L',title:'G7 · L形鹿角',desc:'大写L形自然长出鹿角,极简字标',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M24 18v28h20" fill="none" stroke="#2dd4bf" stroke-width="4" stroke-linecap="round"/>
+<g fill="none" stroke="#fbbf24" stroke-width="2.6" stroke-linecap="round"><path d="M24 18c2-6 6-10 12-10 2-3 5-5 8-5"/><path d="M24 18c3-2 7-4 11-4"/></g></svg>`},
+
+{tag:'点线',title:'G8 · 像素点鹿头',desc:'像素点拼接鹿头,极客/科技感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><g fill="#2dd4bf">
+  <rect x="24" y="16" width="4" height="4"/><rect x="36" y="16" width="4" height="4"/>
+  <rect x="20" y="20" width="4" height="4"/><rect x="40" y="20" width="4" height="4"/>
+  <rect x="16" y="24" width="4" height="4"/><rect x="44" y="24" width="4" height="4"/>
+  <rect x="12" y="28" width="4" height="4"/><rect x="48" y="28" width="4" height="4"/>
+  <rect x="20" y="28" width="24" height="16"/><rect x="26" y="32" width="4" height="4" fill="#04231f" opacity=".5"/>
+  <rect x="34" y="32" width="4" height="4" fill="#04231f" opacity=".5"/>
+</g></svg>`},
+
+{tag:'线条',title:'G9 · 流动线条鹿',desc:'流畅曲线勾勒鹿身,优雅动感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M12 44c4-2 6-6 8-11 2-4 5-7 10-7 3 0 5-2 6-5 1 3 2 5 5 5l-3 5c4 3 6 8 6 14l-4-1c-1-4-3-7-6-9-2 3-5 5-9 5-3 3-5 6-6 10l-4-1 3-6c-3 1-6 2-9 2z" fill="none" stroke="#2dd4bf" stroke-width="3" stroke-linecap="round"/></svg>`},
+
+{tag:'实心剪影',title:'G10 · 完整鹿剪影',desc:'跃起完整鹿剪影,活力动感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M12 44c4-2 6-6 8-11 2-4 5-7 10-7 3 0 5-2 6-5 1 3 2 5 5 5l-3 5c4 3 6 8 6 14l-4-1c-1-4-3-7-6-9-2 3-5 5-9 5-3 3-5 6-6 10l-4-1 3-6c-3 1-6 2-9 2z" fill="#2dd4bf"/>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.4" stroke-linecap="round"><path d="M42 21c1-3 1-6 0-9M45 20c2-2 3-5 3-8"/></g></svg>`},
+];
+
+/* ─────────────────────────────────────────────────────────────────────
+     第二类：创意正负形（10个）
+     ───────────────────────────────────────────────────────────────────── */
+const cat2 = [
+{tag:'鹿+书',title:'G11 · 书里挖鹿头',desc:'圆角方块+负空间鹿头+书脊,巧思耐看',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${squareBg('#2dd4bf')}<g fill="#0e1417">
+  <path d="M32 26c-3 0-5 2-5 5s2 8 5 10c3-2 5-7 5-10s-2-5-5-5Z"/>
+  <path d="M27 24c-3-2-4-5-4-9 2 2 3 3 5 3zM37 24c3-2 4-5 4-9-2 2-3 3-5 3z"/>
+</g></svg>`},
+
+{tag:'鹿+J',title:'G12 · J里藏鹿',desc:'大写J负空间是鹿头,字标二合一',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M24 20v20c0 5 4 8 8 8s8-3 8-8V20z" fill="#2dd4bf"/>
+<path d="M32 30c-2 0-3 1.5-3 4s1.5 5 3 6c2-1 3-4 3-6s-1-4-3-4Z" fill="#0e1417"/>
+<path d="M28 26c-1-2-1-4 0-6h8c1 2 1 4 0 6z" fill="#0e1417"/></svg>`},
+
+{tag:'鹿+L',title:'G13 · L里藏鹿',desc:'大写L负空间是鹿侧脸',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M18 18h18v28H18V18z" fill="#2dd4bf"/>
+<path d="M28 24c-4 1-6 4-6 9 1 6 4 10 9 11v-20z" fill="#0e1417"/></svg>`},
+
+{tag:'鹿+书页',title:'G14 · 书页折角鹿',desc:'翻开的书页折角正好是鹿头剪影',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M22 10v38c0 2 1 4 3 5l20 11V22L33 10H22Z" fill="#2dd4bf"/>
+<path d="M33 10v12h12L33 10Z" fill="#5eead4"/><path d="M28 26c0-2 2-4 4-4s4 2 4 4-2 4-4 4z" fill="#04231f" opacity=".5"/></svg>`},
+
+{tag:'鹿+大脑',title:'G15 · 鹿角=大脑沟回',desc:'鹿角线条是大脑沟回,AI/知识隐喻',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M32 50c-8 0-14-6-14-14 0-6 4-12 8-14v-4c0-4 3-8 6-10 3 2 6 6 6 10v4c4 2 8 8 8 14 0 8-6 14-14 14Z" fill="#2dd4bf"/>
+<g fill="none" stroke="#04231f" stroke-width="1.4" opacity=".3">
+  <path d="M20 36c2-2 5-3 8-3s6 1 8 3"/><path d="M22 30c3-2 6-3 10-3s7 1 10 3"/>
+  <path d="M28 24c2-1 4-2 4-2s2 1 4 2"/><circle cx="27" cy="39" r="1.8" fill="#04231f" opacity=".5"/><circle cx="37" cy="39" r="1.8" fill="#04231f" opacity=".5"/>
+</g></svg>`},
+
+{tag:'鹿+笔',title:'G16 · 鹿角=笔尖',desc:'鹿角是笔尖,「匠」的隐喻',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M22 50h20V28l4-4V10L32 4 18 10v14l4 4v22z" fill="#2dd4bf"/>
+<path d="M26 28h12l-6-6-6 6z" fill="#fbbf24"/><path d="M24 14h16v6H24z" fill="#04231f" opacity=".2"/></svg>`},
+
+{tag:'鹿+星星',title:'G17 · 鹿角=星星角',desc:'四角星的角正好是鹿角,智能/灵感隐喻',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M32 4l4 12 12 4-12 4-4 12-4-12-12-4 12-4 4-12Z" fill="#fbbf24"/>
+<path d="M32 28c-3 0-5 2.5-5 6s2 7 5 8c3-1 5-4 5-8s-2-6-5-6Z" fill="#04231f" opacity=".5"/></svg>`},
+
+{tag:'鹿+引号',title:'G18 · 鹿角=引号',desc:'双引号正好是鹿角,笔记/引用隐喻',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M18 24c-4 0-6 2-6 6s2 6 6 6V24z" fill="#2dd4bf"/>
+<path d="M46 24c4 0 6 2 6 6s-2 6-6 6V24z" fill="#2dd4bf"/>
+<path d="M32 30c-4 0-7 3-7 8v12h14V38c0-5-3-8-7-8Z" fill="#2dd4bf"/>
+<circle cx="29" cy="38" r="1.6" fill="#04231f" opacity=".5"/><circle cx="35" cy="38" r="1.6" fill="#04231f" opacity=".5"/></svg>`},
+
+{tag:'鹿+二维码',title:'G19 · 像素二维码鹿',desc:'二维码格点拼出鹿头,科技感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><g fill="#2dd4bf">
+  <rect x="8" y="8" width="8" height="8"/><rect x="48" y="8" width="8" height="8"/><rect x="8" y="48" width="8" height="8"/>
+  <rect x="12" y="24" width="4" height="4"/><rect x="48" y="24" width="4" height="4"/><rect x="24" y="12" width="4" height="4"/><rect x="36" y="12" width="4" height="4"/>
+  <rect x="20" y="20" width="4" height="4"/><rect x="40" y="20" width="4" height="4"/>
+  <rect x="16" y="28" width="4" height="4"/><rect x="44" y="28" width="4" height="4"/>
+  <rect x="24" y="28" width="16" height="12"/>
+  <rect x="28" y="32" width="4" height="4" fill="#04231f" opacity=".5"/><rect x="32" y="32" width="4" height="4" fill="#04231f" opacity=".5"/>
+</g></svg>`},
+
+{tag:'鹿+无限',title:'G20 · 无限符号鹿',desc:'无限符号∞正好是两只鹿角,知识无限隐喻',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M20 28c-6 0-10 4-10 10s4 10 10 10 10-4 10-10-4-10-10-10zm24 0c-6 0-10 4-10 10s4 10 10 10 10-4 10-10-4-10-10-10z" fill="none" stroke="#2dd4bf" stroke-width="4" stroke-linecap="round"/>
+<path d="M32 24c-4 0-7 3-7 8v14h14V32c0-5-3-8-7-8Z" fill="#2dd4bf"/>
+<circle cx="29" cy="32" r="1.6" fill="#04231f" opacity=".5"/><circle cx="35" cy="32" r="1.6" fill="#04231f" opacity=".5"/></svg>`},
+];
+
+/* ─────────────────────────────────────────────────────────────────────
+     第三类：渐变弥散风（10个）
+     ───────────────────────────────────────────────────────────────────── */
+const cat3 = [
+{tag:'青蓝渐变',title:'G21 · 渐变鹿头',desc:'青→蓝渐变实心鹿头+高光',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${gradient('g21'+id,'#5eead4','#2563eb')}${deerFill(`url(#g21${id})`)}
+<path d="M32 20c-6 0-10 4.5-10 11 0 7 4.5 13 10 16 5.5-3 10-9 10-16 0-6.5-4-11-10-11Z" fill="#fff" opacity=".15"/>
+<circle cx="27" cy="30" r="1.6" fill="#04231f" opacity=".4"/><circle cx="37" cy="30" r="1.6" fill="#04231f" opacity=".4"/></svg>`},
+
+{tag:'紫粉渐变',title:'G22 · 紫粉鹿头',desc:'大胆紫→粉渐变,潮流个性',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${gradient('g22'+id,'#a855f7','#ec4899')}${deerFill(`url(#g22${id})`)}
+<path d="M32 20c-6 0-10 4.5-10 11 0 7 4.5 13 10 16 5.5-3 10-9 10-16 0-6.5-4-11-10-11Z" fill="#fff" opacity=".15"/>
+<circle cx="27" cy="30" r="1.6" fill="#04231f" opacity=".4"/><circle cx="37" cy="30" r="1.6" fill="#04231f" opacity=".4"/></svg>`},
+
+{tag:'橙金渐变',title:'G23 · 金橙鹿头',desc:'暖橙→金渐变,温暖高级',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${gradient('g23'+id,'#f97316','#eab308')}${deerFill(`url(#g23${id})`)}
+<path d="M32 20c-6 0-10 4.5-10 11 0 7 4.5 13 10 16 5.5-3 10-9 10-16 0-6.5-4-11-10-11Z" fill="#fff" opacity=".15"/>
+<circle cx="27" cy="30" r="1.6" fill="#04231f" opacity=".4"/><circle cx="37" cy="30" r="1.6" fill="#04231f" opacity=".4"/></svg>`},
+
+{tag:'蓝紫渐变',title:'G24 · 蓝紫方块鹿',desc:'圆角方块蓝紫渐变底+白鹿头',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${gradient('g24'+id,'#2563eb','#8b5cf6')}${glow('gl24'+id)}
+<rect x="6" y="6" width="52" height="52" rx="14" fill="url(#g24${id})"/>
+<rect x="6" y="6" width="52" height="52" rx="14" fill="url(#gl24${id})"/>
+${deerFill('#fff')}<circle cx="27" cy="30" r="1.6" fill="#1e3a8a" opacity=".6"/><circle cx="37" cy="30" r="1.6" fill="#1e3a8a" opacity=".6"/></svg>`},
+
+{tag:'绿黄渐变',title:'G25 · 森林绿方块鹿',desc:'绿→黄渐变方块底,活力自然',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${gradient('g25'+id,'#16a34a','#eab308')}${glow('gl25'+id)}
+<rect x="6" y="6" width="52" height="52" rx="14" fill="url(#g25${id})"/>
+<rect x="6" y="6" width="52" height="52" rx="14" fill="url(#gl25${id})"/>
+${deerFill('#fff')}<circle cx="27" cy="30" r="1.6" fill="#14532d" opacity=".6"/><circle cx="37" cy="30" r="1.6" fill="#14532d" opacity=".6"/></svg>`},
+
+{tag:'粉橙渐变',title:'G26 · 粉橙弥散鹿',desc:'粉→橙渐变+高光,柔和粉嫩',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${gradient('g26'+id,'#ec4899','#f97316')}${glow('gl26'+id)}
+<circle cx="32" cy="32" r="28" fill="url(#g26${id})"/>
+<circle cx="32" cy="32" r="28" fill="url(#gl26${id})"/>
+${deerFill('#fff')}<circle cx="27" cy="30" r="1.6" fill="#7c2d12" opacity=".5"/><circle cx="37" cy="30" r="1.6" fill="#7c2d12" opacity=".5"/></svg>`},
+
+{tag:'黑白渐变',title:'G27 · 银灰金属鹿',desc:'银→黑渐变,金属质感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${gradient('g27'+id,'#f3f4f6','#1f2937')}
+<rect x="6" y="6" width="52" height="52" rx="14" fill="url(#g27${id})"/>
+${deerFill('#111827')}<circle cx="27" cy="30" r="1.6" fill="#fff" opacity=".8"/><circle cx="37" cy="30" r="1.6" fill="#fff" opacity=".8"/></svg>`},
+
+{tag:'霓虹渐变',title:'G28 · 霓虹发光鹿',desc:'青→紫渐变+发光边框,赛博朋克',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<circle cx="32" cy="32" r="29" fill="none" stroke="#2dd4bf" stroke-width="2" opacity=".3"/>
+<circle cx="32" cy="32" r="27" fill="#0e1417" stroke="#2dd4bf" stroke-width="1"/>
+${deerLine('#2dd4bf',3)}<circle cx="32" cy="34" r="1.8" fill="#2dd4bf"/>
+<circle cx="22" cy="22" r="2" fill="#fbbf24" opacity=".6"/><circle cx="42" cy="22" r="2" fill="#8b5cf6" opacity=".6"/>
+</svg>`},
+
+{tag:'玻璃质感',title:'G29 · 毛玻璃鹿',desc:'半透明白色鹿头+玻璃质感边框',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+${gradient('g29'+id,'#5eead4','#8b5cf6')}<rect x="6" y="6" width="52" height="52" rx="14" fill="url(#g29${id})"/>
+<rect x="12" y="12" width="40" height="40" rx="10" fill="#fff" opacity=".2"/>
+<rect x="12" y="12" width="40" height="8" rx="10 10 0 0" fill="#fff" opacity=".3"/>
+${deerFill('#fff')}<circle cx="27" cy="30" r="1.6" fill="#04231f" opacity=".3"/><circle cx="37" cy="30" r="1.6" fill="#04231f" opacity=".3"/></svg>`},
+
+{tag:'三色渐变',title:'G30 · 彩虹渐变鹿',desc:'青→粉→金三色渐变,大胆醒目',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<defs><linearGradient id="g30${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset=".5" stop-color="#ec4899"/><stop offset="1" stop-color="#eab308"/></linearGradient></defs>
+${deerFill(`url(#g30${id})`)}<path d="M32 20c-6 0-10 4.5-10 11 0 7 4.5 13 10 16 5.5-3 10-9 10-16 0-6.5-4-11-10-11Z" fill="#fff" opacity=".15"/>
+<circle cx="27" cy="30" r="1.6" fill="#04231f" opacity=".4"/><circle cx="37" cy="30" r="1.6" fill="#04231f" opacity=".4"/></svg>`},
+];
+
+/* ─────────────────────────────────────────────────────────────────────
+     第四类：徽章印章风（10个）
+     ───────────────────────────────────────────────────────────────────── */
+const cat4 = [
+{tag:'圆形徽章',title:'G31 · 圆徽章鹿头',desc:'圆形边框+鹿头,学院风',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<circle cx="32" cy="32" r="28" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+<circle cx="32" cy="32" r="24" fill="none" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="2 3"/>
+${deerFill('#2dd4bf')}<circle cx="27" cy="30" r="1.6" fill="#04231f" opacity=".3"/><circle cx="37" cy="30" r="1.6" fill="#04231f" opacity=".3"/></svg>`},
+
+{tag:'盾形徽章',title:'G32 · 盾形鹿徽章',desc:'盾牌形+鹿头,专业有传承感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<path d="M32 4 54 10v22c0 14-10 22-22 26C20 54 10 46 10 32V10z" fill="none" stroke="#2dd4bf" stroke-width="2.5" stroke-linejoin="round"/>
+<g fill="#2dd4bf">
+  <path d="M32 42c-2 0-4-1-5-3l-3-6c3 1 5 1 8 1s5 0 8-1l-3 6c-1 2-3 3-5 3Z"/>
+  <path d="M27 34c-3-2-5-5-5-9 2 2 4 3 6 3zM37 34c3-2 5-5 5-9-2 2-4 3-6 3z"/>
+</g></svg>`},
+
+{tag:'印章',title:'G33 · 方形鹿印章',desc:'红色方形印章,传统中国风',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<rect x="8" y="8" width="48" height="48" rx="2" fill="#ef4444"/>
+<g fill="#fff">
+  <path d="M32 34c-3 0-5 2-5 5s2 7 5 8c3-1 5-4 5-8s-2-5-5-5Z"/>
+  <path d="M26 30c-3-2-4-5-4-9 2 2 3 3 5 3zM38 30c3-2 4-5 4-9-2 2-3 3-5 3z"/>
+  <path d="M26 20h12v4H26z"/>
+</g></svg>`},
+
+{tag:'八角徽章',title:'G34 · 八角形徽章',desc:'八角徽章+鹿头,硬朗军事风',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<path d="M32 4l12 6 12 12v16l-12 12-12 6-12-6-12-12V22L20 10z" fill="none" stroke="#2dd4bf" stroke-width="2.5" stroke-linejoin="round"/>
+${deerFill('#2dd4bf')}<circle cx="27" cy="30" r="1.6" fill="#04231f" opacity=".3"/><circle cx="37" cy="30" r="1.6" fill="#04231f" opacity=".3"/></svg>`},
+
+{tag:'麦穗徽章',title:'G35 · 麦穗环绕鹿',desc:'麦穗环绕+鹿头,权威/认证感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<g fill="none" stroke="#2dd4bf" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M16 38c-2 4-2 8 0 12 2 4 6 6 10 8 4 2 8 2 12 0s8-4 10-8c2-4 2-8 0-12"/>
+  <path d="M18 32c-2 4-2 8 0 12"/><path d="M20 26c-2 4-2 8 0 12"/><path d="M22 20c-2 4-2 8 0 12"/><path d="M24 14c-2 4-2 8 0 12"/>
+  <path d="M46 38c2 4 2 8 0 12"/><path d="M44 32c2 4 2 8 0 12"/><path d="M42 26c2 4 2 8 0 12"/><path d="M40 20c2 4 2 8 0 12"/><path d="M38 14c2 4 2 8 0 12"/>
+</g>
+${deerFill('#2dd4bf')}<circle cx="27" cy="30" r="1.6" fill="#04231f" opacity=".3"/><circle cx="37" cy="30" r="1.6" fill="#04231f" opacity=".3"/></svg>`},
+
+{tag:'圆形印章',title:'G36 · 圆印鹿',desc:'圆形红色印章,篆刻风',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<circle cx="32" cy="32" r="28" fill="#ef4444"/>
+<g fill="#fff">
+  <path d="M32 36c-3 0-5 2-5 5s2 6 5 7c3-1 5-3 5-7s-2-5-5-5Z"/>
+  <path d="M27 32c-2-1-3-3-3-6 1 1 2 2 3 2zM37 32c2-1 3-3 3-6-1 1-2 2-3 2z"/>
+  <path d="M24 22c-1-1-1-3 0-5 1 0 2 1 3 2zM40 22c1-1 1-3 0-5-1 0-2 1-3 2z"/>
+  <path d="M20 18c-1-2-1-4 0-6 1 1 2 2 3 3zM44 18c1-2 1-4 0-6-1 1-2 2-3 3z"/>
+</g></svg>`},
+
+{tag:'桂冠徽章',title:'G37 · 桂冠鹿',desc:'月桂枝环绕+鹿头,荣誉/精英感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<g fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M16 46c0-6 2-12 6-18s10-10 16-10 12 4 16 10 6 12 6 18"/>
+  <path d="M16 42c0-5 2-10 5-15"/><path d="M18 38c0-4 2-8 5-12"/><path d="M20 34c0-4 2-7 4-10"/>
+  <path d="M48 42c0-5-2-10-5-15"/><path d="M46 38c0-4-2-8-5-12"/><path d="M44 34c0-4-2-7-4-10"/>
+  <path d="M28 16l4 4 4-4"/>
+</g>
+${deerFill('#2dd4bf')}<circle cx="27" cy="30" r="1.6" fill="#04231f" opacity=".3"/><circle cx="37" cy="30" r="1.6" fill="#04231f" opacity=".3"/></svg>`},
+
+{tag:'金属徽章',title:'G38 · 金属质感徽章',desc:'金底+黑边+鹿头,高级金属感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<circle cx="32" cy="32" r="28" fill="#eab308"/>
+<circle cx="32" cy="32" r="26" fill="#fbbf24"/>
+<circle cx="32" cy="32" r="22" fill="#1f2937"/>
+${deerFill('#fbbf24')}<circle cx="27" cy="30" r="1.6" fill="#eab308" opacity=".8"/><circle cx="37" cy="30" r="1.6" fill="#eab308" opacity=".8"/></svg>`},
+
+{tag:'圆角徽章',title:'G39 · 圆角方形徽章',desc:'圆角方形+鹿头,现代徽章',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<rect x="8" y="8" width="48" height="48" rx="8" fill="none" stroke="#2dd4bf" stroke-width="2.5"/>
+<rect x="14" y="14" width="36" height="36" rx="4" fill="none" stroke="#2dd4bf" stroke-width="1"/>
+${deerFill('#2dd4bf')}<circle cx="27" cy="30" r="1.6" fill="#04231f" opacity=".3"/><circle cx="37" cy="30" r="1.6" fill="#04231f" opacity=".3"/></svg>`},
+
+{tag:'齿轮徽章',title:'G40 · 齿轮边徽章',desc:'齿轮边框+鹿头,工业/工程感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<g fill="none" stroke="#2dd4bf" stroke-width="1.5" stroke-linejoin="round">
+  <path d="M32 4h4l2 6h4l5-3 3 5-3 5v4l6 2v4l-6 2v4l3 5-3 5-5-3h-4l-2 6h-4l-2-6h-4l-5 3-3-5 3-5v-4l-6-2v-4l6-2v-4l-3-5 3-5 5 3h4l2-6z"/>
+  <circle cx="32" cy="32" r="20" stroke-width="1.5"/>
+</g>
+${deerFill('#2dd4bf')}<circle cx="27" cy="30" r="1.6" fill="#04231f" opacity=".3"/><circle cx="37" cy="30" r="1.6" fill="#04231f" opacity=".3"/></svg>`},
+];
+
+/* ─────────────────────────────────────────────────────────────────────
+     第五类：字标融合风（10个）
+     ───────────────────────────────────────────────────────────────────── */
+const cat5 = [
+{tag:'JL变形',title:'G41 · JL=鹿角+鹿头',desc:'JL变形组成鹿角+鹿头,字标二合一',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">${jl('#2dd4bf',4.5)}${lj('#2dd4bf',4.5)}
+<path d="M32 34c-3 0-5 2-5 6v8h10v-8c0-4-2-6-5-6Z" fill="#2dd4bf"/>
+<circle cx="29" cy="38" r="1.6" fill="#04231f" opacity=".3"/><circle cx="35" cy="38" r="1.6" fill="#04231f" opacity=".3"/></svg>`},
+
+{tag:'鹿+JL',title:'G42 · 鹿头+JL缩写',desc:'鹿头旁边加JL缩写,直接明了',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><g transform="translate(-4,0)">
+${deerFill('#2dd4bf')}<text x="42" y="38" font-size="16" font-weight="800" fill="#2dd4bf">JL</text>
+</g></svg>`},
+
+{tag:'鹿+鹿匠',title:'G43 · 鹿头+鹿匠文字',desc:'鹿头+中文鹿匠,直接点题',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><g transform="translate(-8,0)">
+${deerFill('#2dd4bf')}<text x="38" y="36" font-size="12" font-weight="800" fill="#2dd4bf">鹿匠</text>
+</g></svg>`},
+
+{tag:'LJ变形',title:'G44 · LJ=鹿剪影',desc:'LJ组成完整鹿剪影',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M22 44V24c0-6 4-8 8-4l10 18" fill="none" stroke="#2dd4bf" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 44h24" fill="none" stroke="#2dd4bf" stroke-width="4" stroke-linecap="round"/>
+<g fill="none" stroke="#fbbf24" stroke-width="2.4" stroke-linecap="round"><path d="M30 16c1-3 1-6 0-9M33 15c2-2 3-5 3-8"/></g></svg>`},
+
+{tag:'鹿+J',title:'G45 · J形鹿身',desc:'J形正好是鹿身曲线',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M34 20v20c0 5-4 8-8 8s-8-3-8-8" fill="none" stroke="#2dd4bf" stroke-width="4.5" stroke-linecap="round"/>
+<path d="M34 20c-2-6-6-10-12-10" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+<circle cx="32" cy="22" r="2" fill="#2dd4bf"/></svg>`},
+
+{tag:'鹿+L',title:'G46 · L形鹿身',desc:'L形正好是鹿身+鹿角',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><path d="M22 20v24h24" fill="none" stroke="#2dd4bf" stroke-width="4.5" stroke-linecap="round"/>
+<g fill="none" stroke="#fbbf24" stroke-width="2.8" stroke-linecap="round">
+  <path d="M22 20c2-6 6-10 12-10 2-3 5-5 8-5"/><path d="M22 20c3-2 7-4 11-4"/>
+</g></svg>`},
+
+{tag:'鹿+匠',title:'G47 · 匠字里藏鹿',desc:'匠字框里是鹿头',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+<path d="M16 16h32v32H16z" fill="none" stroke="#2dd4bf" stroke-width="3" stroke-linejoin="round"/>
+<path d="M24 24h16v16H24z" fill="#2dd4bf"/>
+<g fill="#0e1417" opacity=".8">
+  <path d="M32 30c-2 0-3 1.5-3 4s1.5 4 3 5c2-1 3-2.5 3-5s-1-4-3-4Z"/>
+  <path d="M28 28c-1-2-1-4 0-6h8c1 2 1 4 0 6z"/>
+</g></svg>`},
+
+{tag:'鹿+笔记',title:'G48 · 鹿头+笔记文字',desc:'鹿头+笔记二字,明确产品定位',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><g transform="translate(-6,0)">
+${deerFill('#2dd4bf')}<text x="40" y="37" font-size="10" font-weight="800" fill="#2dd4bf">笔记</text>
+</g></svg>`},
+
+{tag:'鹿+SUPER',title:'G49 · 鹿头+SUPER英文',desc:'鹿头+SUPER英文,国际感',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64"><g transform="translate(-4,0)">
+${deerFill('#2dd4bf')}<text x="40" y="38" font-size="9" font-weight="800" fill="#2dd4bf">SUPER</text>
+</g></svg>`},
+
+{tag:'鹿+印章',title:'G50 · 鹿头+鹿匠印章',desc:'鹿头+小印章印着鹿匠二字',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="64" height="64">
+${deerFill('#2dd4bf')}<rect x="44" y="40" width="12" height="12" rx="1" fill="#ef4444"/>
+<text x="50" y="48" text-anchor="middle" font-size="8" font-weight="800" fill="#fff">鹿匠</text>
+</svg>`},
+];
+
+/* 渲染到页面 */
+function renderGrid(elId, cat){
+  document.getElementById(elId).innerHTML = cat.map((l,i)=>`
+    <div class="card">
+      <div class="stage"><div class="brandrow">${l.svg(i)}<span class="name gname">鹿匠笔记</span></div></div>
+      <div class="meta"><span class="tag">${l.tag}</span><div class="t">${l.title}</div><div class="d">${l.desc}</div></div>
+    </div>`).join('');
+}
+renderGrid('grid1', cat1);
+renderGrid('grid2', cat2);
+renderGrid('grid3', cat3);
+renderGrid('grid4', cat4);
+renderGrid('grid5', cat5);
+</script>
+</body>
+</html>

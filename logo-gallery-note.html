@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鹿匠笔记 · Evernote 风鹿头 + 翻页折角(多配色)</title>
+<style>
+  :root{
+    --bg:#0e1417; --panel:#151d21; --panel2:#1d272c; --line:#2a373d; --line-strong:#3a4a52;
+    --fg:#e8edef; --mut:#8a9ba3; --accent:#2dd4bf;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;padding:40px 24px 80px;}
+  h1{font-size:26px;font-weight:800;margin:0 0 6px;}
+  h2{font-size:15px;color:var(--accent);margin:38px 0 14px;border-bottom:1px solid var(--line);padding-bottom:8px;max-width:1200px;font-weight:700;}
+  .sub{color:var(--mut);font-size:14px;margin-bottom:8px;}
+  .hint{color:var(--mut);font-size:13px;margin-bottom:8px;line-height:1.7;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:800px;}
+  .hint b{color:var(--accent);}
+  .toggle{margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap;}
+  .toggle button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+  .toggle button.on{background:var(--accent);color:#04231f;border-color:transparent;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;max-width:1200px;margin-top:12px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px 20px 18px;display:flex;flex-direction:column;align-items:center;gap:16px;transition:border-color .2s,transform .2s;}
+  .card:hover{border-color:var(--accent);transform:translateY(-3px);}
+  .stage{height:130px;display:flex;align-items:center;justify-content:center;width:100%;}
+  .brandrow{display:flex;align-items:center;gap:12px;}
+  .brandrow .name{font-size:22px;font-weight:800;white-space:nowrap;}
+  .meta{text-align:center;}
+  .meta .tag{display:inline-block;background:var(--panel2);border:1px solid var(--line);color:var(--accent);font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:8px;letter-spacing:.4px;}
+  .meta .t{font-size:15px;font-weight:700;margin-bottom:4px;}
+  .meta .d{font-size:12px;color:var(--mut);line-height:1.6;}
+  body.light{--bg:#f6f8f9;--panel:#fff;--panel2:#eef2f4;--line:#dce3e6;--line-strong:#c3cdd2;--fg:#16232a;--mut:#5f7079;}
+  .gname{background:linear-gradient(92deg,var(--fg),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  body.iconly .brandrow .name{display:none;}
+</style>
+</head>
+<body>
+<h1>鹿匠笔记 · Evernote 风「鹿头 + 翻页折角」</h1>
+<div class="sub">照 Evernote 的思路:实心侧脸剪影 + 左上角翻页折角(书页隐喻)。把大象换成鹿,并换一批新配色。</div>
+<div class="hint">Evernote 的精髓是<b>实心动物侧脸 + 翻页折角</b>。这批把大象换成<b>鹿头(带枝角)</b>,保留标志性折角,做了 E1~E8 八种<b>不同配色</b>方案(森林绿 / 墨黑 / 品牌青蓝 / 琥珀金 / 靛紫 / 珊瑚 / 海蓝渐变 / 圆角方块)。右上可切<b>明/暗背景</b>与<b>纯图标</b>。挑中告诉我编号(可换色、可微调)。</div>
+<div class="toggle">
+  <button class="on" onclick="setTheme('dark',this)">暗色背景</button>
+  <button onclick="setTheme('light',this)">亮色背景</button>
+  <button onclick="toggleIcon(this)" style="margin-left:12px;">纯图标 / 带字</button>
+</div>
+<div class="grid" id="grid"></div>
+
+<script>
+function setTheme(t,btn){document.body.classList.toggle('light',t==='light');document.querySelectorAll('.toggle button')[0].classList.toggle('on',t==='dark');document.querySelectorAll('.toggle button')[1].classList.toggle('on',t==='light');}
+function toggleIcon(btn){document.body.classList.toggle('iconly');btn.classList.toggle('on');}
+
+/* ── 鹿头侧脸剪影(朝右)+ 左上翻页折角 ──
+   deerHead(fill): 实心鹿头,面朝右下,顶部两只枝角
+   pageFold(main,edge): 左上角翻起的书页折角
+   eye: 白色负空间眼 + 高光 (Evernote 同款) */
+function deerHead(fill){return `
+  <path fill="${fill}" d="M30 8c-2 0-3 1.4-3.6 3.2-4.6.8-9 3.6-11.4 8.2-2.6 5-2.2 10.6.6 14.6 1 1.4 1.4 3 1 4.8-1 4.6.4 9.4 3.8 12.8C27 69 34 71 40 68c5-2.4 8.4-7.6 8.4-13.4 0-1.8.6-3.4 1.8-4.8 3-3.4 4.4-8 3.6-12.6-1-6-5.6-10.8-11.4-12.4-.4-3-1.2-6-2.6-8.8C38.6 12 36 8 32.4 8H30Z"/>`;}
+
+/* 枝角(线条,叠在头顶) */
+function antlers(stroke){return `
+  <g fill="none" stroke="${stroke}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M28 9c-3-2-5-5-6-9M28 9c-4 0-8-1-11-4M23 6c-3 1-6 1-9-1"/>
+    <path d="M36 9c3-2 5-5 6-9M36 9c4 0 8-1 11-4M41 6c3 1 6 1 9-1"/>
+  </g>`;}
+
+function eye(){return `
+  <circle cx="42" cy="30" r="3.4" fill="#fff" opacity=".9"/>
+  <circle cx="43" cy="31" r="1.4" fill="#0b0f10" opacity=".55"/>`;}
+
+/* 左上翻页折角 */
+function pageFold(edge){return `
+  <path fill="${edge}" d="M13 15l12 3-9 8Z" opacity=".9"/>
+  <path fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" opacity=".5" d="M13 15l12 3-9 8"/>`;}
+
+const logos = [
+{tag:'森林绿',title:'E1 · 墨绿鹿头 + 折角',desc:'呼应 Evernote 的绿,但用更沉稳的墨绿。实心鹿头侧脸 + 左上翻页折角 + 白色眼高光,最原汁原味的「换成鹿」。',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="82" height="82">${deerHead('#16a34a')}${pageFold('#22c55e')}${eye()}</svg>`},
+
+{tag:'墨黑经典',title:'E2 · 石墨黑鹿头',desc:'完全照 Evernote 原配色:深石墨灰实心剪影。放在任何背景都稳,极简、专业、耐看。',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="82" height="82">${deerHead('#2b3338')}${pageFold('#3a4a52')}${eye()}</svg>`},
+
+{tag:'品牌青蓝',title:'E3 · 青绿鹿头(现色系)',desc:'沿用当前品牌主色 #2dd4bf,和产品 UI 无缝统一。清爽现代。',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="82" height="82">${deerHead('#2dd4bf')}${pageFold('#5eead4')}${eye()}</svg>`},
+
+{tag:'琥珀金',title:'E4 · 暖金鹿头',desc:'换成温暖的琥珀金 #f59e0b,书卷+匠气,有「典藏 / 手作」味道,和「鹿匠」二字很搭。',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="82" height="82">${deerHead('#e08c1a')}${pageFold('#f5b942')}${eye()}</svg>`},
+
+{tag:'靛紫',title:'E5 · 靛紫鹿头',desc:'靛紫 #7c3aed,神秘、有 AI/智能科技感,和知识生成主题呼应。',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="82" height="82">${deerHead('#7c3aed')}${pageFold('#a78bfa')}${eye()}</svg>`},
+
+{tag:'珊瑚红',title:'E6 · 珊瑚鹿头',desc:'珊瑚红 #f26d5b,活力、亲和、年轻化。折角用更亮的橘调点缀。',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="82" height="82">${deerHead('#ef5b4c')}${pageFold('#fb8a5c')}${eye()}</svg>`},
+
+{tag:'海蓝渐变',title:'E7 · 青→蓝渐变鹿头',desc:'实心块换成青→蓝渐变,比纯色更有质感,又保留 Evernote 的简洁剪影。折角提亮。',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="82" height="82">
+   <defs><linearGradient id="ge7${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset=".55" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+   ${deerHead(`url(#ge7${id})`)}${pageFold('#a5f3ea')}${eye()}</svg>`},
+
+{tag:'圆角方块',title:'E8 · 方块底 + 白鹿头折角',desc:'iOS 风渐变圆角方块底 + 白色鹿头剪影 + 折角,最适合做 App 图标 / favicon,一眼认得出。',
+ svg:(id)=>`<svg viewBox="0 0 64 64" width="82" height="82">
+   <defs><linearGradient id="ge8${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+   <radialGradient id="gl8${id}" cx=".3" cy=".25" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".4"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+   <rect x="4" y="4" width="56" height="56" rx="15" fill="url(#ge8${id})"/>
+   <rect x="4" y="4" width="56" height="56" rx="15" fill="url(#gl8${id})"/>
+   <g transform="translate(6.5,6.5) scale(.8)">
+     ${deerHead('#fff')}
+     <path fill="#2dd4bf" d="M13 15l12 3-9 8Z" opacity=".55"/>
+     <circle cx="42" cy="30" r="3.4" fill="#1e6f66"/><circle cx="43" cy="31" r="1.3" fill="#0b0f10" opacity=".5"/>
+   </g></svg>`},
+];
+
+const grid = document.getElementById('grid');
+grid.innerHTML = logos.map((l,i)=>`
+  <div class="card">
+    <div class="stage"><div class="brandrow">${l.svg(i)}<span class="name gname">鹿匠笔记</span></div></div>
+    <div class="meta"><span class="tag">${l.tag}</span><div class="t">${l.title}</div><div class="d">${l.desc}</div></div>
+  </div>`).join('');
+</script>
+</body>
+</html>

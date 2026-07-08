@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鹿匠笔记 · Logo 大画廊</title>
+<style>
+  :root{
+    --bg:#0e1417; --panel:#151d21; --panel2:#1d272c; --line:#2a373d; --line-strong:#3a4a52;
+    --fg:#e8edef; --mut:#8a9ba3; --accent:#2dd4bf; --accent2:#22a3d6; --warn:#fbbf24;
+    --violet:#8b5cf6; --pink:#ec4899; --lime:#a3e635; --orange:#fb923c; --gold:#e8c07d;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;padding:40px 24px 90px;}
+  h1{font-size:26px;font-weight:800;margin:0 0 6px;}
+  h2{font-size:16px;color:var(--accent);margin:44px 0 18px;border-bottom:1px solid var(--line);padding-bottom:8px;max-width:1280px;}
+  h2 span{color:var(--mut);font-weight:500;font-size:13px;margin-left:8px;}
+  .sub{color:var(--mut);font-size:14px;margin-bottom:8px;}
+  .hint{color:var(--mut);font-size:13px;margin-bottom:8px;line-height:1.7;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:780px;}
+  .hint b{color:var(--accent);}
+  .bar{margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .bar button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+  .bar button.on{background:var(--accent);color:#04231f;border-color:transparent;}
+  .bar .lbl{color:var(--mut);font-size:12px;margin-left:6px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;max-width:1280px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 18px 16px;display:flex;flex-direction:column;align-items:center;gap:14px;transition:border-color .2s,transform .2s;}
+  .card:hover{border-color:var(--accent);transform:translateY(-3px);}
+  .stage{height:104px;display:flex;align-items:center;justify-content:center;width:100%;}
+  .brandrow{display:flex;align-items:center;gap:10px;}
+  .brandrow .name{font-size:19px;font-weight:800;white-space:nowrap;}
+  .code{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.5px;}
+  .meta{text-align:center;}
+  .meta .t{font-size:14px;font-weight:700;margin:2px 0 4px;}
+  .meta .d{font-size:12px;color:var(--mut);line-height:1.55;}
+  body.light{--bg:#f6f8f9;--panel:#fff;--panel2:#eef2f4;--line:#dce3e6;--line-strong:#c3cdd2;--fg:#16232a;--mut:#5f7079;}
+  .gname{background:linear-gradient(92deg,var(--fg),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .nameonly .stage{height:64px;}
+</style>
+</head>
+<body>
+<h1>鹿匠笔记 · Logo 大画廊</h1>
+<div class="sub">36 个鹿主题方案 · 无 AI 组(18)+ 含 AI 元素组(18)· 全部内联 SVG,可直接落地</div>
+<div class="hint">看中告诉我编号即可(如 <b>「N7 和 A3,配色偏冷一点」</b>,可混搭)。右上切换<b>明 / 暗背景</b>、<b>纯图标 / 带文字</b>两种预览。</div>
+<div class="bar">
+  <button class="on" onclick="setTheme('dark',this)">暗背景</button>
+  <button onclick="setTheme('light',this)">亮背景</button>
+  <span class="lbl">|</span>
+  <button id="txtOn" class="on" onclick="setText(true,this)">带文字</button>
+  <button onclick="setText(false,this)">纯图标</button>
+</div>
+
+<h2>一、无 AI 元素 · 纯鹿 / 鹿+书 <span>18 个</span></h2>
+<div class="grid" id="gridN"></div>
+
+<h2>二、含 AI 元素 · 神经 / 星耀 / 电路 / 光晕 <span>18 个</span></h2>
+<div class="grid" id="gridA"></div>
+
+<script>
+const BRAND = '鹿匠笔记';
+let showText = true;
+function setTheme(t,btn){document.body.classList.toggle('light',t==='light');btn.parentNode.querySelectorAll('button').forEach((b,i)=>{if(i<2)b.classList.remove('on')});btn.classList.add('on');}
+function setText(v,btn){showText=v;document.querySelectorAll('.bar button').forEach(b=>{if(b.textContent.includes('文字')||b.textContent.includes('图标'))b.classList.remove('on')});btn.classList.add('on');render();}
+
+// ===== 无 AI 组 =====
+const N = [
+{c:'N1',t:'几何鹿头',d:'最少直线勾正面鹿头+对称角,单色 monogram',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M32 30 24 46h16z"/><path d="M26 30c-4-2-6-6-6-10M26 22c-4 0-7-2-9-5M20 20c-3 1-6 0-8-3"/>
+ <path d="M38 30c4-2 6-6 6-10M38 22c4 0 7-2 9-5M44 20c3 1 6 0 8-3"/><circle cx="32" cy="34" r="1.6" fill="#2dd4bf" stroke="none"/></g>`},
+{c:'N2',t:'鹿角托开书',d:'一对角托起翻开的书,鹿+书合体,主题最贴',s:`
+<defs><linearGradient id="n2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#22a3d6"/></linearGradient></defs>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M20 40c-5-3-8-9-8-16M20 32c-5-1-9-5-11-11M12 26c-4 0-7-3-8-7"/><path d="M44 40c5-3 8-9 8-16M44 32c5-1 9-5 11-11M52 26c4 0 7-3 8-7"/></g>
+<path d="M32 34c-4-3-9-3-13-1v18c4-2 9-2 13 1 4-3 9-3 13-1V33c-4-2-9-2-13 1Z" fill="url(#n2)"/><path d="M32 34v18" stroke="#04231f" stroke-width="1.6" opacity=".4"/>`},
+{c:'N3',t:'盾形鹿纹章',d:'盾牌嵌鹿头,学院/出版社庄重感',s:`
+<path d="M32 6 54 12v20c0 14-10 22-22 26C20 54 10 46 10 32V12Z" fill="none" stroke="#2dd4bf" stroke-width="3" stroke-linejoin="round"/>
+<g fill="#2dd4bf"><path d="M32 40c-2 0-4-1-5-3l-3-6c3 1 5 1 8 1s5 0 8-1l-3 6c-1 2-3 3-5 3Z"/><path d="M27 32c-3-2-5-5-5-9 2 2 4 3 6 3zM37 32c3-2 5-5 5-9-2 2-4 3-6 3z"/></g>`},
+{c:'N4',t:'负空间鹿+书',d:'实心块挖空藏鹿头与书脊,聪明不撞色',s:`
+<rect x="6" y="6" width="52" height="52" rx="15" fill="#2dd4bf"/>
+<g fill="var(--bg)"><path d="M32 26c-3 0-5 2-5 5s2 8 5 10c3-2 5-7 5-10s-2-5-5-5Z"/><path d="M27 24c-3-2-4-5-4-9 2 2 3 3 5 3zM37 24c3-2 4-5 4-9-2 2-3 3-5 3z"/></g>`},
+{c:'N5',t:'鹿角长成书页',d:'角枝末端绽成书页与叶,超现实诗意',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M32 52V30"/><path d="M32 34c-6-2-10-7-11-14M32 30c6-2 10-7 11-14"/><path d="M21 20c-4-1-6-4-7-8M43 20c4-1 6-4 7-8"/></g>
+<g fill="#2dd4bf"><path d="M14 12c-3-1-5 1-5 4 3 0 5-1 5-4ZM21 20c-2-3-1-6 2-7 1 3 0 5-2 7ZM50 12c3-1 5 1 5 4-3 0-5-1-5-4ZM43 20c2-3 1-6-2-7-1 3 0 5 2 7Z"/></g>`},
+{c:'N6',t:'低多边形鹿',d:'low-poly 三角面拼鹿头,科技插画感',s:`
+<g stroke="var(--bg)" stroke-width="1" stroke-linejoin="round">
+ <path d="M32 50 24 34l8-4 8 4z" fill="#2dd4bf"/><path d="M24 34l-2-10 10 6z" fill="#14b8a6"/><path d="M40 34l2-10-10 6z" fill="#5eead4"/>
+ <path d="M22 24l-4-10 6 4z" fill="#0d9488"/><path d="M42 24l4-10-6 4z" fill="#0d9488"/><path d="M32 30l-8 4 8 6 8-6z" fill="#22a3d6"/></g>`},
+{c:'N7',t:'奔跃全身鹿',d:'跃起的完整鹿剪影,动势与活力',s:`
+<path d="M12 44c4-2 6-6 8-11 2-4 5-7 10-7 3 0 5-2 6-5 1 3 2 5 5 5l-3 5c4 3 6 8 6 14l-4-1c-1-4-3-7-6-9-2 3-5 5-9 5-3 3-5 6-6 10l-4-1 3-6c-3 1-6 2-9 2z" fill="#2dd4bf"/>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.4" stroke-linecap="round"><path d="M42 21c1-3 1-6 0-9M45 20c2-2 3-5 3-8"/></g>`},
+{c:'N8',t:'圆形鹿印章',d:'圆边框+鹿头,藏书票/钢印复古文艺',s:`
+<circle cx="32" cy="32" r="26" fill="none" stroke="#2dd4bf" stroke-width="2"/><circle cx="32" cy="32" r="21" fill="none" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="2 3"/>
+<g fill="#2dd4bf"><path d="M32 40c-2 0-4-1-5-3l-2-5c2 1 4 1 7 1s5 0 7-1l-2 5c-1 2-3 3-5 3Z"/><path d="M28 31c-3-2-4-5-4-9 2 2 4 3 5 4zM36 31c3-2 4-5 4-9-2 2-4 3-5 4z"/><circle cx="32" cy="30" r="1.4"/></g>`},
+{c:'N9',t:'鹿角=书脊',d:'合起的书立着,书脊两侧生出鹿角',s:`
+<defs><linearGradient id="n9" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#22a3d6"/></linearGradient></defs>
+<rect x="24" y="26" width="16" height="26" rx="2" fill="url(#n9)"/><line x1="32" y1="28" x2="32" y2="50" stroke="#04231f" stroke-width="1.4" opacity=".4"/>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M27 26c-3-4-4-9-3-14M27 24c-3-2-5-5-5-9M40 26c3-4 4-9 3-14M40 24c3-2 5-5 5-9"/></g>`},
+{c:'N10',t:'单线连笔鹿',d:'一笔画成的鹿头轮廓,极简优雅有手感',s:`
+<path d="M22 48c-2-6-1-12 2-16-3-1-6-4-7-8 3 1 5 2 8 1-2-3-3-7-2-11 2 3 4 5 6 6 1-3 3-5 5-5s4 2 5 5c2-1 4-3 6-6 1 4 0 8-2 11 3 1 5 0 8-1-1 4-4 7-7 8 3 4 4 10 2 16" fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`},
+{c:'N11',t:'鹿角书签',d:'一枚书签下垂,顶端化作小鹿角,精巧',s:`
+<rect x="26" y="20" width="12" height="30" fill="#2dd4bf"/><path d="M26 50l6-5 6 5z" fill="var(--bg)"/>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.4" stroke-linecap="round"><path d="M28 20c-2-4-3-8-2-12 2 2 3 4 5 4M36 20c2-4 3-8 2-12-2 2-3 4-5 4"/></g>`},
+{c:'N12',t:'鹿角山峰',d:'鹿角与山峰同构,寓意攀登知识高峰',s:`
+<path d="M8 48 22 24l6 10 6-14 10 16 4-6 8 18z" fill="none" stroke="#2dd4bf" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="34" cy="16" r="3" fill="#fbbf24"/>`},
+{c:'N13',t:'方章鹿头',d:'圆角方形印章+正面鹿头,现代 app 图标',s:`
+<defs><linearGradient id="n13" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#22a3d6"/></linearGradient></defs>
+<rect x="6" y="6" width="52" height="52" rx="15" fill="url(#n13)"/>
+<g fill="none" stroke="#04231f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".85"><path d="M32 32 27 42h10z"/><path d="M28 32c-3-1-5-4-5-8M28 26c-3 0-5-2-6-4M36 32c3-1 5-4 5-8M36 26c3 0 5-2 6-4"/></g>`},
+{c:'N14',t:'鹿+羽毛笔',d:'鹿头搭一支羽毛笔,书写/记录属性',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M26 34 20 46h12z"/><path d="M23 34c-3-2-5-5-5-9 2 2 3 3 5 3M23 27c-2-1-4-3-4-6"/></g>
+<path d="M46 14c-8 3-12 9-13 18l4 1c1-8 5-14 12-17z" fill="#fbbf24"/><line x1="35" y1="32" x2="40" y2="24" stroke="#fbbf24" stroke-width="2"/>`},
+{c:'N15',t:'鹿角对称徽标',d:'完全左右对称的装饰鹿角,高端制表/酒标感',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M32 50V22"/><path d="M32 30c-5 0-9-3-11-8M32 30c5 0 9-3 11-8M32 24c-6-1-10-5-12-11M32 24c6-1 10-5 12-11"/>
+ <path d="M20 22c-4 1-8-1-10-5M44 22c4 1 8-1 10-5"/></g><circle cx="32" cy="52" r="2.4" fill="#2dd4bf"/>`},
+{c:'N16',t:'鹿眸书页',d:'翻开的书,书页留白构成鹿的眼神与角',s:`
+<path d="M10 22c7-3 15-3 22 1 7-4 15-4 22-1v26c-7-3-15-3-22 1-7-4-15-4-22-1Z" fill="#2dd4bf"/>
+<g fill="var(--bg)"><circle cx="24" cy="34" r="2.2"/><circle cx="40" cy="34" r="2.2"/><path d="M20 26c-2-3-3-6-2-9 2 2 3 4 4 6zM44 26c2-3 3-6 2-9-2 2-3 4-4 6z"/></g>`},
+{c:'N17',t:'极简圆点鹿',d:'圆脸+两点眼+简角,亲和可爱,偏 C 端',s:`
+<circle cx="32" cy="36" r="14" fill="#2dd4bf"/><g fill="var(--bg)"><circle cx="27" cy="34" r="2"/><circle cx="37" cy="34" r="2"/><circle cx="32" cy="40" r="1.6"/></g>
+<g fill="none" stroke="#2dd4bf" stroke-width="3" stroke-linecap="round"><path d="M24 24c-3-3-4-7-3-11 2 3 4 4 6 5M40 24c3-3 4-7 3-11-2 3-4 4-6 5"/></g>`},
+{c:'N18',t:'鹿角书立',d:'两只对望的鹿托起中间一排书籍,叙事感',s:`
+<g fill="#2dd4bf"><rect x="26" y="24" width="4" height="20"/><rect x="31" y="22" width="4" height="22"/><rect x="36" y="26" width="4" height="18"/></g>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 44c-4-2-6-6-6-11 2 2 4 3 6 3M46 44c4-2 6-6 6-11-2 2-4 3-6 3"/><path d="M20 44v-8M46 44v-8"/></g>`},
+];
+
+// ===== 含 AI 组 =====
+const A = [
+{c:'A1',t:'神经鹿角+书',d:'N2 底座,鹿角末端亮神经节点连线=AI大脑',s:`
+<defs><linearGradient id="a1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#22a3d6"/></linearGradient></defs>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 40c-5-3-8-9-8-16M20 32c-5-1-9-5-11-11M12 26c-4 0-7-3-8-7"/><path d="M44 40c5-3 8-9 8-16M44 32c5-1 9-5 11-11M52 26c4 0 7-3 8-7"/></g>
+<path d="M32 34c-4-3-9-3-13-1v18c4-2 9-2 13 1 4-3 9-3 13-1V33c-4-2-9-2-13 1Z" fill="url(#a1)"/>
+<g stroke="#fbbf24" stroke-width="1" opacity=".55"><line x1="4" y1="19" x2="9" y2="13"/><line x1="9" y1="13" x2="12" y2="24"/><line x1="60" y1="19" x2="55" y2="13"/><line x1="55" y1="13" x2="52" y2="24"/></g>
+<g fill="#fbbf24"><circle cx="4" cy="19" r="2.2"/><circle cx="9" cy="13" r="2.2"/><circle cx="12" cy="24" r="2.2"/><circle cx="60" cy="19" r="2.2"/><circle cx="55" cy="13" r="2.2"/><circle cx="52" cy="24" r="2.2"/></g>`},
+{c:'A2',t:'星耀鹿书',d:'N2 底座,书页上方浮 AI 四角星,通用好认',s:`
+<defs><linearGradient id="a2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#22a3d6"/></linearGradient></defs>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 40c-5-3-8-9-8-16M20 32c-5-1-9-5-11-11M12 26c-4 0-7-3-8-7"/><path d="M44 40c5-3 8-9 8-16M44 32c5-1 9-5 11-11M52 26c4 0 7-3 8-7"/></g>
+<path d="M32 34c-4-3-9-3-13-1v18c4-2 9-2 13 1 4-3 9-3 13-1V33c-4-2-9-2-13 1Z" fill="url(#a2)"/>
+<path d="M32 6c.7 5 2 6.3 7 7-5 .7-6.3 2-7 7-.7-5-2-6.3-7-7 5-.7 6.3-2 7-7Z" fill="#fbbf24"/>`},
+{c:'A3',t:'神经鹿头',d:'几何鹿头,角枝布满节点连线,纯 AI 大脑',s:`
+<path d="M32 32 26 44h12z" fill="none" stroke="#2dd4bf" stroke-width="2.8" stroke-linejoin="round"/>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.2" stroke-linecap="round"><path d="M28 32c-4-2-6-6-6-10M28 24c-4 0-7-2-9-5M36 32c4-2 6-6 6-10M36 24c4 0 7-2 9-5"/></g>
+<g fill="#fbbf24"><circle cx="22" cy="22" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="42" cy="22" r="2"/><circle cx="45" cy="19" r="2"/><circle cx="32" cy="16" r="2"/></g>
+<g stroke="#fbbf24" stroke-width="1" opacity=".5"><line x1="22" y1="22" x2="32" y2="16"/><line x1="42" y1="22" x2="32" y2="16"/></g>`},
+{c:'A4',t:'智能光环鹿',d:'N2 底座,书页透柔光+微粒子,知识被激活',s:`
+<defs><linearGradient id="a4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#22a3d6"/></linearGradient></defs>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 40c-5-3-8-9-8-16M20 32c-5-1-9-5-11-11M12 26c-4 0-7-3-8-7"/><path d="M44 40c5-3 8-9 8-16M44 32c5-1 9-5 11-11M52 26c4 0 7-3 8-7"/></g>
+<circle cx="32" cy="43" r="12" fill="#5eead4" opacity=".25"/>
+<path d="M32 34c-4-3-9-3-13-1v18c4-2 9-2 13 1 4-3 9-3 13-1V33c-4-2-9-2-13 1Z" fill="url(#a4)"/>
+<g fill="#fbbf24"><circle cx="20" cy="30" r="1.3"/><circle cx="45" cy="32" r="1.3"/><circle cx="42" cy="25" r="1"/></g>`},
+{c:'A5',t:'电路鹿角',d:'鹿角叠 PCB 节点走线,极客工程硬核感',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M32 50V28"/><path d="M32 34c-6-2-10-6-11-13M32 34c6-2 10-6 11-13"/></g>
+<g fill="#22a3d6"><circle cx="21" cy="21" r="2"/><circle cx="43" cy="21" r="2"/><circle cx="32" cy="28" r="2"/></g>
+<g stroke="#22a3d6" stroke-width="1.4" fill="none" opacity=".7"><path d="M21 21h4v-3"/><path d="M43 21h-4v-3"/></g>`},
+{c:'A6',t:'芯片鹿头',d:'鹿头底座是一枚芯片,四周引脚,AI 算力味',s:`
+<rect x="22" y="30" width="20" height="18" rx="3" fill="#2dd4bf"/>
+<g stroke="#2dd4bf" stroke-width="2" stroke-linecap="round"><path d="M26 30v-4M32 30v-4M38 30v-4M26 48v3M32 48v3M38 48v3M22 36h-4M22 42h-4M42 36h4M42 42h4"/></g>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.4" stroke-linecap="round"><path d="M27 30c-3-3-4-7-3-11 2 2 3 4 5 4M37 30c3-3 4-7 3-11-2 2-3 4-5 4"/></g>
+<g fill="var(--bg)"><circle cx="29" cy="38" r="1.6"/><circle cx="35" cy="38" r="1.6"/></g>`},
+{c:'A7',t:'数据流鹿',d:'鹿身由流动的数据点/二进制颗粒组成',s:`
+<g fill="#2dd4bf"><circle cx="24" cy="42" r="2"/><circle cx="30" cy="44" r="2"/><circle cx="36" cy="42" r="2"/><circle cx="28" cy="38" r="2"/><circle cx="34" cy="38" r="2"/><circle cx="31" cy="34" r="2"/><circle cx="26" cy="34" r="1.6"/><circle cx="37" cy="35" r="1.6"/></g>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.4" stroke-linecap="round"><path d="M26 32c-3-3-4-7-3-11 2 2 4 3 6 4M37 33c3-3 4-7 3-11-2 2-4 3-6 4"/></g>
+<g fill="#fbbf24" font-size="5" font-family="monospace"><text x="42" y="30">1</text><text x="46" y="38">0</text><text x="43" y="45">1</text></g>`},
+{c:'A8',t:'鹿角=脑回路',d:'两侧鹿角内嵌左右脑回沟纹,思考/智能',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M28 46c-6-1-10-6-10-13 0-6 4-10 10-10 2 0 4 1 4 3"/><path d="M36 46c6-1 10-6 10-13 0-6-4-10-10-10-2 0-4 1-4 3"/>
+ <path d="M24 28c2 0 3 1 3 3M40 28c-2 0-3 1-3 3M24 36c2 0 4-1 4-3M40 36c-2 0-4-1-4-3"/>
+ <path d="M20 18c-2-3-2-7-1-10M44 18c2-3 2-7 1-10"/></g>`},
+{c:'A9',t:'像素鹿',d:'8-bit 像素风鹿头,复古游戏×AI 生成趣味',s:`
+<g fill="#2dd4bf">
+ <rect x="26" y="30" width="12" height="14"/><rect x="24" y="34" width="2" height="6"/><rect x="38" y="34" width="2" height="6"/>
+ <rect x="24" y="20" width="4" height="8"/><rect x="20" y="16" width="4" height="6"/><rect x="36" y="20" width="4" height="8"/><rect x="40" y="16" width="4" height="6"/></g>
+<g fill="var(--bg)"><rect x="28" y="34" width="3" height="3"/><rect x="34" y="34" width="3" height="3"/></g>
+<g fill="#fbbf24"><rect x="44" y="12" width="3" height="3"/><rect x="17" y="12" width="3" height="3"/></g>`},
+{c:'A10',t:'对话气泡鹿',d:'鹿头顶一个对话气泡+星,直点AI问答',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M32 40 27 50h10z"/><path d="M28 40c-3-2-5-5-5-9 2 2 3 3 5 3M36 40c3-2 5-5 5-9-2 2-3 3-5 3"/></g>
+<path d="M22 14h20a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-6l-4 4v-4h-10a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3Z" fill="#2dd4bf"/>
+<path d="M32 17c.5 3 1.2 3.7 4 4-2.8.5-3.5 1.2-4 4-.5-2.8-1.2-3.5-4-4 2.8-.3 3.5-1 4-4Z" fill="var(--bg)"/>`},
+{c:'A11',t:'轨道电子鹿',d:'鹿头外三条电子轨道环绕,原子/智能核',s:`
+<g fill="none" stroke="#fbbf24" stroke-width="1.4" opacity=".7"><ellipse cx="32" cy="34" rx="24" ry="9"/><ellipse cx="32" cy="34" rx="24" ry="9" transform="rotate(60 32 34)"/><ellipse cx="32" cy="34" rx="24" ry="9" transform="rotate(120 32 34)"/></g>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M32 38 28 46h8z"/><path d="M29 38c-2-2-3-5-3-8M35 38c2-2 3-5 3-8"/></g>
+<circle cx="56" cy="34" r="2" fill="#fbbf24"/>`},
+{c:'A12',t:'渐变弥散鹿角',d:'圆角块弥散彩光+白鹿角线稿,新拟态时髦',s:`
+<defs><linearGradient id="a12" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset=".55" stop-color="#22a3d6"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient><radialGradient id="a12s" cx=".3" cy=".22" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+<rect x="6" y="6" width="52" height="52" rx="16" fill="url(#a12)"/><rect x="6" y="6" width="52" height="52" rx="16" fill="url(#a12s)"/>
+<g fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M32 48V34"/><path d="M32 36c-5-2-8-6-9-12M32 34c5-2 8-6 9-12"/><path d="M23 24c-3-1-5-3-6-6M41 24c3-1 5-3 6-6"/></g>`},
+{c:'A13',t:'扫描线鹿',d:'鹿头上一道AI扫描光带,识别/理解中',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M32 32 26 46h12z"/><path d="M28 32c-4-2-6-6-6-10M28 24c-4 0-7-2-9-5M36 32c4-2 6-6 6-10M36 24c4 0 7-2 9-5"/></g>
+<rect x="16" y="35" width="32" height="3" rx="1.5" fill="#fbbf24" opacity=".9"/>
+<g fill="var(--bg)"><circle cx="29" cy="36" r="1.5"/><circle cx="35" cy="36" r="1.5"/></g>`},
+{c:'A14',t:'量子点鹿角',d:'角尖各挂发光量子点+连线,轻盈科技',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M32 50V26"/><path d="M32 32c-6-2-10-6-11-13M32 32c6-2 10-6 11-13"/><path d="M21 19c-3-1-5-3-6-6M43 19c3-1 5-3 6-6"/></g>
+<g fill="#fbbf24"><circle cx="21" cy="19" r="2.6"/><circle cx="43" cy="19" r="2.6"/><circle cx="15" cy="13" r="2"/><circle cx="49" cy="13" r="2"/><circle cx="32" cy="26" r="2.4"/></g>`},
+{c:'A15',t:'书页神经网络',d:'翻开的书,页面上是节点连线的神经图',s:`
+<defs><linearGradient id="a15" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#22a3d6"/></linearGradient></defs>
+<path d="M10 20c7-3 15-3 22 1 7-4 15-4 22-1v26c-7-3-15-3-22 1-7-4-15-4-22-1Z" fill="url(#a15)"/>
+<g stroke="#04231f" stroke-width="1" opacity=".55"><line x1="18" y1="30" x2="25" y2="26"/><line x1="18" y1="30" x2="25" y2="38"/><line x1="25" y1="26" x2="25" y2="38"/><line x1="39" y1="26" x2="46" y2="30"/><line x1="39" y1="38" x2="46" y2="30"/></g>
+<g fill="#04231f" opacity=".7"><circle cx="18" cy="30" r="1.6"/><circle cx="25" cy="26" r="1.6"/><circle cx="25" cy="38" r="1.6"/><circle cx="39" cy="26" r="1.6"/><circle cx="39" cy="38" r="1.6"/><circle cx="46" cy="30" r="1.6"/></g>`},
+{c:'A16',t:'鹿+光标星',d:'几何鹿头+闪烁生成光标|与星,创作AI',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M28 34 23 46h10z"/><path d="M25 34c-3-2-5-5-5-9 2 2 3 3 5 3M25 27c-2-1-4-3-4-6M33 34c3-2 5-5 5-9-2 2-3 3-5 3"/></g>
+<line x1="44" y1="26" x2="44" y2="42" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/><path d="M41 26h6M41 42h6" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M50 14c.4 2.6 1 3.2 3.6 3.6-2.6.4-3.2 1-3.6 3.6-.4-2.6-1-3.2-3.6-3.6 2.6-.4 3.2-1 3.6-3.6Z" fill="#fbbf24"/>`},
+{c:'A17',t:'全息鹿',d:'鹿头带 RGB 通道错位=全息投影,未来感',s:`
+<g opacity=".9"><path d="M31 32 25 46h12z" fill="none" stroke="#ec4899" stroke-width="2" transform="translate(-1.5,0)"/><path d="M33 32 27 46h12z" fill="none" stroke="#22a3d6" stroke-width="2" transform="translate(1.5,0)"/><path d="M32 32 26 46h12z" fill="none" stroke="#2dd4bf" stroke-width="2"/></g>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.2" stroke-linecap="round"><path d="M28 32c-4-2-6-6-6-10M36 32c4-2 6-6 6-10"/></g>`},
+{c:'A18',t:'思维气泡鹿角',d:'鹿角枝头结出三个渐大的思考气泡,灵感涌现',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M32 50V30"/><path d="M32 34c-5-2-9-5-10-11M32 32c5-2 9-5 10-11"/></g>
+<g fill="#2dd4bf"><circle cx="20" cy="17" r="4"/><circle cx="44" cy="17" r="4"/></g>
+<g fill="#fbbf24"><circle cx="14" cy="11" r="2.4"/><circle cx="50" cy="11" r="2.4"/><circle cx="32" cy="26" r="3"/></g>`},
+];
+
+function render(){
+  const box=(l)=>`
+    <div class="card${showText?'':' nameonly'}">
+      <div class="stage"><div class="brandrow"><svg viewBox="0 0 64 64" width="72" height="72">${l.s}</svg>${showText?`<span class="name gname">${BRAND}</span>`:''}</div></div>
+      <div class="meta"><span class="code">${l.c}</span><div class="t">${l.t}</div><div class="d">${l.d}</div></div>
+    </div>`;
+  document.getElementById('gridN').innerHTML = N.map(box).join('');
+  document.getElementById('gridA').innerHTML = A.map(box).join('');
+}
+render();
+</script>
+</body>
+</html>

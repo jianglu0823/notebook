@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D2 + AI · 变体与命名预览</title>
+<style>
+  :root{
+    --bg:#0e1417; --panel:#151d21; --panel2:#1d272c; --line:#2a373d; --line-strong:#3a4a52;
+    --fg:#e8edef; --mut:#8a9ba3; --accent:#2dd4bf; --accent2:#22a3d6; --warn:#fbbf24; --violet:#8b5cf6;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;padding:40px 24px 80px;}
+  h1{font-size:26px;font-weight:800;margin:0 0 6px;}
+  h2{font-size:16px;color:var(--accent);margin:40px 0 16px;border-bottom:1px solid var(--line);padding-bottom:8px;max-width:1200px;}
+  .sub{color:var(--mut);font-size:14px;margin-bottom:8px;}
+  .hint{color:var(--mut);font-size:13px;margin-bottom:8px;line-height:1.7;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:760px;}
+  .hint b{color:var(--accent);}
+  .toggle{margin:16px 0 8px;display:flex;gap:8px;}
+  .toggle button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+  .toggle button.on{background:var(--accent);color:#04231f;border-color:transparent;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:20px;max-width:1200px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px 20px 18px;display:flex;flex-direction:column;align-items:center;gap:16px;transition:border-color .2s,transform .2s;}
+  .card:hover{border-color:var(--accent);transform:translateY(-3px);}
+  .stage{height:110px;display:flex;align-items:center;justify-content:center;width:100%;}
+  .brandrow{display:flex;align-items:center;gap:11px;}
+  .brandrow .name{font-size:20px;font-weight:800;white-space:nowrap;}
+  .meta{text-align:center;}
+  .meta .tag{display:inline-block;background:var(--panel2);border:1px solid var(--line);color:var(--accent);font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:8px;letter-spacing:.4px;}
+  .meta .t{font-size:15px;font-weight:700;margin-bottom:4px;}
+  .meta .d{font-size:12px;color:var(--mut);line-height:1.6;}
+  body.light{--bg:#f6f8f9;--panel:#fff;--panel2:#eef2f4;--line:#dce3e6;--line-strong:#c3cdd2;--fg:#16232a;--mut:#5f7079;}
+  .gname{background:linear-gradient(92deg,var(--fg),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+</style>
+</head>
+<body>
+<h1>D2 鹿角托书 + AI 元素 · 变体与命名</h1>
+<div class="sub">上半部分:同一个 D2 基底,4 种「AI 味」表达 · 下半部分:选定图标 × 候选中文名</div>
+<div class="hint">告诉我:① 喜欢哪种 AI 变体(<b>A1~A4</b>);② 定哪个名字。右上可切明 / 暗背景。</div>
+<div class="toggle">
+  <button class="on" onclick="setTheme('dark',this)">暗色背景</button>
+  <button onclick="setTheme('light',this)">亮色背景</button>
+</div>
+
+<h2>一、D2 + AI 的 4 种表达</h2>
+<div class="grid" id="grid1"></div>
+
+<h2>二、图标 × 候选名字(用 A1 神经鹿角示范)</h2>
+<div class="grid" id="grid2"></div>
+
+<script>
+function setTheme(t,btn){document.body.classList.toggle('light',t==='light');document.querySelectorAll('.toggle button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+
+// ---- D2 底座:鹿角 + 托起的书。各变体在此基础上叠加 AI 元素 ----
+const antlers = `
+  <g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 40c-5-3-8-9-8-16M20 32c-5-1-9-5-11-11M12 26c-4 0-7-3-8-7"/>
+    <path d="M44 40c5-3 8-9 8-16M44 32c5-1 9-5 11-11M52 26c4 0 7-3 8-7"/>
+  </g>`;
+const book = `
+  <path d="M32 34c-4-3-9-3-13-1v18c4-2 9-2 13 1 4-3 9-3 13-1V33c-4-2-9-2-13 1Z" fill="url(#bookg)"/>
+  <path d="M32 34v18" stroke="#04231f" stroke-width="1.6" opacity=".4"/>`;
+const defs = `<defs><linearGradient id="bookg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#22a3d6"/></linearGradient></defs>`;
+
+const aiVariants = [
+{tag:'神经节点',title:'A1 · 鹿角=神经网络',desc:'鹿角枝桠末端点亮神经节点、枝干间连细线,鹿角本身化作神经网络——最直观的「AI 大脑」隐喻,又不破坏鹿角美感。',
+ extra:`
+  <g fill="#fbbf24"><circle cx="4" cy="19" r="2.4"/><circle cx="9" cy="13" r="2.4"/><circle cx="12" cy="24" r="2.4"/><circle cx="60" cy="19" r="2.4"/><circle cx="55" cy="13" r="2.4"/><circle cx="52" cy="24" r="2.4"/></g>
+  <g stroke="#fbbf24" stroke-width="1" opacity=".55"><line x1="4" y1="19" x2="9" y2="13"/><line x1="9" y1="13" x2="12" y2="24"/><line x1="60" y1="19" x2="55" y2="13"/><line x1="55" y1="13" x2="52" y2="24"/></g>`},
+
+{tag:'四角星',title:'A2 · AI Sparkle 星',desc:'书页上方浮一颗 AI 通用的「闪耀四角星」(Gemini/Copilot 同款符号),一眼传达智能生成。克制、通用、好认。',
+ extra:`
+  <path d="M32 6c.7 5 2 6.3 7 7-5 .7-6.3 2-7 7-.7-5-2-6.3-7-7 5-.7 6.3-2 7-7Z" fill="#fbbf24"/>
+  <circle cx="43" cy="9" r="1.7" fill="#5eead4"/>`},
+
+{tag:'电路纹',title:'A3 · 鹿角电路板',desc:'鹿角线条上叠加 PCB 电路节点与走线,科技硬核感更强,偏「工程 / 极客」气质。',
+ extra:`
+  <g fill="#22a3d6"><circle cx="12" cy="24" r="2"/><circle cx="9" cy="13" r="2"/><circle cx="52" cy="24" r="2"/><circle cx="55" cy="13" r="2"/></g>
+  <g stroke="#22a3d6" stroke-width="1.4" fill="none" opacity=".7"><path d="M12 24h4v-4"/><path d="M52 24h-4v-4"/></g>`},
+
+{tag:'弥散光晕',title:'A4 · 智能光环',desc:'书页中央透出一圈柔和光晕 + 微光粒子,暗示「知识被激活」。氛围感强,最温柔现代。',
+ extra:`
+  <circle cx="32" cy="42" r="9" fill="#5eead4" opacity=".28"/>
+  <circle cx="32" cy="42" r="4" fill="#fff" opacity=".5"/>
+  <g fill="#fbbf24"><circle cx="24" cy="30" r="1.3"/><circle cx="41" cy="33" r="1.3"/><circle cx="38" cy="26" r="1"/></g>`},
+];
+
+// 名字候选,用 A1 图标示范
+const names = [
+ {name:'白鹿', d:'白鹿洞书院意象,知识殿堂,文雅有底蕴'},
+ {name:'鹿鸣', d:'《诗经·鹿鸣》,招贤纳知,古典声律美'},
+ {name:'鹿书', d:'鹿+书,最简洁,和图标直接对应'},
+ {name:'灵鹿', d:'灵感、灵性,轻盈现代'},
+ {name:'鹿角笔记', d:'你的原案,直白稳妥'},
+ {name:'Superbook', d:'保留现名,英文国际感'},
+];
+
+function svg(extra){
+  return `<svg viewBox="0 0 64 64" width="72" height="72">${defs}${antlers}${book}${extra||''}</svg>`;
+}
+
+document.getElementById('grid1').innerHTML = aiVariants.map(v=>`
+  <div class="card">
+    <div class="stage"><div class="brandrow">${svg(v.extra)}<span class="name gname">Superbook</span></div></div>
+    <div class="meta"><span class="tag">${v.tag}</span><div class="t">${v.title}</div><div class="d">${v.desc}</div></div>
+  </div>`).join('');
+
+document.getElementById('grid2').innerHTML = names.map(n=>`
+  <div class="card">
+    <div class="stage"><div class="brandrow">${svg(aiVariants[0].extra)}<span class="name gname">${n.name}</span></div></div>
+    <div class="meta"><div class="t">${n.name}</div><div class="d">${n.d}</div></div>
+  </div>`).join('');
+</script>
+</body>
+</html>

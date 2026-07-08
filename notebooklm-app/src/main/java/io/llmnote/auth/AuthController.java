@@ -1,5 +1,7 @@
 package io.llmnote.auth;
 
+import io.llmnote.log.AccessLogService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +20,10 @@ public class AuthController {
     private final UserRepository userRepo;
     private final PasswordHasher passwordHasher;
     private final JwtService jwtService;
+    private final AccessLogService accessLogService;
 
     @PostMapping("/register")
-    public Map<String, Object> register(@RequestBody Credentials req) {
+    public Map<String, Object> register(@RequestBody Credentials req, HttpServletRequest httpReq) {
         String username = req.getUsername().trim();
         if (userRepo.existsByUsername(username)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "用户名已存在");
@@ -29,14 +32,21 @@ public class AuthController {
         u.setUsername(username);
         u.setPasswordHash(passwordHasher.hash(req.getPassword()));
         u = userRepo.save(u);
+        accessLogService.logAuth(httpReq, "REGISTER", u.getId(), u.getUsername(), false);
         return tokenResponse(u);
     }
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody Credentials req) {
-        User u = userRepo.findByUsername(req.getUsername().trim())
+    public Map<String, Object> login(@RequestBody Credentials req, HttpServletRequest httpReq) {
+        String username = req.getUsername().trim();
+        User u = userRepo.findByUsername(username)
                 .filter(x -> passwordHasher.matches(req.getPassword(), x.getPasswordHash()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "用户名或密码错误"));
+                .orElse(null);
+        if (u == null) {
+            accessLogService.logAuth(httpReq, "LOGIN_FAIL", null, username, false);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "用户名或密码错误");
+        }
+        accessLogService.logAuth(httpReq, "LOGIN", u.getId(), u.getUsername(), false);
         return tokenResponse(u);
     }
 

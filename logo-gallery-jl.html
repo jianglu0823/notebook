@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鹿匠笔记 · JL/LJ 字母鹿画廊</title>
+<style>
+  :root{
+    --bg:#0e1417; --panel:#151d21; --panel2:#1d272c; --line:#2a373d; --line-strong:#3a4a52;
+    --fg:#e8edef; --mut:#8a9ba3; --accent:#2dd4bf; --accent2:#22a3d6; --warn:#fbbf24; --violet:#8b5cf6;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;padding:40px 24px 90px;}
+  h1{font-size:26px;font-weight:800;margin:0 0 6px;}
+  h2{font-size:16px;color:var(--accent);margin:44px 0 18px;border-bottom:1px solid var(--line);padding-bottom:8px;max-width:1280px;}
+  h2 span{color:var(--mut);font-weight:500;font-size:13px;margin-left:8px;}
+  .sub{color:var(--mut);font-size:14px;margin-bottom:8px;}
+  .hint{color:var(--mut);font-size:13px;margin-bottom:8px;line-height:1.7;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:780px;}
+  .hint b{color:var(--accent);}
+  .bar{margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .bar button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+  .bar button.on{background:var(--accent);color:#04231f;border-color:transparent;}
+  .bar .lbl{color:var(--mut);font-size:12px;margin-left:6px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;max-width:1280px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 18px 16px;display:flex;flex-direction:column;align-items:center;gap:14px;transition:border-color .2s,transform .2s;}
+  .card:hover{border-color:var(--accent);transform:translateY(-3px);}
+  .stage{height:104px;display:flex;align-items:center;justify-content:center;width:100%;}
+  .brandrow{display:flex;align-items:center;gap:10px;}
+  .brandrow .name{font-size:19px;font-weight:800;white-space:nowrap;}
+  .code{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.5px;}
+  .meta{text-align:center;}
+  .meta .t{font-size:14px;font-weight:700;margin:2px 0 4px;}
+  .meta .d{font-size:12px;color:var(--mut);line-height:1.55;}
+  body.light{--bg:#f6f8f9;--panel:#fff;--panel2:#eef2f4;--line:#dce3e6;--line-strong:#c3cdd2;--fg:#16232a;--mut:#5f7079;}
+  .gname{background:linear-gradient(92deg,var(--fg),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .nameonly .stage{height:64px;}
+</style>
+</head>
+<body>
+<h1>鹿匠笔记 · JL / LJ 字母鹿画廊</h1>
+<div class="sub">18 个方案 · 把「鹿匠」拼音首字母 JL / LJ 融进鹿的造型 · 无 AI(J1~J10)+ 含 AI(J11~J18)</div>
+<div class="hint">这批的核心是<b>字母与鹿的同构</b>:L 做鹿腿/鹿颈/书脊,J 做鹿角钩/尾钩/挂钩。看中告诉我编号(如 <b>「J4,L 再明显点」</b>)。右上可切<b>明/暗背景</b>、<b>带字/纯图标</b>。</div>
+<div class="bar">
+  <button class="on" onclick="setTheme('dark',this)">暗背景</button>
+  <button onclick="setTheme('light',this)">亮背景</button>
+  <span class="lbl">|</span>
+  <button class="on" onclick="setText(true,this)">带文字</button>
+  <button onclick="setText(false,this)">纯图标</button>
+</div>
+
+<h2>一、无 AI · JL/LJ 字母鹿 <span>J1~J10</span></h2>
+<div class="grid" id="gridN"></div>
+
+<h2>二、含 AI 元素 · 字母鹿 + 智能符号 <span>J11~J18</span></h2>
+<div class="grid" id="gridA"></div>
+
+<script>
+const BRAND='鹿匠笔记';
+let showText=true;
+function setTheme(t,btn){document.body.classList.toggle('light',t==='light');btn.parentNode.querySelectorAll('button').forEach((b,i)=>{if(i<2)b.classList.remove('on')});btn.classList.add('on');}
+function setText(v,btn){showText=v;[...document.querySelectorAll('.bar button')].filter(b=>b.textContent.includes('文字')||b.textContent.includes('图标')).forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();}
+
+const N=[
+{c:'J1',t:'LJ 连体鹿头',d:'L 作左脸颊竖折,J 作右侧脸+下巴钩,合成正面鹿脸,顶生对称角',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M26 24v16h6"/>
+ <path d="M38 24v14a4 4 0 0 1-8 0"/>
+ <path d="M26 24c-3-3-4-7-3-11 2 2 4 3 6 4M38 24c3-3 4-7 3-11-2 2-4 3-6 4"/></g>`},
+{c:'J2',t:'J 角 L 颈',d:'鹿颈用粗 L 撑起,鹿角化作两个对称的 J 钩,极简字标',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M24 22v22h10"/>
+ <path d="M30 22c-4 0-7-3-7-8 0-3 2-5 5-5M34 22c4 0 7-3 7-8 0-3-2-5-5-5"/></g>`},
+{c:'J3',t:'书脊 L + 角 J',d:'合起的书立着(L 形底座+书脊),书顶伸出 J 形鹿角',s:`
+<defs><linearGradient id="j3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#22a3d6"/></linearGradient></defs>
+<path d="M22 24h14v24H22z" fill="url(#j3)"/><path d="M22 48h20" stroke="#2dd4bf" stroke-width="3.4" stroke-linecap="round"/>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.8" stroke-linecap="round"><path d="M27 24c-3-4-3-9 1-11 2 1 3 3 3 5M33 24c3-4 3-9-1-11-2 1-3 3-3 5"/></g>`},
+{c:'J4',t:'JL 组合字标',d:'J 与 L 首尾相扣成一个整体符号,J 上钩暗示鹿角,纯字体方案',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M40 18v20a6 6 0 0 1-12 0"/>
+ <path d="M22 18v24h12"/></g>
+<g fill="#fbbf24"><circle cx="40" cy="15" r="2.6"/></g>`},
+{c:'J5',t:'L 腿奔鹿',d:'奔跑的鹿,四条腿刻意排成 L 直角,动态中藏字母',s:`
+<path d="M14 42c5-1 8-5 11-10 2-3 5-5 9-5 2 0 4-1 5-4 1 2 2 4 4 4l-2 5c3 2 5 6 5 11" fill="none" stroke="#2dd4bf" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<g stroke="#2dd4bf" stroke-width="3.4" stroke-linecap="round"><path d="M18 42v8h6"/><path d="M40 42v8h6"/></g>
+<path d="M43 22c1-3 1-6 0-9" stroke="#2dd4bf" stroke-width="2.4" fill="none" stroke-linecap="round"/>`},
+{c:'J6',t:'圆章 LJ',d:'圆形印章内,鹿头由 L(左)与 J(右)镜像拼出,徽标感',s:`
+<circle cx="32" cy="32" r="25" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+<g fill="none" stroke="#2dd4bf" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M27 26v12h4"/><path d="M37 26v10a3 3 0 0 1-6 0"/>
+ <path d="M27 26c-2-3-3-6-2-9 2 1 3 3 4 4M37 26c2-3 3-6 2-9-2 1-3 3-4 4"/></g>`},
+{c:'J7',t:'J 尾 L 身鹿',d:'侧身鹿,身躯为 L 块面,上翘尾巴勾成 J,俏皮',s:`
+<path d="M18 30h18v14H18z" fill="#2dd4bf"/><path d="M18 44v-4M22 44v4M32 44v4M36 44v-4" stroke="#2dd4bf" stroke-width="3.2" stroke-linecap="round"/>
+<g fill="none" stroke="#2dd4bf" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M36 34c4-1 7-4 8-9 1 3 1 6 0 9"/>
+ <path d="M18 30c-3 0-5-3-5-7 0-2 2-4 4-3"/></g>`},
+{c:'J8',t:'鹿角双 J',d:'左右鹿角就是两个背对背的 J,中间一点鼻,超简',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M28 46V22c0-4-2-7-6-7"/>
+ <path d="M36 46V22c0-4 2-7 6-7"/></g>
+<circle cx="32" cy="46" r="2.6" fill="#2dd4bf"/>`},
+{c:'J9',t:'L 书 J 签',d:'一本 L 形托底的书,书页间夹一枚 J 形书签垂下',s:`
+<defs><linearGradient id="j9" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#22a3d6"/></linearGradient></defs>
+<path d="M16 22c6-2 12-2 16 1v22c-4-3-10-3-16-1Z" fill="url(#j9)"/><path d="M48 22c-6-2-12-2-16 1v22c4-3 10-3 16-1Z" fill="#2dd4bf" opacity=".55"/>
+<path d="M38 24v16a4 4 0 0 1-8 0" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>`},
+{c:'J10',t:'负空间 LJ 鹿',d:'实心圆角块,挖空的负形同时读出 L、J 与鹿角缝隙',s:`
+<rect x="6" y="6" width="52" height="52" rx="15" fill="#2dd4bf"/>
+<g fill="var(--bg)"><path d="M24 22v18h6v-4h-2V22z"/><path d="M40 22v14a4 4 0 0 1-8 0h4a0 0 0 0 0 0 0V22z" opacity=".0"/>
+ <path d="M40 22v13a3.5 3.5 0 0 1-7 0h3.5V22z"/></g>`},
+];
+
+const A=[
+{c:'J11',t:'神经 J 角',d:'J1 连体字鹿,双角末端点亮神经节点连线',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M26 26v14h6"/><path d="M38 26v12a4 4 0 0 1-8 0"/>
+ <path d="M26 26c-3-3-4-7-3-11M38 26c3-3 4-7 3-11"/></g>
+<g fill="#fbbf24"><circle cx="23" cy="15" r="2.4"/><circle cx="41" cy="15" r="2.4"/><circle cx="20" cy="10" r="1.8"/><circle cx="44" cy="10" r="1.8"/></g>
+<g stroke="#fbbf24" stroke-width="1" opacity=".55"><line x1="23" y1="15" x2="20" y2="10"/><line x1="41" y1="15" x2="44" y2="10"/></g>`},
+{c:'J12',t:'星耀 LJ',d:'J4 组合字标,J 顶钩替换成 AI 四角星',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M40 20v18a6 6 0 0 1-12 0"/><path d="M22 20v24h12"/></g>
+<path d="M40 8c.6 4.5 1.8 5.7 6.3 6.3-4.5.6-5.7 1.8-6.3 6.3-.6-4.5-1.8-5.7-6.3-6.3 4.5-.6 5.7-1.8 6.3-6.3Z" fill="#fbbf24"/>`},
+{c:'J13',t:'电路 L 颈鹿',d:'J2 底座,L 形鹿颈上叠 PCB 节点走线',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M24 24v20h10"/><path d="M30 24c-4 0-7-3-7-8 0-3 2-5 5-5M34 24c4 0 7-3 7-8 0-3-2-5-5-5"/></g>
+<g fill="#22a3d6"><circle cx="24" cy="30" r="2"/><circle cx="24" cy="38" r="2"/><circle cx="30" cy="44" r="2"/></g>
+<g stroke="#22a3d6" stroke-width="1.4" fill="none" opacity=".7"><path d="M24 30h5"/><path d="M24 38h5v3"/></g>`},
+{c:'J14',t:'光环书 L+J角',d:'J3 书脊底座,书顶 J 角,书心透智能柔光',s:`
+<defs><linearGradient id="j14" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#22a3d6"/></linearGradient></defs>
+<circle cx="29" cy="36" r="10" fill="#5eead4" opacity=".28"/>
+<path d="M22 24h14v24H22z" fill="url(#j14)"/><path d="M22 48h20" stroke="#2dd4bf" stroke-width="3.4" stroke-linecap="round"/>
+<g fill="none" stroke="#2dd4bf" stroke-width="2.8" stroke-linecap="round"><path d="M27 24c-3-4-3-9 1-11M33 24c3-4 3-9-1-11"/></g>
+<g fill="#fbbf24"><circle cx="42" cy="30" r="1.4"/><circle cx="18" cy="34" r="1.2"/></g>`},
+{c:'J15',t:'数据流 J 尾鹿',d:'J7 侧身鹿,J 尾散成流动数据颗粒',s:`
+<path d="M18 30h18v14H18z" fill="#2dd4bf"/><path d="M18 44v-4M22 44v4M32 44v4M36 44v-4" stroke="#2dd4bf" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M18 30c-3 0-5-3-5-7 0-2 2-4 4-3" fill="none" stroke="#2dd4bf" stroke-width="3.2" stroke-linecap="round"/>
+<g fill="#fbbf24"><circle cx="40" cy="30" r="2"/><circle cx="45" cy="27" r="1.8"/><circle cx="49" cy="31" r="1.6"/><circle cx="52" cy="27" r="1.3"/></g>`},
+{c:'J16',t:'对话气泡 LJ',d:'J4 字标顶生对话气泡+星,直点AI问答',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M40 26v14a6 6 0 0 1-12 0"/><path d="M22 26v22h12"/></g>
+<path d="M22 8h20a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-5l-4 4v-4h-11a3 3 0 0 1-3-3v-6a3 3 0 0 1 3-3Z" fill="#2dd4bf"/>
+<path d="M32 10c.4 2.4 1 3 3.4 3.4-2.4.4-3 1-3.4 3.4-.4-2.4-1-3-3.4-3.4 2.4-.4 3-1 3.4-3.4Z" fill="var(--bg)"/>`},
+{c:'J17',t:'量子点双 J 角',d:'J8 双 J 鹿角,角尖各挂发光量子点连线',s:`
+<g fill="none" stroke="#2dd4bf" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M28 46V24c0-4-2-7-6-7"/><path d="M36 46V24c0-4 2-7 6-7"/></g>
+<circle cx="32" cy="46" r="2.4" fill="#2dd4bf"/>
+<g fill="#fbbf24"><circle cx="22" cy="17" r="2.8"/><circle cx="42" cy="17" r="2.8"/><circle cx="32" cy="24" r="2.2"/></g>
+<g stroke="#fbbf24" stroke-width="1" opacity=".5"><line x1="22" y1="17" x2="32" y2="24"/><line x1="42" y1="17" x2="32" y2="24"/></g>`},
+{c:'J18',t:'弥散渐变 LJ',d:'圆角块弥散彩光 + 白色 LJ 连体鹿线稿,新拟态',s:`
+<defs><linearGradient id="j18" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset=".55" stop-color="#22a3d6"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient><radialGradient id="j18s" cx=".3" cy=".22" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+<rect x="6" y="6" width="52" height="52" rx="16" fill="url(#j18)"/><rect x="6" y="6" width="52" height="52" rx="16" fill="url(#j18s)"/>
+<g fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M27 26v14h6"/><path d="M39 26v12a4 4 0 0 1-8 0"/>
+ <path d="M27 26c-3-3-4-7-3-11M39 26c3-3 4-7 3-11"/></g>`},
+];
+
+function render(){
+  const box=(l)=>`
+    <div class="card${showText?'':' nameonly'}">
+      <div class="stage"><div class="brandrow"><svg viewBox="0 0 64 64" width="72" height="72">${l.s}</svg>${showText?`<span class="name gname">${BRAND}</span>`:''}</div></div>
+      <div class="meta"><span class="code">${l.c}</span><div class="t">${l.t}</div><div class="d">${l.d}</div></div>
+    </div>`;
+  document.getElementById('gridN').innerHTML=N.map(box).join('');
+  document.getElementById('gridA').innerHTML=A.map(box).join('');
+}
+render();
+</script>
+</body>
+</html>

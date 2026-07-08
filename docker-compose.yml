@@ -122,6 +122,7 @@ services:
 
   # ---------- notebooklm-app: 单体应用(全部功能) ----------
   app:
+    image: nblm-app:prebuilt
     build:
       context: .
       dockerfile: notebooklm-app/Dockerfile
