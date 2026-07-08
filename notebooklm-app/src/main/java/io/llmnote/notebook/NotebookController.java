@@ -30,6 +30,11 @@ public class NotebookController {
         return notebookService.create(req.getName(), req.getDescription(), principal.ownerId());
     }
 
+    @PutMapping("/{id}")
+    public Notebook update(@PathVariable Long id, @RequestBody UpdateReq req, Principal principal) {
+        return notebookService.update(id, req.getName(), req.getDescription(), principal.ownerId());
+    }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id, Principal principal) {
         notebookService.delete(id, principal.ownerId());
@@ -43,6 +48,12 @@ public class NotebookController {
     @Data
     public static class CreateReq {
         @NotBlank
+        private String name;
+        private String description;
+    }
+
+    @Data
+    public static class UpdateReq {
         private String name;
         private String description;
     }

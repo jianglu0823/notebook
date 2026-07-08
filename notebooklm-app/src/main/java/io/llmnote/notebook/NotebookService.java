@@ -56,6 +56,16 @@ public class NotebookService {
     }
 
     @Transactional
+    public Notebook update(Long id, String name, String description, String ownerId) {
+        Notebook nb = getOwned(id, ownerId);
+        if (name != null && !name.isBlank()) {
+            nb.setName(name.trim());
+        }
+        nb.setDescription(description);
+        return notebookRepo.save(nb);
+    }
+
+    @Transactional
     public void delete(Long id, String ownerId) {
         Notebook nb = getOwned(id, ownerId);
         notebookRepo.delete(nb);

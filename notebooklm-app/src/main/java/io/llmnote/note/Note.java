@@ -20,7 +20,11 @@ public class Note {
     @Column(nullable = false)
     private String title;
 
-    /** 富文本正文(HTML) */
+    /** 笔记类型:RICHTEXT(富文本 HTML)/ MARKDOWN(Markdown 源码) */
+    @Column(nullable = false)
+    private String type;
+
+    /** 正文:RICHTEXT 存 HTML,MARKDOWN 存 Markdown 源码 */
     @Column(columnDefinition = "MEDIUMTEXT")
     private String content;
 

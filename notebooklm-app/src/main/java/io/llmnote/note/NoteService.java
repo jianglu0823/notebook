@@ -22,6 +22,8 @@ import java.util.List;
 public class NoteService {
 
     public static final String NOTE_BODY_TYPE = "NOTE_BODY";
+    public static final String TYPE_RICHTEXT = "RICHTEXT";
+    public static final String TYPE_MARKDOWN = "MARKDOWN";
 
     private final NoteRepository noteRepo;
     private final NotebookService notebookService;
@@ -54,11 +56,12 @@ public class NoteService {
     }
 
     @Transactional
-    public Note create(Long notebookId, String title, String ownerId) {
+    public Note create(Long notebookId, String title, String type, String ownerId) {
         notebookService.getOwned(notebookId, ownerId);
         Note note = new Note();
         note.setNotebookId(notebookId);
         note.setTitle(title == null || title.isBlank() ? "未命名笔记" : title.trim());
+        note.setType(TYPE_MARKDOWN.equalsIgnoreCase(type) ? TYPE_MARKDOWN : TYPE_RICHTEXT);
         return noteRepo.save(note);
     }
 
@@ -90,8 +93,9 @@ public class NoteService {
     }
 
     /** 维护笔记正文对应的 NOTE_BODY source:删旧 chunk → 重切块;正文为空则清理。 */
-    private void reingestBody(Note note, String html) {
-        String plain = htmlToPlainText(html);
+    private void reingestBody(Note note, String content) {
+        String plain = TYPE_MARKDOWN.equalsIgnoreCase(note.getType())
+                ? markdownToPlainText(content) : htmlToPlainText(content);
 
         List<Source> existing = sourceRepo.findByNoteIdAndType(note.getId(), NOTE_BODY_TYPE);
         Source body = existing.isEmpty() ? null : existing.get(0);
@@ -131,6 +135,25 @@ public class NoteService {
                 .replace("&gt;", ">")
                 .replace("&quot;", "\"")
                 .replace("&#39;", "'");
+        t = t.replaceAll("\n{3,}", "\n\n");
+        return t.trim();
+    }
+
+    /** Markdown 源码 → 纯文本:去掉常见标记(标题/强调/代码/引用/列表/链接),保留正文。嵌入向量对格式不敏感。 */
+    static String markdownToPlainText(String md) {
+        if (md == null) return "";
+        String t = md;
+        t = t.replaceAll("(?s)```.*?```", " ");            // 代码块
+        t = t.replaceAll("`([^`]*)`", "$1");                 // 行内代码
+        t = t.replaceAll("!\\[([^\\]]*)\\]\\([^)]*\\)", "$1"); // 图片
+        t = t.replaceAll("\\[([^\\]]*)\\]\\([^)]*\\)", "$1");  // 链接
+        t = t.replaceAll("(?m)^\\s{0,3}#{1,6}\\s*", "");      // 标题
+        t = t.replaceAll("(?m)^\\s{0,3}>\\s?", "");           // 引用
+        t = t.replaceAll("(?m)^\\s*[-*+]\\s+", "");           // 无序列表
+        t = t.replaceAll("(?m)^\\s*\\d+\\.\\s+", "");         // 有序列表
+        t = t.replaceAll("(\\*\\*|__)(.*?)\\1", "$2");        // 粗体
+        t = t.replaceAll("(\\*|_)(.*?)\\1", "$2");            // 斜体
+        t = t.replaceAll("(?m)^\\s*([-*_]\\s*){3,}$", "");    // 分隔线
         t = t.replaceAll("\n{3,}", "\n\n");
         return t.trim();
     }

@@ -29,7 +29,7 @@ public class NoteController {
 
     @PostMapping
     public Note create(@PathVariable Long notebookId, @RequestBody CreateReq req, Principal principal) {
-        return noteService.create(notebookId, req.getTitle(), principal.ownerId());
+        return noteService.create(notebookId, req.getTitle(), req.getType(), principal.ownerId());
     }
 
     /** 保存正文(标题 + 富文本 HTML);后端转纯文本重切块。 */
@@ -56,6 +56,7 @@ public class NoteController {
     @Data
     public static class CreateReq {
         private String title;
+        private String type;
     }
 
     @Data

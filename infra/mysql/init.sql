@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS note (
     id           BIGINT PRIMARY KEY AUTO_INCREMENT,
     notebook_id  BIGINT        NOT NULL,
     title        VARCHAR(255)  NOT NULL,
-    content      MEDIUMTEXT    NULL COMMENT '富文本正文(HTML)',
+    type         VARCHAR(16)   NOT NULL DEFAULT 'RICHTEXT' COMMENT 'RICHTEXT/MARKDOWN',
+    content      MEDIUMTEXT    NULL COMMENT '正文:RICHTEXT 存 HTML,MARKDOWN 存 Markdown 源码',
     created_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_note_notebook (notebook_id)

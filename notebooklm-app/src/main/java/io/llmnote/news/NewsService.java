@@ -69,7 +69,7 @@ public class NewsService {
 
             Notebook nb = ensureNewsNotebook(job.getOwnerId());
             String title = job.getTopic() + " · " + LocalDate.now();
-            Note note = noteService.create(nb.getId(), title, job.getOwnerId());
+            Note note = noteService.create(nb.getId(), title, "RICHTEXT", job.getOwnerId());
             noteService.updateBody(nb.getId(), note.getId(), title, html, job.getOwnerId());
 
             job.setNotebookId(nb.getId());

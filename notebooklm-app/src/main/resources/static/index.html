@@ -85,6 +85,9 @@
   .ncard .cp { font-size:12.5px; color:var(--mut); line-height:1.55; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:16px; }
   .ncard .cf { display:flex; align-items:center; gap:8px; margin-top:9px; font-size:11px; color:var(--mut); }
   .ncard .nbchip { background:var(--panel2); border:1px solid var(--line); border-radius:20px; padding:2px 9px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:55%; }
+  .ncard .typechip { flex:none; border-radius:20px; padding:2px 9px; border:1px solid var(--line); white-space:nowrap; }
+  .ncard .typechip.md { color:#0369a1; background:color-mix(in srgb, #0ea5e9 12%, transparent); border-color:color-mix(in srgb, #0ea5e9 30%, transparent); }
+  .ncard .typechip.rt { color:#15803d; background:color-mix(in srgb, #22c55e 12%, transparent); border-color:color-mix(in srgb, #22c55e 30%, transparent); }
   .ncard .cd { margin-left:auto; flex:none; }
   .ncard .cardDel { position:absolute; top:8px; right:8px; opacity:0; background:transparent; border:1px solid var(--line); color:var(--mut); padding:3px 7px; font-size:12px; border-radius:var(--radius-sm); transition:opacity .15s ease, color .15s ease, border-color .15s ease; }
   .ncard:hover .cardDel { opacity:1; }
@@ -166,10 +169,11 @@
       radial-gradient(900px 260px at 88% -30%, color-mix(in srgb, var(--warn) 16%, transparent), transparent 70%); }
   .home-hero .hi { font-size:13px; color:var(--accent); font-weight:700; letter-spacing:.6px; text-transform:uppercase; margin-bottom:8px; }
   .home-hero h1 { font-size:30px; font-weight:850; letter-spacing:-.5px; line-height:1.2; }
-  .home-hero .sub { margin-top:8px; color:var(--mut); font-size:14px; }
+  .home-hero .greetline { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+  .home-hero .homeDate { font-size:14px; color:var(--mut); font-weight:600; }
+  .home-hero .sub { margin-top:10px; color:var(--mut); font-size:14px; transition:opacity .4s ease; }
   .home-wrap { max-width:1040px; margin:0 auto; padding:var(--sp-3) var(--sp-4) 0; }
-  .home-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:var(--sp-2); margin-bottom:var(--sp-3); }
-  .stat { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-lg); padding:18px 20px; display:flex; flex-direction:column; gap:6px; transition:border-color .15s ease, transform .05s ease; }
+  .home-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:var(--sp-2); margin-bottom:var(--sp-3); }  .stat { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-lg); padding:18px 20px; display:flex; flex-direction:column; gap:6px; transition:border-color .15s ease, transform .05s ease; }
   .stat:hover { border-color:var(--line-strong); }
   .stat .k { font-size:12px; color:var(--mut); font-weight:600; display:flex; align-items:center; gap:7px; }
   .stat .v { font-size:26px; font-weight:800; }
@@ -188,6 +192,59 @@
   .njob .nt { font-weight:700; font-size:14px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .njob .nd { font-size:11px; color:var(--mut); flex:none; }
   .njob button { padding:6px 12px; font-size:12px; flex:none; }
+
+  /* 首页顶部工具栏(印象笔记式) */
+  .home-toolbar { display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; margin-bottom:var(--sp-3); scrollbar-width:thin; }
+  .tbtn { flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:7px; width:82px; padding:14px 6px; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); color:var(--fg); cursor:pointer; transition:border-color .15s ease, transform .05s ease, box-shadow .15s ease; }
+  .tbtn:hover { border-color:var(--line-strong); transform:translateY(-2px); box-shadow:var(--shadow-sm); }
+  .tbtn:active { transform:translateY(0); }
+  .tbtn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .tbtn.disabled { opacity:.45; cursor:not-allowed; }
+  .tbtn.disabled:hover { border-color:var(--line); transform:none; box-shadow:none; }
+  .tbtn .ti { font-size:22px; line-height:1; }
+  .tbtn .tl { font-size:12px; color:var(--mut); font-weight:600; white-space:nowrap; }
+
+  /* Markdown 编辑器 */
+  #mdEditor { display:none; }
+  #mdToolbar { display:flex; gap:6px; align-items:center; margin:10px 0; padding-bottom:10px; border-bottom:1px solid var(--line); }
+  #mdToolbar .seg { display:flex; gap:2px; background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:2px; }
+  #mdToolbar .seg button { background:transparent; border:none; color:var(--mut); padding:5px 12px; font-size:13px; font-weight:600; border-radius:6px; }
+  #mdToolbar .seg button.on { background:var(--accent); color:var(--accent-fg); }
+  #mdToolbar .hint { font-size:12px; color:var(--mut); margin-left:auto; }
+  #mdSrc { width:100%; min-height:340px; background:transparent; border:none; outline:none; resize:vertical; color:var(--fg); font-family:var(--mono); font-size:14px; line-height:1.7; padding:6px 2px; }
+  #mdPreview { display:none; min-height:340px; font-size:15px; line-height:1.75; padding:6px 2px; }
+  #mdPreview h1 { font-size:24px; margin:16px 0 10px; } #mdPreview h2 { font-size:20px; margin:14px 0 8px; }
+  #mdPreview h3 { font-size:16px; margin:12px 0 6px; color:var(--accent); }
+  #mdPreview p { margin:8px 0; } #mdPreview ul,#mdPreview ol { padding-left:22px; margin:8px 0; }
+  #mdPreview blockquote { border-left:3px solid var(--accent); padding-left:12px; color:var(--mut); margin:8px 0; }
+  #mdPreview code { background:var(--panel2); padding:1px 5px; border-radius:4px; font-family:var(--mono); font-size:13px; }
+  #mdPreview pre { background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px; overflow-x:auto; font-family:var(--mono); font-size:12px; line-height:1.5; }
+  #mdPreview pre code { background:none; padding:0; }
+  #mdPreview a { color:var(--accent); }
+
+  /* 笔记本管理面板 */
+  #nbMgrModal .box { width:460px; max-width:92vw; }
+  #nbMgrList { display:flex; flex-direction:column; gap:8px; max-height:52vh; overflow-y:auto; margin-bottom:var(--sp-2); }
+  .nbrow { display:flex; align-items:center; gap:10px; background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:10px 12px; }
+  .nbrow .nn { flex:1; overflow:hidden; }
+  .nbrow .nn .t { font-weight:700; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .nbrow .nn .d { font-size:12px; color:var(--mut); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .nbrow button { padding:5px 11px; font-size:12px; flex:none; }
+  #nbMgrCreate { display:flex; gap:8px; border-top:1px solid var(--line); padding-top:var(--sp-2); }
+  #nbMgrCreate input { flex:1; }
+
+  /* 语音录音浮层 */
+  #voiceModal .box { width:420px; max-width:92vw; text-align:center; }
+  #voiceModal .mic { font-size:44px; margin:8px 0 4px; }
+  #voiceModal .vstate { font-size:13px; color:var(--mut); margin-bottom:6px; }
+  #voiceModal .vtimer { font-family:var(--mono); font-size:22px; font-weight:700; margin-bottom:14px; }
+  #voiceLive { min-height:56px; max-height:180px; overflow-y:auto; background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px; font-size:14px; line-height:1.6; text-align:left; color:var(--mut); margin-bottom:var(--sp-2); }
+  #voiceLive .fin { color:var(--fg); } #voiceLive .part { color:var(--accent); }
+  #voiceModal .vacts { display:flex; gap:10px; }
+  #voiceModal .vacts button { flex:1; }
+  .vdot { display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--err); margin-right:6px; animation:vpulse 1s infinite; }
+  @keyframes vpulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
   /* AI fab + drawer */
   /* AI 面板:桌面常驻第四栏 */
   #aiFab { display:none; }
@@ -315,10 +372,23 @@
     <section id="homeView">
       <div class="home-hero">
         <div class="hi">鹿匠笔记</div>
-        <h1 id="homeGreet">欢迎回来</h1>
-        <div class="sub">选择一个方向,让 AI 联网收集最新动态,自动整理成一条笔记。</div>
+        <div class="greetline"><h1 id="homeGreet">欢迎回来</h1><span class="homeDate" id="homeDate"></span></div>
+        <div class="sub" id="homeQuote">选择一个方向,让 AI 联网收集最新动态,自动整理成一条笔记。</div>
       </div>
       <div class="home-wrap">
+        <div class="home-toolbar" id="homeToolbar">
+          <button class="tbtn" onclick="createNote('RICHTEXT')"><span class="ti">📝</span><span class="tl">超级笔记</span></button>
+          <button class="tbtn" onclick="createNote('RICHTEXT')"><span class="ti">🗒️</span><span class="tl">笔记</span></button>
+          <button class="tbtn" onclick="createNote('MARKDOWN')"><span class="ti">⬇️</span><span class="tl">Markdown</span></button>
+          <button class="tbtn" onclick="startVoiceNote()"><span class="ti">🎙️</span><span class="tl">语音笔记</span></button>
+          <button class="tbtn" onclick="openNbManager()"><span class="ti">📓</span><span class="tl">笔记本</span></button>
+          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">🧠</span><span class="tl">思维导图</span></button>
+          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">📑</span><span class="tl">大纲笔记</span></button>
+          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">📚</span><span class="tl">模板库</span></button>
+          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">🧩</span><span class="tl">我的模板</span></button>
+          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">🏷️</span><span class="tl">桌面便签</span></button>
+          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">⏺️</span><span class="tl">录屏</span></button>
+        </div>
         <div class="home-grid">
           <div class="stat clk" onclick="selectAll()">
             <span class="k">📝 全部笔记</span><span class="v" id="statNotes">–</span>
@@ -415,6 +485,17 @@
             <button type="button" onmousedown="event.preventDefault()" onclick="rt('redo')">↷</button>
           </div>
           <div id="noteBody" contenteditable="true" onblur="saveNote()"></div>
+          <div id="mdEditor">
+            <div id="mdToolbar">
+              <div class="seg">
+                <button type="button" id="mdTabEdit" class="on" onclick="mdView('edit')">编辑</button>
+                <button type="button" id="mdTabPrev" onclick="mdView('preview')">预览</button>
+              </div>
+              <span class="hint">Markdown 语法:# 标题 · **粗体** · - 列表 · &gt; 引用 · \`代码\`</span>
+            </div>
+            <textarea id="mdSrc" placeholder="# 在这里用 Markdown 记录…" oninput="mdRender()" onblur="saveNote()"></textarea>
+            <div id="mdPreview"></div>
+          </div>
           <div class="card" id="uploadCard" style="margin-top:20px">
             <div class="row" style="justify-content:space-between;margin:0">
               <b style="font-size:13px">📎 附件</b>
@@ -515,6 +596,44 @@
   </div>
 </div>
 
+<div id="nbMgrModal" class="modal hidden">
+  <div class="box">
+    <h2>📓 笔记本管理</h2>
+    <div id="nbMgrList"></div>
+    <div id="nbMgrCreate">
+      <input id="nbMgrName" placeholder="新笔记本名称" onkeydown="if(event.key==='Enter')nbMgrCreate()">
+      <button onclick="nbMgrCreate()">+ 新建</button>
+      <button class="sec" onclick="closeNbMgr()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div id="nbEditModal" class="modal hidden">
+  <div class="box">
+    <h2>编辑笔记本</h2>
+    <div class="row"><input id="nbEditName" placeholder="名称"></div>
+    <div class="row"><input id="nbEditDesc" placeholder="描述(可选)"></div>
+    <div class="row" style="gap:8px">
+      <button onclick="nbEditSave()" style="flex:1">保存</button>
+      <button class="sec" onclick="closeNbEdit()">取消</button>
+    </div>
+  </div>
+</div>
+
+<div id="voiceModal" class="modal hidden">
+  <div class="box">
+    <h2 id="voiceTitle">🎙️ 语音笔记</h2>
+    <div class="mic" id="voiceMic">🎤</div>
+    <div class="vstate" id="voiceState">准备就绪</div>
+    <div class="vtimer" id="voiceTimer">00:00</div>
+    <div id="voiceLive"></div>
+    <div class="vacts">
+      <button id="voiceStopBtn" class="danger" onclick="stopVoice()">■ 停止并保存</button>
+      <button class="sec" onclick="cancelVoice()">取消</button>
+    </div>
+  </div>
+</div>
+
 <div id="toastWrap" aria-live="polite" aria-atomic="true"></div>
 
 <script>
@@ -526,6 +645,29 @@ let currentNote = null;        // 右栏打开的笔记(含 notebookId/content)
 let qaSession = null, aiTab = 'qa', pollTimer = null, authMode = 'login';
 let newsPreset = '';           // 选中的预设方向;空 = 用自定义输入
 let newsTimer = null;          // 新闻任务轮询
+let currentUser = null;        // 当前登录用户 {username, guest}
+let quoteTimer = null;         // 首页鸡汤语句轮询
+const QUOTES = [
+  '今天多记一点,明天少慌一点。',
+  '好记性不如烂笔头,你已经赢在起跑线。',
+  '把想法写下来的那一刻,它才真正属于你。',
+  '知识的复利,始于每一条随手的笔记。',
+  '慢慢来,比较快。',
+  '你不必很厉害才开始,但要开始才会很厉害。',
+  '灵感转瞬即逝,记录让它永驻。',
+  '每一次整理,都是与更清晰的自己相遇。',
+  '积跬步,以至千里;积小记,以成大智。',
+  '把复杂留给系统,把简单留给自己。',
+  '认真记录生活的人,运气都不会太差。',
+  '今天的笔记,是明天的底气。',
+  '专注当下这一条,其余的交给时间。',
+  '写下来,是为了更好地放下与前行。',
+  '所有伟大的想法,最初都只是一行字。',
+  '别怕起点低,怕的是没有开始。',
+  '整理信息,也是在整理心情。',
+  '你收藏的每一条知识,终将成为你的一部分。',
+  '保持好奇,持续记录,世界为你展开。',
+  '深耕一寸,胜过泛读千里。'];
 const NEWS_PRESETS = ['国际', '国内', '科技', '财经', '体育'];
 
 function nbById(id) { return notebooks.find(n => n.id === id); }
@@ -607,11 +749,13 @@ async function loadMe() {
   try {
     const me = await j(`${API}/auth/me`);
     const guest = me.guest;
+    currentUser = { username: me.username, guest };
     document.getElementById('whoami').textContent = guest ? '游客模式' : ('👤 ' + me.username);
     document.getElementById('loginBtn').classList.toggle('hidden', !guest);
     document.getElementById('registerBtn').classList.toggle('hidden', !guest);
     document.getElementById('logoutBtn').classList.toggle('hidden', guest);
-  } catch (e) { document.getElementById('whoami').textContent = '游客模式'; }
+    renderGreet();
+  } catch (e) { document.getElementById('whoami').textContent = '游客模式'; currentUser = { username:'', guest:true }; }
 }
 function openAuth(mode) {
   authMode = mode;
@@ -680,6 +824,62 @@ async function createNb() {
   } catch (e) { toast('创建失败:' + errText(e), 'err'); }
 }
 
+// ---- 笔记本管理 ----
+let nbEditingId = null;
+function openNbManager() { renderNbMgr(); document.getElementById('nbMgrModal').classList.remove('hidden'); }
+function closeNbMgr() { document.getElementById('nbMgrModal').classList.add('hidden'); }
+function renderNbMgr() {
+  const own = notebooks.filter(n => !isSystemNb(n));
+  const el = document.getElementById('nbMgrList');
+  el.innerHTML = own.length ? own.map(n => `
+    <div class="nbrow">
+      <div class="nn"><div class="t">${esc(n.name)}</div><div class="d">${esc(n.description||'无描述')}</div></div>
+      <button class="sec" onclick="openNbEdit(${n.id})">编辑</button>
+      <button class="danger" onclick="nbMgrDelete(${n.id})">删除</button>
+    </div>`).join('') : '<div class="mut" style="padding:10px">还没有笔记本,在下方新建一个。</div>';
+}
+async function nbMgrCreate() {
+  const name = document.getElementById('nbMgrName').value.trim();
+  if (!name) { toast('请输入笔记本名称', 'err'); return; }
+  try {
+    await j(`${API}/notebooks`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
+    document.getElementById('nbMgrName').value = '';
+    await loadNotebooks(); await loadCards(); renderNbMgr();
+    toast('笔记本已创建', 'ok');
+  } catch (e) { toast('创建失败:' + errText(e), 'err'); }
+}
+function openNbEdit(id) {
+  const nb = nbById(id); if (!nb) return;
+  nbEditingId = id;
+  document.getElementById('nbEditName').value = nb.name || '';
+  document.getElementById('nbEditDesc').value = nb.description || '';
+  document.getElementById('nbEditModal').classList.remove('hidden');
+  document.getElementById('nbEditName').focus();
+}
+function closeNbEdit() { document.getElementById('nbEditModal').classList.add('hidden'); nbEditingId = null; }
+async function nbEditSave() {
+  if (!nbEditingId) return;
+  const name = document.getElementById('nbEditName').value.trim();
+  const description = document.getElementById('nbEditDesc').value.trim();
+  if (!name) { toast('名称不能为空', 'err'); return; }
+  try {
+    await j(`${API}/notebooks/${nbEditingId}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, description})});
+    closeNbEdit();
+    await loadNotebooks(); await loadCards(); renderNbMgr();
+    toast('已保存', 'ok');
+  } catch (e) { toast('保存失败:' + errText(e), 'err'); }
+}
+async function nbMgrDelete(id) {
+  const nb = nbById(id); if (!nb) return;
+  if (!await confirmDialog(`确定删除笔记本「${nb.name}」及其下全部笔记?`, {title:'删除笔记本', okText:'删除'})) return;
+  try {
+    await j(`${API}/notebooks/${id}`, {method:'DELETE'});
+    if (currentNb && currentNb.id === id) { currentNb = null; }
+    await loadNotebooks(); await loadCards(); renderNbMgr();
+    toast('笔记本已删除', 'ok');
+  } catch (e) { toast('删除失败:' + errText(e), 'err'); }
+}
+
 // ---- views / cards ----
 function setActiveNav(elId) {
   ['view-home','view-all'].forEach(id => {
@@ -700,10 +900,33 @@ function renderHome() {
   const notes = cards ? cards.length : 0;
   document.getElementById('statNotes').textContent = notes;
   document.getElementById('statNbs').textContent = notebooks.filter(n => !isSystemNb(n)).length;
-  document.getElementById('homeGreet').textContent =
-    (new Date().getHours() < 6 ? '夜深了' : new Date().getHours() < 12 ? '早上好' : new Date().getHours() < 18 ? '下午好' : '晚上好') + ',欢迎回来';
+  renderGreet();
+  startQuoteRotation();
   renderNewsChips();
   loadNews();
+}
+function renderGreet() {
+  const greetEl = document.getElementById('homeGreet');
+  if (!greetEl) return;
+  const h = new Date().getHours();
+  const period = h < 6 ? '夜深了' : h < 12 ? '早上好' : h < 18 ? '下午好' : '晚上好';
+  const name = (currentUser && !currentUser.guest && currentUser.username) ? currentUser.username : '游客';
+  greetEl.textContent = `${period},${name},欢迎回来`;
+  const now = new Date();
+  const week = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][now.getDay()];
+  document.getElementById('homeDate').textContent =
+    `${now.getFullYear()} 年 ${now.getMonth()+1} 月 ${now.getDate()} 日 · ${week}`;
+}
+function startQuoteRotation() {
+  const el = document.getElementById('homeQuote');
+  if (!el) return;
+  const show = () => {
+    el.style.opacity = '0';
+    setTimeout(() => { el.textContent = '“' + QUOTES[Math.floor(Math.random()*QUOTES.length)] + '”'; el.style.opacity = ''; }, 400);
+  };
+  if (quoteTimer) clearInterval(quoteTimer);
+  el.textContent = '“' + QUOTES[Math.floor(Math.random()*QUOTES.length)] + '”';
+  quoteTimer = setInterval(show, 8000);
 }
 function renderNewsChips() {
   document.getElementById('newsChips').innerHTML = NEWS_PRESETS.map(p =>
@@ -790,7 +1013,7 @@ async function loadCards() {
     if (currentNb) {
       const raw = await j(`${API}/notebooks/${currentNb.id}/notes`);
       cards = raw.map(n => ({ id:n.id, notebookId:currentNb.id, notebookName:currentNb.name,
-        title:n.title, preview:stripHtml(n.content), updatedAt:n.updatedAt || n.createdAt }));
+        title:n.title, type:n.type, preview:stripHtml(n.content), updatedAt:n.updatedAt || n.createdAt }));
     } else {
       cards = await j(`${API}/notes`);
     }
@@ -826,6 +1049,7 @@ function cardHtml(c) {
     <div class="cp">${esc(c.preview || '(空笔记)')}</div>
     <div class="cf">
       <span class="nbchip" title="${esc(c.notebookName||'')}">📓 ${esc(c.notebookName||'')}</span>
+      <span class="typechip ${c.type==='MARKDOWN'?'md':'rt'}">${c.type==='MARKDOWN'?'⬇️ Markdown':'📝 富文本'}</span>
       <span class="cd">${fmtDate(c.updatedAt)}</span>
     </div>
   </div>`;
@@ -849,8 +1073,22 @@ async function openNote(notebookId, noteId) {
   document.getElementById('editorBar').classList.toggle('hidden', ro);
   document.getElementById('roTip').classList.toggle('hidden', !ro);
   const et = document.getElementById('editTitle'); et.value = currentNote.title || ''; et.disabled = ro;
-  const nb = document.getElementById('noteBody'); nb.innerHTML = currentNote.content || ''; nb.setAttribute('contenteditable', ro ? 'false' : 'true');
-  document.getElementById('rtToolbar').style.display = ro ? 'none' : '';
+  const isMd = (currentNote.type === 'MARKDOWN');
+  const nbEl = document.getElementById('noteBody');
+  const mdEl = document.getElementById('mdEditor');
+  if (isMd) {
+    nbEl.style.display = 'none';
+    document.getElementById('rtToolbar').style.display = 'none';
+    mdEl.style.display = 'block';
+    document.getElementById('mdSrc').value = currentNote.content || '';
+    document.getElementById('mdSrc').readOnly = ro;
+    mdView('edit'); mdRender();
+  } else {
+    mdEl.style.display = 'none';
+    nbEl.style.display = '';
+    nbEl.innerHTML = currentNote.content || ''; nbEl.setAttribute('contenteditable', ro ? 'false' : 'true');
+    document.getElementById('rtToolbar').style.display = ro ? 'none' : '';
+  }
   document.getElementById('uploadCard').style.display = ro ? 'none' : '';
   document.getElementById('noteSaveState').textContent = '';
   renderCards();
@@ -858,30 +1096,35 @@ async function openNote(notebookId, noteId) {
   refreshAiScopeOption();
   if (isMobile()) document.body.classList.add('mobile-editor');
 }
-async function createNote() {
+async function createNote(type) {
+  type = (type === 'MARKDOWN') ? 'MARKDOWN' : 'RICHTEXT';
   let nb = currentNb;
   if (!nb || isSystemNb(nb)) {
     nb = notebooks.find(n => !isSystemNb(n));
     if (!nb) {
       try { nb = await j(`${API}/notebooks`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:'我的笔记本'})}); await loadNotebooks(); }
-      catch (e) { toast('新建失败:' + errText(e), 'err'); return; }
+      catch (e) { toast('新建失败:' + errText(e), 'err'); return null; }
     }
   }
   try {
     const note = await j(`${API}/notebooks/${nb.id}/notes`, {
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title:'未命名笔记'})
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title:'未命名笔记', type})
     });
+    if (document.body.classList.contains('home')) selectAll();
     await loadCards();
     await openNote(nb.id, note.id);
     document.getElementById('editTitle').focus();
     document.getElementById('editTitle').select();
-    toast('笔记已创建', 'ok');
-  } catch (e) { toast('创建失败:' + errText(e), 'err'); }
+    toast(type === 'MARKDOWN' ? 'Markdown 笔记已创建' : '笔记已创建', 'ok');
+    return { nbId: nb.id, noteId: note.id };
+  } catch (e) { toast('创建失败:' + errText(e), 'err'); return null; }
 }
 async function saveNote() {
   if (!currentNote || isSystemNbId(currentNote.notebookId)) return;
   const title = document.getElementById('editTitle').value.trim() || '未命名笔记';
-  const content = document.getElementById('noteBody').innerHTML;
+  const content = (currentNote.type === 'MARKDOWN')
+    ? document.getElementById('mdSrc').value
+    : document.getElementById('noteBody').innerHTML;
   if (currentNote.title === title && (currentNote.content||'') === content) return;
   document.getElementById('noteSaveState').textContent = '保存中…';
   try {
@@ -910,6 +1153,174 @@ async function deleteCard(notebookId, noteId) {
 }
 function rt(cmd) { document.execCommand(cmd, false, null); document.getElementById('noteBody').focus(); }
 function rtQuote() { document.execCommand('formatBlock', false, 'blockquote'); document.getElementById('noteBody').focus(); }
+
+// ---- Markdown 编辑器 ----
+function mdView(mode) {
+  const edit = mode !== 'preview';
+  document.getElementById('mdSrc').style.display = edit ? 'block' : 'none';
+  document.getElementById('mdPreview').style.display = edit ? 'none' : 'block';
+  document.getElementById('mdTabEdit').classList.toggle('on', edit);
+  document.getElementById('mdTabPrev').classList.toggle('on', !edit);
+  if (!edit) mdRender();
+}
+function mdRender() {
+  document.getElementById('mdPreview').innerHTML = renderMarkdown(document.getElementById('mdSrc').value || '');
+}
+// 极简内联 Markdown → HTML(标题/加粗/斜体/行内代码/代码块/列表/引用/链接)。先转义再逐块处理。
+function renderMarkdown(md) {
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const inline = s => esc(s)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>')
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  const lines = md.replace(/\r\n/g, '\n').split('\n');
+  let html = '', i = 0, listType = null;
+  const closeList = () => { if (listType) { html += `</${listType}>`; listType = null; } };
+  while (i < lines.length) {
+    let ln = lines[i];
+    if (/^```/.test(ln)) {
+      closeList(); i++;
+      let code = [];
+      while (i < lines.length && !/^```/.test(lines[i])) { code.push(lines[i]); i++; }
+      i++;
+      html += `<pre><code>${esc(code.join('\n'))}</code></pre>`;
+      continue;
+    }
+    let m;
+    if ((m = ln.match(/^\s{0,3}(#{1,6})\s+(.*)$/))) {
+      closeList(); html += `<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`; i++; continue;
+    }
+    if (/^\s{0,3}>\s?/.test(ln)) {
+      closeList(); html += `<blockquote>${inline(ln.replace(/^\s{0,3}>\s?/, ''))}</blockquote>`; i++; continue;
+    }
+    if ((m = ln.match(/^\s*[-*+]\s+(.*)$/))) {
+      if (listType !== 'ul') { closeList(); html += '<ul>'; listType = 'ul'; }
+      html += `<li>${inline(m[1])}</li>`; i++; continue;
+    }
+    if ((m = ln.match(/^\s*\d+\.\s+(.*)$/))) {
+      if (listType !== 'ol') { closeList(); html += '<ol>'; listType = 'ol'; }
+      html += `<li>${inline(m[1])}</li>`; i++; continue;
+    }
+    if (/^\s*([-*_]\s*){3,}$/.test(ln)) { closeList(); html += '<hr>'; i++; continue; }
+    if (ln.trim() === '') { closeList(); i++; continue; }
+    closeList(); html += `<p>${inline(ln)}</p>`; i++;
+  }
+  closeList();
+  return html;
+}
+
+// ---- 语音笔记(实时转写) ----
+let vWs = null, vAudioCtx = null, vProcessor = null, vStream = null, vSource = null;
+let vTimer = null, vStart = 0, vFinal = '', vSaved = false;
+async function startVoiceNote() {
+  const created = await createNote('RICHTEXT');
+  if (!created) return;
+  const t = new Date();
+  const title = '语音笔记 · ' + t.toLocaleString('zh-CN', {hour12:false});
+  document.getElementById('editTitle').value = title;
+  await saveNote();
+  vFinal = ''; vSaved = false;
+  document.getElementById('voiceLive').innerHTML = '<span class="mut">开始说话…</span>';
+  document.getElementById('voiceState').innerHTML = '<span class="vdot"></span>正在聆听';
+  document.getElementById('voiceTimer').textContent = '00:00';
+  document.getElementById('voiceStopBtn').disabled = false;
+  document.getElementById('voiceModal').classList.remove('hidden');
+  try { await beginRecording(); }
+  catch (e) { toast('无法开始录音:' + (e.message||e), 'err'); cancelVoice(); }
+}
+async function beginRecording() {
+  vStream = await navigator.mediaDevices.getUserMedia({audio:{channelCount:1, echoCancellation:true, noiseSuppression:true}});
+  const wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const tok = token();
+  vWs = new WebSocket(`${wsProto}://${location.host}/api/ws/voice${tok ? ('?token='+encodeURIComponent(tok)) : ''}`);
+  vWs.binaryType = 'arraybuffer';
+  vWs.onmessage = onVoiceMessage;
+  vWs.onerror = () => { document.getElementById('voiceState').textContent = '连接异常'; };
+  vWs.onclose = () => { stopAudioGraph(); };
+
+  vAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  vSource = vAudioCtx.createMediaStreamSource(vStream);
+  vProcessor = vAudioCtx.createScriptProcessor(4096, 1, 1);
+  const inRate = vAudioCtx.sampleRate;
+  vProcessor.onaudioprocess = (e) => {
+    if (!vWs || vWs.readyState !== WebSocket.OPEN) return;
+    const input = e.inputBuffer.getChannelData(0);
+    const pcm = downsampleToPCM16(input, inRate, 16000);
+    if (pcm) vWs.send(pcm);
+  };
+  vSource.connect(vProcessor);
+  vProcessor.connect(vAudioCtx.destination);
+
+  vStart = Date.now();
+  vTimer = setInterval(() => {
+    const s = Math.floor((Date.now() - vStart) / 1000);
+    document.getElementById('voiceTimer').textContent =
+      String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+  }, 500);
+}
+function downsampleToPCM16(input, inRate, outRate) {
+  const ratio = inRate / outRate;
+  const outLen = Math.floor(input.length / ratio);
+  if (outLen <= 0) return null;
+  const buf = new ArrayBuffer(outLen * 2);
+  const view = new DataView(buf);
+  for (let i = 0; i < outLen; i++) {
+    const s = Math.max(-1, Math.min(1, input[Math.floor(i * ratio)]));
+    view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return buf;
+}
+function onVoiceMessage(ev) {
+  let msg; try { msg = JSON.parse(ev.data); } catch { return; }
+  if (msg.type === 'text') {
+    const live = document.getElementById('voiceLive');
+    if (msg.end) {
+      vFinal += msg.text;
+      appendToNoteBody(msg.text);
+      live.innerHTML = `<span class="fin">${esc(vFinal)}</span>`;
+    } else {
+      live.innerHTML = `<span class="fin">${esc(vFinal)}</span> <span class="part">${esc(msg.text)}</span>`;
+    }
+    live.scrollTop = live.scrollHeight;
+  } else if (msg.type === 'status' && msg.status === 'error') {
+    document.getElementById('voiceState').textContent = '识别服务异常';
+  }
+}
+function appendToNoteBody(text) {
+  if (!currentNote) return;
+  if (currentNote.type === 'MARKDOWN') {
+    const ta = document.getElementById('mdSrc');
+    ta.value += (ta.value && !ta.value.endsWith('\n') ? '\n' : '') + text;
+  } else {
+    const nb = document.getElementById('noteBody');
+    const p = document.createElement('p'); p.textContent = text; nb.appendChild(p);
+  }
+}
+function stopAudioGraph() {
+  if (vTimer) { clearInterval(vTimer); vTimer = null; }
+  try { if (vProcessor) { vProcessor.disconnect(); vProcessor.onaudioprocess = null; } } catch {}
+  try { if (vSource) vSource.disconnect(); } catch {}
+  try { if (vAudioCtx && vAudioCtx.state !== 'closed') vAudioCtx.close(); } catch {}
+  try { if (vStream) vStream.getTracks().forEach(t => t.stop()); } catch {}
+  vProcessor = vSource = vAudioCtx = vStream = null;
+}
+async function stopVoice() {
+  document.getElementById('voiceStopBtn').disabled = true;
+  document.getElementById('voiceState').textContent = '正在保存…';
+  try { if (vWs && vWs.readyState === WebSocket.OPEN) { vWs.send(JSON.stringify({type:'stop'})); vWs.close(); } } catch {}
+  vWs = null;
+  stopAudioGraph();
+  if (!vSaved) { vSaved = true; await saveNote(); }
+  document.getElementById('voiceModal').classList.add('hidden');
+  toast('语音笔记已保存', 'ok');
+}
+function cancelVoice() {
+  try { if (vWs) vWs.close(); } catch {}
+  vWs = null;
+  stopAudioGraph();
+  document.getElementById('voiceModal').classList.add('hidden');
+}
 
 // ---- sources (attachments) ----
 function triggerUpload() {

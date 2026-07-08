@@ -57,11 +57,11 @@ public class SystemNotebookSeeder implements ApplicationRunner {
             Long nbId = nb.getId();
             log.info("seeding system notebook id={}", nbId);
 
-            Note n1 = noteService.create(nbId, "一、项目架构 · 设计方案 · 使用说明", OWNER);
+            Note n1 = noteService.create(nbId, "一、项目架构 · 设计方案 · 使用说明", "RICHTEXT", OWNER);
             noteService.updateBody(nbId, n1.getId(), n1.getTitle(), NOTE1_HTML, OWNER);
             log.info("system note #1 ingested");
 
-            Note n2 = noteService.create(nbId, "二、AgentScope 生产级应用与组件机制", OWNER);
+            Note n2 = noteService.create(nbId, "二、AgentScope 生产级应用与组件机制", "RICHTEXT", OWNER);
             noteService.updateBody(nbId, n2.getId(), n2.getTitle(), NOTE2_HTML, OWNER);
             log.info("system note #2 ingested");
 

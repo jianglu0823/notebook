@@ -41,6 +41,7 @@ public class AllNoteController {
         c.setNotebookId(n.getNotebookId());
         c.setNotebookName(notebookName);
         c.setTitle(n.getTitle());
+        c.setType(n.getType());
         c.setPreview(preview(n.getContent()));
         c.setCreatedAt(n.getCreatedAt());
         c.setUpdatedAt(n.getUpdatedAt());
@@ -58,6 +59,7 @@ public class AllNoteController {
         private Long notebookId;
         private String notebookName;
         private String title;
+        private String type;
         private String preview;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
