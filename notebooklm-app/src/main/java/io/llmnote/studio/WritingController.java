@@ -24,7 +24,8 @@ public class WritingController {
         return service.create(principal.ownerId(),
                 req == null ? null : req.getTopic(),
                 req == null ? null : req.getGenre(),
-                req == null ? null : req.getMaxRounds());
+                req == null ? null : req.getMaxRounds(),
+                req == null ? null : req.getModel());
     }
 
     @GetMapping
@@ -48,5 +49,6 @@ public class WritingController {
         private String topic;
         private String genre;
         private Integer maxRounds;
+        private String model;
     }
 }

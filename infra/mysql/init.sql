@@ -158,11 +158,146 @@ CREATE TABLE IF NOT EXISTS writing_project (
     events         MEDIUMTEXT    NULL COMMENT '协作事件时间线 JSON 数组(节点/思考/工具调用实时追加)',
     final_text     MEDIUMTEXT    NULL COMMENT '收敛后的终稿',
     approved       TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '编辑是否 APPROVE 收敛',
+    model          VARCHAR(32)   NULL COMMENT '本次协作使用的模型',
+    input_tokens   BIGINT        NOT NULL DEFAULT 0 COMMENT '累计输入 token',
+    output_tokens  BIGINT        NOT NULL DEFAULT 0 COMMENT '累计输出 token',
+    cost_rmb       DECIMAL(12,6) NOT NULL DEFAULT 0 COMMENT '按模型单价换算的费用(元)',
     error_msg      VARCHAR(2048) NULL,
     created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_writing_owner (owner_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:员工(可配置人设的 ReActAgent)
+CREATE TABLE IF NOT EXISTS agent_employee (
+    id             BIGINT PRIMARY KEY AUTO_INCREMENT,
+    owner_id       VARCHAR(64)   NOT NULL COMMENT '主体:斯坦福小镇模式下统一为 world(全局共享)',
+    name           VARCHAR(64)   NOT NULL COMMENT '员工名字',
+    avatar         VARCHAR(16)   NULL COMMENT '头像 emoji',
+    title          VARCHAR(64)   NULL COMMENT '职位/角色',
+    persona        TEXT          NULL COMMENT '性格人设(作为 system prompt)',
+    color          VARCHAR(16)   NULL COMMENT '主题色 hex',
+    office_x       INT           NOT NULL DEFAULT 0 COMMENT '地图/网格横向工位(家/基点)',
+    office_y       INT           NOT NULL DEFAULT 0 COMMENT '地图/网格纵向工位(家/基点)',
+    birth_date     DATE          NULL COMMENT '出生日期',
+    creator        VARCHAR(64)   NULL COMMENT '创造者',
+    mood           VARCHAR(32)   NULL COMMENT '心情状态文字',
+    mood_emoji     VARCHAR(16)   NULL COMMENT '心情 emoji',
+    status         VARCHAR(16)   NOT NULL DEFAULT 'active' COMMENT 'active / jailed(小黑屋,软删除)',
+    autonomous_active TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否参与自主行动',
+    pos_x          DOUBLE        NULL COMMENT '地图漫游当前 x',
+    pos_y          DOUBLE        NULL COMMENT '地图漫游当前 y',
+    location       VARCHAR(32)   NULL COMMENT '当前所在具名地点 key(见 TownMap)',
+    created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_agent_owner (owner_id),
+    INDEX idx_agent_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:话题会议/群聊(多员工轮流发言,events 记录发言时间线)
+CREATE TABLE IF NOT EXISTS agent_meeting (
+    id               BIGINT PRIMARY KEY AUTO_INCREMENT,
+    owner_id         VARCHAR(64)   NOT NULL COMMENT '主体:u:<id> / g:<uuid>',
+    status           VARCHAR(32)   NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/RUNNING/DONE/FAILED',
+    topic            VARCHAR(512)  NOT NULL COMMENT '会议议题',
+    participant_ids  TEXT          NULL COMMENT '参会员工 id JSON 数组',
+    max_rounds       INT           NOT NULL DEFAULT 3 COMMENT '发言轮数',
+    events           MEDIUMTEXT    NULL COMMENT '发言时间线 JSON 数组(实时追加,前端围观)',
+    summary          MEDIUMTEXT    NULL COMMENT '主持人总结',
+    model            VARCHAR(32)   NULL COMMENT '本场会议使用的模型',
+    input_tokens     BIGINT        NOT NULL DEFAULT 0 COMMENT '累计输入 token',
+    output_tokens    BIGINT        NOT NULL DEFAULT 0 COMMENT '累计输出 token',
+    cost_rmb         DECIMAL(12,6) NOT NULL DEFAULT 0 COMMENT '按模型单价换算的费用(元)',
+    error_msg        VARCHAR(2048) NULL,
+    created_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_meeting_owner (owner_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:员工长期记忆/事件流(可观测,供前端时间线 + 跨员工引用)
+CREATE TABLE IF NOT EXISTS agent_memory (
+    id               BIGINT PRIMARY KEY AUTO_INCREMENT,
+    agent_id         BIGINT        NOT NULL COMMENT '所属员工 id',
+    kind             VARCHAR(16)   NOT NULL COMMENT 'observation/dialogue/meeting/reflection/action',
+    content          TEXT          NOT NULL COMMENT '记忆内容',
+    importance       INT           NOT NULL DEFAULT 5 COMMENT '重要度 1~10',
+    related_agent_id BIGINT        NULL COMMENT '相关员工(如对话/找人)',
+    created_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_mem_agent (agent_id),
+    INDEX idx_mem_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:1:1 对话消息(用户 ↔ 员工)
+CREATE TABLE IF NOT EXISTS agent_chat_msg (
+    id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+    agent_id      BIGINT        NOT NULL COMMENT '对话的员工 id',
+    owner_id      VARCHAR(64)   NOT NULL COMMENT '发起对话的用户主体',
+    role          VARCHAR(8)    NOT NULL COMMENT 'user / agent',
+    content       TEXT          NOT NULL COMMENT '消息内容',
+    input_tokens  BIGINT        NOT NULL DEFAULT 0,
+    output_tokens BIGINT        NOT NULL DEFAULT 0,
+    cost_rmb      DECIMAL(12,6) NOT NULL DEFAULT 0,
+    created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_chat_agent_owner (agent_id, owner_id),
+    INDEX idx_chat_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:群聊会话(用户 + 多名居民,交互式多轮,支持中途增减成员)
+CREATE TABLE IF NOT EXISTS agent_group_chat (
+    id             BIGINT PRIMARY KEY AUTO_INCREMENT,
+    owner_id       VARCHAR(64)   NOT NULL COMMENT '主体:u:<id> / g:<uuid>',
+    title          VARCHAR(255)  NOT NULL COMMENT '群聊标题',
+    member_ids     TEXT          NULL COMMENT '当前在场成员 id JSON 数组',
+    model          VARCHAR(32)   NULL COMMENT '本群使用模型',
+    input_tokens   BIGINT        NOT NULL DEFAULT 0,
+    output_tokens  BIGINT        NOT NULL DEFAULT 0,
+    cost_rmb       DECIMAL(12,6) NOT NULL DEFAULT 0,
+    created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_group_owner (owner_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:群聊消息(role=user/agent/system)
+CREATE TABLE IF NOT EXISTS agent_group_msg (
+    id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+    chat_id       BIGINT        NOT NULL COMMENT '所属群聊 id',
+    agent_id      BIGINT        NULL COMMENT '发言居民 id(user/system 为空)',
+    role          VARCHAR(8)    NOT NULL COMMENT 'user / agent / system',
+    content       TEXT          NOT NULL COMMENT '消息内容',
+    input_tokens  BIGINT        NOT NULL DEFAULT 0,
+    output_tokens BIGINT        NOT NULL DEFAULT 0,
+    cost_rmb      DECIMAL(12,6) NOT NULL DEFAULT 0,
+    created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_gmsg_chat (chat_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:自主行动记录(移动/思考/找人说话/反思)
+CREATE TABLE IF NOT EXISTS agent_action (
+    id               BIGINT PRIMARY KEY AUTO_INCREMENT,
+    agent_id         BIGINT        NOT NULL COMMENT '行动的员工 id',
+    type             VARCHAR(16)   NOT NULL COMMENT 'move/think/talk/reflect/goto',
+    content          TEXT          NULL COMMENT '行动描述/说的话',
+    target_agent_id  BIGINT        NULL COMMENT '找人说话的对象员工 id',
+    place            VARCHAR(32)   NULL COMMENT '行动发生地点 key(见 TownMap)',
+    scene            VARCHAR(64)   NULL COMMENT '场景短标题(可空)',
+    input_tokens     BIGINT        NOT NULL DEFAULT 0,
+    output_tokens    BIGINT        NOT NULL DEFAULT 0,
+    cost_rmb         DECIMAL(12,6) NOT NULL DEFAULT 0,
+    created_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_action_agent (agent_id),
+    INDEX idx_action_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:全局世界设置(单行 id=1)
+CREATE TABLE IF NOT EXISTS agent_world_settings (
+    id                 BIGINT PRIMARY KEY COMMENT '固定为 1',
+    autonomous_enabled TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '自主行动总开关(默认关)',
+    interval_seconds   INT         NOT NULL DEFAULT 600 COMMENT '自主行动间隔秒(默认 10 分钟)',
+    model              VARCHAR(32)  NOT NULL DEFAULT 'qwen-turbo' COMMENT '自主行动使用模型',
+    updated_at         DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+INSERT IGNORE INTO agent_world_settings (id, autonomous_enabled, interval_seconds, model)
+VALUES (1, 0, 600, 'qwen-turbo');
 
 -- 访问/操作日志(登录、注册及各类写操作;记录 IP、设备、动作)
 CREATE TABLE IF NOT EXISTS access_log (

@@ -52,6 +52,20 @@ public class WritingProject {
     @Column(nullable = false)
     private Boolean approved = false;
 
+    /** 本次协作使用的模型 */
+    @Column(length = 32)
+    private String model;
+
+    @Column(name = "input_tokens", nullable = false)
+    private Long inputTokens = 0L;
+
+    @Column(name = "output_tokens", nullable = false)
+    private Long outputTokens = 0L;
+
+    /** 按模型单价换算的费用(元) */
+    @Column(name = "cost_rmb", nullable = false)
+    private java.math.BigDecimal costRmb = java.math.BigDecimal.ZERO;
+
     @Column(name = "error_msg", length = 2048)
     private String errorMsg;
 

@@ -216,6 +216,158 @@
   body.writing #aiFab { display:none !important; }
   body.writing #homeView { display:none !important; }
   body.writing #writingView { display:block; }
+  /* ---- 工作台 · 智能体小世界 ---- */
+  #worldView { display:none; grid-column:2 / -1; grid-row:1; overflow-y:auto; background:var(--bg); padding:0 0 var(--sp-4); }
+  body.world #listCol, body.world #editorCol, body.world #aiPanel { display:none !important; }
+  body.world #aiFab { display:none !important; }
+  body.world #homeView { display:none !important; }
+  body.world #worldView { display:block; }
+  .world-tabs { display:inline-flex; gap:4px; margin-left:auto; background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:3px; }
+  .world-tabs .wtab { border:none; background:transparent; color:var(--mut); font-weight:650; font-size:13px; padding:6px 14px; border-radius:calc(var(--radius) - 3px); cursor:pointer; transition:all .15s ease-in-out; }
+  .world-tabs .wtab:hover { color:var(--fg); }
+  .world-tabs .wtab.active { background:var(--accent); color:#04211d; }
+  .cost-line { margin-top:10px; font-size:13px; color:var(--mut); background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:8px 12px; }
+  .cost-line:empty { display:none; }
+  .cost-line b { color:var(--fg); }
+  .price-cap { font-weight:700; font-size:13px; color:var(--fg); margin:12px 0 6px; }
+  .price-cap:first-child { margin-top:0; }
+  .price-tbl { width:100%; border-collapse:collapse; font-size:13px; }
+  .price-tbl th, .price-tbl td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); }
+  .price-tbl th { color:var(--mut); font-weight:650; }
+  .price-tbl td.mut { color:var(--mut); }
+  .office-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-top:6px; }
+  .office-room { position:relative; border:1px solid var(--line); border-top:3px solid var(--rc,#2dd4bf); border-radius:var(--radius); background:var(--panel2); padding:16px 14px 14px; transition:all .2s ease-in-out; overflow:visible; }
+  .office-room:hover { border-color:var(--line-strong); transform:translateY(-2px); }
+  .office-room.speaking { box-shadow:0 0 0 2px var(--rc,#2dd4bf), 0 6px 22px color-mix(in srgb,var(--rc,#2dd4bf) 35%,transparent); }
+  .office-room .oavatar { font-size:34px; line-height:1; margin-bottom:8px; }
+  .office-room .oname { font-weight:750; font-size:14.5px; color:var(--fg); }
+  .office-room .otitle { font-size:12px; color:var(--mut); margin-top:2px; }
+  .office-room .ostatus { position:absolute; top:12px; right:12px; width:9px; height:9px; border-radius:50%; background:var(--line-strong); }
+  .office-room.speaking .ostatus { background:var(--rc,#2dd4bf); animation:pulse 1s ease-in-out infinite; }
+  .office-room .oacts { display:flex; gap:6px; margin-top:10px; }
+  .office-room .oacts button { padding:4px 9px; font-size:11px; flex:1; }
+  .speech-bubble { position:absolute; bottom:calc(100% + 8px); left:10px; right:10px; background:var(--fg); color:var(--bg); font-size:12px; line-height:1.5; padding:8px 11px; border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,.3); z-index:5; animation:fadeUp .28s ease-in-out; }
+  .speech-bubble::after { content:''; position:absolute; top:100%; left:22px; border:6px solid transparent; border-top-color:var(--fg); }
+  .office-room.add-room { display:flex; flex-direction:column; align-items:center; justify-content:center; border-style:dashed; border-top-style:dashed; border-top-color:var(--line); cursor:pointer; color:var(--mut); min-height:120px; }
+  .office-room.add-room:hover { color:var(--accent); border-color:var(--accent); }
+  .office-room.add-room .plus { font-size:30px; line-height:1; margin-bottom:6px; }
+  .map-wrap { margin-top:6px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:#0d1512; }
+  #worldMap { display:block; width:100%; height:auto; image-rendering:pixelated; cursor:pointer; }
+  /* 像素小镇容器 + 浮动场景卡覆盖层 */
+  .town-wrap { position:relative; width:100%; }
+  .scene-layer { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .scene-card { position:absolute; width:190px; transform:translate(-50%,-100%); background:var(--panel); border:1px solid var(--line-strong);
+    border-radius:12px; box-shadow:0 8px 26px rgba(0,0,0,.42); overflow:hidden; opacity:0; transition:opacity .4s ease-in-out, transform .4s ease-in-out;
+    transform-origin:bottom center; z-index:6; }
+  .scene-card.in { opacity:1; transform:translate(-50%,-100%) translateY(-8px); }
+  .scene-card.out { opacity:0; transform:translate(-50%,-100%) translateY(2px); }
+  .scene-card .sc-head { display:flex; align-items:center; gap:6px; padding:6px 10px; background:color-mix(in srgb,var(--accent) 22%,var(--panel2));
+    border-bottom:1px solid var(--line); font-weight:750; font-size:12px; color:var(--fg); }
+  .scene-card .sc-head .sc-emoji { font-size:14px; }
+  .scene-card .sc-body { padding:8px 10px; display:flex; flex-direction:column; gap:5px; }
+  .scene-card .sc-line { font-size:11.5px; line-height:1.5; color:var(--fg); }
+  .scene-card .sc-line b { color:var(--accent); font-weight:700; }
+  .scene-card::after { content:''; position:absolute; left:50%; top:100%; transform:translateX(-50%);
+    border:7px solid transparent; border-top-color:var(--line-strong); }
+  /* 自主行动控制条 */
+  .auto-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:var(--sp-3); }
+  .auto-bar .ab-title { font-weight:750; font-size:13.5px; color:var(--fg); }
+  .auto-bar .ab-sep { width:1px; height:18px; background:var(--line); }
+  .auto-bar .ab-state { font-size:12px; }
+  .switch { position:relative; display:inline-block; width:42px; height:22px; flex:none; }
+  .switch input { opacity:0; width:0; height:0; }
+  .switch .slider { position:absolute; inset:0; background:var(--line-strong); border-radius:22px; transition:.2s; cursor:pointer; }
+  .switch .slider::before { content:''; position:absolute; height:16px; width:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.2s; }
+  .switch input:checked + .slider { background:var(--accent); }
+  .switch input:checked + .slider::before { transform:translateX(20px); }
+  .sec.danger { color:#ef4444; border-color:color-mix(in srgb,#ef4444 40%,transparent); }
+  .sec.danger:hover { background:color-mix(in srgb,#ef4444 12%,transparent); }
+  /* 实时动态 feed */
+  .feed-box { margin-top:10px; max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
+  .feed-item { font-size:12.5px; line-height:1.5; padding:7px 11px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); }
+  .feed-item .fi-who { font-weight:700; }
+  .feed-item .fi-kind { font-size:10.5px; color:var(--mut); border:1px solid var(--line); border-radius:10px; padding:1px 7px; margin-left:6px; }
+  /* 村民动态面板:筛选条 + 列表 */
+  .act-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0 12px; }
+  .act-input { background:var(--panel2); border:1px solid var(--line); border-radius:9px; color:var(--fg); font-size:13px; padding:7px 11px; outline:none; }
+  .act-input:focus { border-color:var(--accent); }
+  input.act-input { flex:1; min-width:180px; }
+  .act-list { max-height:440px; overflow-y:auto; display:flex; flex-direction:column; gap:7px; }
+  .act-row { display:flex; align-items:flex-start; gap:9px; padding:9px 12px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); font-size:13px; line-height:1.55; }
+  .act-row .ar-ava { font-size:16px; flex:none; }
+  .act-row .ar-main { flex:1; min-width:0; }
+  .act-row .ar-head { display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-bottom:2px; }
+  .act-row .ar-name { font-weight:700; }
+  .act-row .ar-kind { font-size:10.5px; color:var(--mut); border:1px solid var(--line); border-radius:9px; padding:1px 7px; }
+  .act-row .ar-kind.k-source { background:color-mix(in srgb,var(--accent) 16%,transparent); color:var(--accent); border-color:transparent; }
+  .act-row .ar-time { font-size:11px; color:var(--mut); margin-left:auto; }
+  .act-row .ar-content { color:var(--fg); word-break:break-word; }
+  .act-row .ar-tgt { color:var(--mut); }
+  /* 居民卡上的心情/生日 */
+  .office-room .omood { font-size:11.5px; color:var(--mut); margin-top:4px; }
+  .office-room .obirth { position:absolute; top:12px; left:12px; font-size:10.5px; color:var(--mut); }
+  /* 1:1 对话 */
+  .chat-log { max-height:48vh; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:4px 2px; margin-bottom:12px; }
+  .chat-msg { max-width:78%; padding:9px 13px; border-radius:12px; font-size:13.5px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+  .chat-msg.user { align-self:flex-end; background:var(--accent); color:#04211d; border-bottom-right-radius:4px; }
+  .chat-msg.agent { align-self:flex-start; background:var(--panel2); border:1px solid var(--line); border-bottom-left-radius:4px; }
+  /* 群聊:每条 agent 消息带发言人名条,system 居中提示 */
+  .chat-msg .cm-who { display:block; font-size:11px; font-weight:700; margin-bottom:3px; opacity:.85; }
+  .chat-msg.system { align-self:center; max-width:90%; background:transparent; border:none; color:var(--mut); font-size:12px; text-align:center; padding:2px 0; }
+  /* 群聊成员管理条 */
+  .gc-members { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; align-items:center; }
+  .gc-chip { display:inline-flex; align-items:center; gap:5px; border:1px solid var(--line); border-left:3px solid var(--rc,#2dd4bf); border-radius:999px; padding:3px 6px 3px 10px; background:var(--panel2); font-size:12.5px; }
+  .gc-chip .gc-rm { cursor:pointer; border:none; background:transparent; color:var(--mut); font-size:14px; line-height:1; padding:0 2px; }
+  .gc-chip .gc-rm:hover { color:var(--danger,#f87171); }
+  .gc-add { border:1px dashed var(--line-strong); border-radius:999px; padding:3px 12px; font-size:12.5px; cursor:pointer; background:transparent; color:var(--mut); }
+  .gc-add:hover { color:var(--fg); border-color:var(--accent); }
+  .g-work-item { display:flex; align-items:center; gap:8px; padding:9px 12px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); cursor:pointer; margin-bottom:7px; }
+  .g-work-item:hover { border-color:var(--line-strong); }
+  .g-work-item .gtitle { flex:1; font-weight:650; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .g-work-item .gcount { font-size:11.5px; color:var(--mut); }
+  .meeting-topic { font-weight:700; font-size:14px; margin-bottom:12px; color:var(--fg); }
+  /* 像素会议舞台 */
+  .stage-wrap { margin-bottom:14px; }
+  .stage-frame { position:relative; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 24px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, transparent 1px 24px),
+      radial-gradient(120% 90% at 50% 0%, #182a2f 0%, #0d1512 70%); }
+  #meetingStage { display:block; width:100%; height:auto; image-rendering:pixelated; }
+  .stage-badge { position:absolute; top:8px; left:10px; font-size:11px; font-weight:700; letter-spacing:.4px;
+    color:var(--mut); background:color-mix(in srgb,var(--bg) 70%,transparent); border:1px solid var(--line);
+    padding:3px 9px; border-radius:20px; pointer-events:none; }
+  .stage-bar { display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap; }
+  .stage-btn { padding:6px 14px; font-size:12.5px; flex:none; }
+  #replaySlider { flex:1; min-width:120px; accent-color:var(--accent); cursor:pointer; }
+  .stage-time { font-size:12px; flex:none; font-variant-numeric:tabular-nums; }
+  .stage-speeds { display:inline-flex; gap:4px; flex:none; }
+  .stage-speeds .chip { padding:3px 9px; font-size:11.5px; }
+  .m-work-item { display:flex; align-items:center; gap:10px; padding:11px 13px; border:1px solid var(--line); border-radius:var(--radius); margin-bottom:8px; cursor:pointer; transition:all .15s ease-in-out; }
+  .m-work-item:hover { border-color:var(--line-strong); background:var(--panel2); }
+  .m-work-item .mtopic { font-weight:650; font-size:14px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .m-work-item button { padding:6px 12px; font-size:12px; flex:none; }
+  .mbadge { font-size:11px; padding:2px 9px; border-radius:12px; border:1px solid var(--line); flex:none; }
+  .mbadge.running { color:#f59e0b; border-color:color-mix(in srgb,#f59e0b 45%,transparent); }
+  .mbadge.done { color:#22c55e; border-color:color-mix(in srgb,#22c55e 45%,transparent); }
+  .mbadge.failed { color:#ef4444; border-color:color-mix(in srgb,#ef4444 45%,transparent); }
+  .agent-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border:1px solid var(--line); border-radius:20px; cursor:pointer; font-size:13px; transition:all .15s ease-in-out; user-select:none; }
+  .agent-chip:hover { border-color:var(--line-strong); }
+  .agent-chip.on { border-color:var(--rc,#2dd4bf); background:color-mix(in srgb,var(--rc,#2dd4bf) 12%,transparent); }
+  .mcard-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; max-height:44vh; overflow-y:auto; padding:2px; }
+  .mcard { position:relative; border:1px solid var(--line); border-left:3px solid var(--rc,#2dd4bf); border-radius:var(--radius); background:var(--panel2); padding:10px 11px; cursor:pointer; transition:all .15s ease-in-out; user-select:none; }
+  .mcard:hover { border-color:var(--line-strong); transform:translateY(-1px); }
+  .mcard.on { background:color-mix(in srgb,var(--rc,#2dd4bf) 14%,transparent); border-color:var(--rc,#2dd4bf); }
+  .mcard-head { display:flex; align-items:center; gap:6px; }
+  .mcard-ava { font-size:18px; line-height:1; }
+  .mcard-name { font-weight:700; font-size:14px; color:var(--fg); }
+  .mcard-check { margin-left:auto; color:var(--rc,#2dd4bf); font-weight:800; opacity:0; transition:opacity .15s ease-in-out; }
+  .mcard.on .mcard-check { opacity:1; }
+  .mcard-title { font-size:12px; font-weight:650; margin-top:3px; }
+  .mcard-persona { font-size:11.5px; color:var(--mut); margin-top:5px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .mcard-pos { font-size:11px; color:var(--mut); margin-top:6px; opacity:.8; }
+  @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+  #meetingTimeline .tl-ev:not(.system)::before { background:var(--dc,#2dd4bf); }
   .w-genre { display:flex; gap:10px; flex-wrap:wrap; margin:6px 0 14px; }
   .w-genre .gcard { flex:1 1 150px; min-width:150px; text-align:left; padding:12px 14px; border-radius:var(--radius); border:1px solid var(--line); background:var(--panel2); cursor:pointer; transition:all .18s ease-in-out; }
   .w-genre .gcard:hover { border-color:var(--line-strong); transform:translateY(-1px); }
@@ -264,7 +416,7 @@
   .studio-hero .greetline { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
   .studio-hero h1 { font-size:26px; font-weight:850; letter-spacing:-.5px; line-height:1.2; }
   .studio-hero .sub { margin-top:10px; color:var(--mut); font-size:14px; }
-  .studio-wrap { max-width:1040px; margin:0 auto; padding:var(--sp-3) var(--sp-4) 0; }
+  .studio-wrap { max-width:1440px; margin:0 auto; padding:var(--sp-3) var(--sp-4) 0; }
   .studio-topbar { display:flex; gap:10px; margin-bottom:var(--sp-3); }
   .studio-steps { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:var(--sp-3); }
   .studio-steps .sitem { display:flex; align-items:center; gap:7px; padding:7px 13px; border-radius:22px; border:1px solid var(--line); background:var(--panel); font-size:13px; color:var(--mut); font-weight:600; }
@@ -372,6 +524,7 @@
   /* auth / confirm modal */
   .modal { position:fixed; inset:0; background:rgba(4,10,12,.62); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center; z-index:100; animation:fadeIn .18s ease; }
   .modal .box { background:var(--panel); border:1px solid var(--line-strong); border-radius:var(--radius-lg); padding:var(--sp-3); width:340px; box-shadow:var(--shadow); animation:popIn .2s cubic-bezier(.2,.8,.3,1); }
+  .modal .box.box-wide { width:min(680px,92vw); max-height:90vh; overflow-y:auto; }
   .modal h2 { font-size:16px; margin-bottom:var(--sp-2); }
   .modal .row { margin-bottom:12px; }
   @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
@@ -522,6 +675,7 @@
           <div class="studio-entries">
             <button class="tbtn" onclick="selectStudio()"><span class="ti">📱</span><span class="tl">小红书文案</span></button>
             <button class="tbtn" onclick="selectWriting()"><span class="ti">✍️</span><span class="tl">协作写作</span></button>
+            <button class="tbtn" onclick="selectWorld()"><span class="ti">🏙️</span><span class="tl">智能体小世界</span></button>
             <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">🎬</span><span class="tl">短视频生成</span></button>
             <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">📊</span><span class="tl">公众号排版</span></button>
           </div>
@@ -637,6 +791,10 @@
             <span class="mut">协作轮数:</span>
             <div class="chips" id="wRoundChips"></div>
           </div>
+          <div class="pub-row">
+            <span class="mut">模型:</span>
+            <div class="chips" id="wModelChips"></div>
+          </div>
           <div class="img-actions"><button id="wSubmitBtn" onclick="submitWriting()">✦ 开始协作创作</button></div>
         </div>
 
@@ -658,11 +816,128 @@
           <div class="widget hidden" id="wFinalBox">
             <div class="wt">🏆 终稿 <span class="xbadge" id="wApprovedBadge"></span></div>
             <div class="copy-box" id="wFinal"></div>
+            <div id="wCost" class="cost-line"></div>
             <div class="img-actions">
               <button onclick="copyWFinal()">📋 复制终稿</button>
               <button class="sec" onclick="newWriting()">＋ 再来一篇</button>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 工作台 · 智能体小世界 -->
+    <section id="worldView">
+      <div class="studio-hero">
+        <div class="hi">工作台 · 智能体小世界</div>
+        <div class="greetline"><h1>一个由你创建的智能体小世界</h1></div>
+        <div class="sub">新增员工(智能体)、给他们配置人设,再发起一场话题会议,看他们围绕议题轮流发言、相互回应。办公室视图与像素地图两种围观方式。</div>
+      </div>
+      <div class="studio-wrap">
+        <div class="studio-topbar">
+          <button class="sec" onclick="openAgentForm()">＋ 新增居民</button>
+          <button class="sec" onclick="openGroupChatForm()">👥 群聊</button>
+          <button class="sec" onclick="toggleGroups()" id="groupsToggle">📂 群聊记录</button>
+          <button class="sec" onclick="openMeetingForm()">💬 发起会议</button>
+          <button class="sec" onclick="toggleMeetings()" id="meetingsToggle">📁 历史会议</button>
+          <button class="sec" onclick="toggleActivity()" id="activityToggle">📊 村民动态</button>
+          <div class="world-tabs" id="worldTabs">
+            <button class="wtab active" data-tab="map" onclick="switchWorldTab('map')">🗺 小镇</button>
+            <button class="wtab" data-tab="jail" onclick="switchWorldTab('jail')">🚫 小黑屋</button>
+          </div>
+        </div>
+
+        <!-- 自主行动控制条 -->
+        <div class="widget auto-bar" id="autoBar">
+          <span class="ab-title">🤖 自主行动</span>
+          <label class="switch"><input type="checkbox" id="autoToggle" onchange="toggleAutonomous(this.checked)"><span class="slider"></span></label>
+          <span class="ab-sep"></span>
+          <span class="mut">间隔</span>
+          <div class="chips" id="autoIntervalChips"></div>
+          <span class="ab-sep"></span>
+          <span class="mut">模型</span>
+          <div class="chips" id="autoModelChips"></div>
+          <button class="sec danger" onclick="stopAllAutonomous()" style="margin-left:auto">■ 全部停止</button>
+          <span class="ab-state mut" id="autoState"></span>
+        </div>
+
+        <div id="meetingsPanel" class="widget hidden">
+          <div class="wt">📁 历史会议</div>
+          <div id="meetingsList"><div class="mut">加载中…</div></div>
+        </div>
+
+        <div id="groupsPanel" class="widget hidden">
+          <div class="wt">📂 群聊记录</div>
+          <div id="groupsList"><div class="mut">加载中…</div></div>
+        </div>
+
+        <!-- 村民动态:全量行动/记忆流水,支持搜索 + 类型 + 村民维度筛选 -->
+        <div id="activityPanel" class="widget hidden">
+          <div class="wt">📊 村民动态</div>
+          <div class="act-filters">
+            <input type="text" id="actSearch" class="act-input" placeholder="🔍 搜索动态内容…" oninput="renderActivity()">
+            <select id="actType" class="act-input" onchange="renderActivity()">
+              <option value="">全部类型</option>
+              <option value="goto">🚶 移动</option>
+              <option value="talk">🗣 交谈</option>
+              <option value="think">💭 思考</option>
+              <option value="reflect">✨ 反思</option>
+              <option value="dialogue">💬 对话记忆</option>
+              <option value="observation">👀 观察</option>
+              <option value="meeting">📋 会议</option>
+              <option value="reflection">🌱 内省</option>
+            </select>
+            <select id="actAgent" class="act-input" onchange="renderActivity()">
+              <option value="">全部村民</option>
+            </select>
+            <button class="sec" onclick="loadActivity()">🔄 刷新</button>
+          </div>
+          <div id="activityList" class="act-list"><div class="mut">加载中…</div></div>
+        </div>
+
+        <!-- 小镇视图:像素地图 + 居民列表聚合在一起 -->
+        <div class="widget" id="mapPane">
+          <div class="wt">🗺 斯坦福小镇</div>
+          <div class="wd">居民按坐标在镇上走动,头顶显示心情。开启「自主行动」后他们会自己思考、漫步、串门聊天;下方是实时动态。</div>
+          <div class="map-wrap"><div class="town-wrap"><canvas id="worldMap" width="960" height="640" onclick="mapClick(event)"></canvas><div class="scene-layer" id="sceneLayer"></div></div></div>
+          <div class="feed-box" id="worldFeed"></div>
+          <div class="wt" style="margin-top:var(--sp-4)">🏢 小镇居民</div>
+          <div class="wd">每位居民是一个带长期记忆、性格与心情的智能体。点「对话」和他单独聊,或发起会议围观群聊。会议进行中,发言者会高亮冒泡。</div>
+          <div class="office-grid" id="officeGrid"><div class="mut">加载中…</div></div>
+        </div>
+
+        <!-- 小黑屋视图 -->
+        <div class="widget hidden" id="jailPane">
+          <div class="wt">🚫 小黑屋</div>
+          <div class="wd">被「删除」的居民会被关进这里,数据保留。可随时释放,恢复在册。</div>
+          <div class="office-grid" id="jailGrid"><div class="mut">加载中…</div></div>
+        </div>
+
+        <!-- 会议日志(共享) -->
+        <div class="widget hidden" id="meetingRun">
+          <div class="wt">💬 会议进行中 <span class="mut" id="meetingStatusHint"></span></div>
+          <div class="meeting-topic" id="meetingTopic"></div>
+
+          <!-- 像素会议舞台:参会者聚到一起,走动/发言 -->
+          <div class="stage-wrap" id="meetingStageWrap">
+            <div class="stage-frame">
+              <canvas id="meetingStage" width="760" height="360"></canvas>
+              <div class="stage-badge" id="stageBadge"></div>
+            </div>
+            <div class="stage-bar" id="stageBar">
+              <button class="sec stage-btn" id="replayPlayBtn" onclick="toggleReplay()">▶ 回放</button>
+              <input type="range" id="replaySlider" min="0" max="0" value="0" step="1" oninput="seekReplay(this.value)">
+              <span class="mut stage-time" id="replayCounter">0 / 0</span>
+              <div class="stage-speeds" id="replaySpeeds"></div>
+            </div>
+          </div>
+
+          <div class="w-timeline" id="meetingTimeline"></div>
+          <div class="widget hidden" id="meetingSummaryBox" style="margin-top:var(--sp-2);background:transparent;padding:0;border:0">
+            <div class="wt">🧑‍⚖️ 主持人总结</div>
+            <div class="copy-box" id="meetingSummary"></div>
+          </div>
+          <div id="meetingCost" class="cost-line"></div>
         </div>
       </div>
     </section>
@@ -679,6 +954,7 @@
         <div class="navitem" id="view-all" onclick="selectAll()"><span class="ic">📝</span><span class="lbl">全部笔记</span></div>
         <div class="navitem" id="view-studio" onclick="selectStudio()"><span class="ic">🛠</span><span class="lbl">工作台</span></div>
         <div class="navitem" id="view-writing" onclick="selectWriting()"><span class="ic">✍️</span><span class="lbl">协作写作</span></div>
+        <div class="navitem" id="view-world" onclick="selectWorld()"><span class="ic">🏙️</span><span class="lbl">智能体小世界</span></div>
         <div class="navitem muted" onclick="soon()"><span class="ic">🕐</span><span class="lbl">最近</span></div>
         <div class="navitem muted" onclick="soon()"><span class="ic">⭐</span><span class="lbl">快捷方式</span></div>
       </div>
@@ -889,6 +1165,124 @@
 
 <div id="toastWrap" aria-live="polite" aria-atomic="true"></div>
 
+<div id="agentModal" class="modal hidden">
+  <div class="box">
+    <h2 id="agentModalTitle">＋ 新增居民</h2>
+    <div class="row" style="gap:8px">
+      <input id="agentAvatar" placeholder="头像 emoji" style="flex:0 0 90px;text-align:center;font-size:20px">
+      <input id="agentName" placeholder="名字,如「小林」" style="flex:1">
+    </div>
+    <div class="row"><input id="agentTitle" placeholder="职位/身份,如「杂货铺老板」"></div>
+    <div class="row"><textarea id="agentPersona" rows="4" placeholder="性格与人设(作为 system prompt),如「你性格直率、数据驱动,喜欢用事实说话,擅长挑战不严谨的观点」"></textarea></div>
+    <div class="row" style="gap:8px">
+      <div style="flex:1"><span class="mut" style="font-size:12px">出生日期</span>
+        <input id="agentBirth" type="date" style="width:100%"></div>
+      <div style="flex:1"><span class="mut" style="font-size:12px">当前心情</span>
+        <input id="agentMood" placeholder="如「平静」" style="width:100%"></div>
+      <div style="flex:0 0 90px"><span class="mut" style="font-size:12px">心情 emoji</span>
+        <input id="agentMoodEmoji" placeholder="🙂" style="width:100%;text-align:center"></div>
+    </div>
+    <div class="row" style="gap:8px;align-items:center">
+      <span class="mut">主题色</span>
+      <input id="agentColor" type="color" value="#2dd4bf" style="flex:0 0 48px;height:34px;padding:2px">
+      <span class="mut" style="flex:1;font-size:12px">用于居民卡边框与地图小人着色</span>
+    </div>
+    <div class="row" style="gap:8px">
+      <button onclick="saveAgent()" id="agentSaveBtn" style="flex:1">保存</button>
+      <button class="sec" onclick="closeAgentForm()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 1:1 对话面板 -->
+<div id="chatModal" class="modal hidden">
+  <div class="box box-wide">
+    <h2 id="chatModalTitle">💬 对话</h2>
+    <div class="chat-log" id="chatLog"><div class="mut">加载中…</div></div>
+    <div class="row" style="gap:8px">
+      <input id="chatInput" placeholder="说点什么…" style="flex:1" onkeydown="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()" id="chatSendBtn">发送</button>
+      <button class="sec" onclick="closeChat()">关闭</button>
+    </div>
+    <div id="chatCost" class="cost-line"></div>
+  </div>
+</div>
+
+<div id="meetingModal" class="modal hidden">
+  <div class="box box-wide">
+    <h2>💬 发起话题会议</h2>
+    <div class="row"><input id="meetingTopicInput" placeholder="议题,如「远程办公的利与弊」"></div>
+    <div class="row" style="flex-direction:column;align-items:stretch;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="mut">选择参会员工(至少 2 名),看头衔与人设挑人</span>
+        <span class="mut" id="meetingPickHint" style="font-size:12px"></span>
+      </div>
+      <div id="meetingAgentChips" class="mcard-grid"></div>
+    </div>
+    <div class="row" style="gap:8px;align-items:center">
+      <span class="mut">发言轮数</span>
+      <div class="chips" id="meetingRoundChips" style="flex:1"></div>
+    </div>
+    <div class="row" style="gap:8px;align-items:center">
+      <span class="mut">模型</span>
+      <div class="chips" id="meetingModelChips" style="flex:1"></div>
+    </div>
+    <div class="row" style="gap:8px">
+      <button onclick="startMeeting()" id="meetingStartBtn" style="flex:1">✦ 开始会议</button>
+      <button class="sec" onclick="closeMeetingForm()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 群聊:创建表单(选多名居民发起会话) -->
+<div id="groupFormModal" class="modal hidden">
+  <div class="box box-wide">
+    <h2>👥 发起群聊</h2>
+    <div class="row"><input id="groupTitleInput" placeholder="群聊标题(可留空,自动命名)"></div>
+    <div class="row" style="flex-direction:column;align-items:stretch;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="mut">选择加入群聊的居民(至少 1 名)</span>
+        <span class="mut" id="groupPickHint" style="font-size:12px"></span>
+      </div>
+      <div id="groupAgentChips" class="mcard-grid"></div>
+    </div>
+    <div class="row" style="gap:8px;align-items:center">
+      <span class="mut">模型</span>
+      <div class="chips" id="groupModelChips" style="flex:1"></div>
+    </div>
+    <div class="row" style="gap:8px">
+      <button onclick="startGroup()" id="groupStartBtn" style="flex:1">✦ 创建群聊</button>
+      <button class="sec" onclick="closeGroupForm()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 群聊:会话窗口(历史消息 + 成员管理 + 发送) -->
+<div id="groupRunModal" class="modal hidden">
+  <div class="box box-wide">
+    <h2 id="groupRunTitle">👥 群聊</h2>
+    <div class="gc-members" id="groupMembers"></div>
+    <div class="chat-log" id="groupLog"><div class="mut">加载中…</div></div>
+    <div class="row" style="gap:8px">
+      <input id="groupInput" placeholder="对群里的居民说点什么…" style="flex:1" onkeydown="if(event.key==='Enter')sendGroup()">
+      <button onclick="sendGroup()" id="groupSendBtn">发送</button>
+      <button class="sec" onclick="closeGroupRun()">关闭</button>
+    </div>
+    <div id="groupCost" class="cost-line"></div>
+  </div>
+</div>
+
+<!-- 群聊:加人选择器(会话中途) -->
+<div id="groupAddModal" class="modal hidden">
+  <div class="box box-wide">
+    <h2>➕ 邀请居民进群</h2>
+    <div id="groupAddChips" class="mcard-grid"></div>
+    <div class="row" style="gap:8px">
+      <button class="sec" onclick="closeGroupAdd()" style="flex:1">完成</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const API = '/api';
 let notebooks = [];            // 全部可读笔记本
@@ -924,6 +1318,57 @@ const W_GENRES = [
   {k:'REVIEW',  t:'⭐ 测评', d:'产品测评、种草长文'},
   {k:'SCRIPT',  t:'🎬 脚本', d:'短视频/口播脚本'}];
 const W_STATUS_LABEL = {PENDING:'排队中', RUNNING:'协作中', DONE:'已完成', FAILED:'失败'};
+// ---- 智能体小世界 ----
+let agents = [];               // 小镇在册居民(全局共享)
+let editingAgentId = null;     // 正在编辑的居民 id;null = 新增
+let meeting = null;            // 当前围观的会议
+let meetingPoll = null;        // 会议轮询定时器
+let worldTab = 'map';          // 当前视图:map / jail(居民列表已并入 map)
+let mMembers = [];             // 会议表单选中的员工 id
+let mRounds = 3;               // 会议表单选中的轮数
+// ---- 自主行动 / 实时动态 / 对话 ----
+let worldSettings = null;      // GET /world/settings 缓存
+let feedTimer = null;          // 地图实时动态轮询
+let feedSince = 0;             // feed 增量游标(epoch ms)
+let feedItems = [];            // 最近动态(最多 40 条)
+let mapAnim = null;            // 地图漫游 rAF 句柄
+let townMap = null;            // GET /world/places 缓存:{worldW,worldH,places}
+let sceneCards = [];           // 地图上浮动场景卡 {id,el,x,y,timer}
+let chatAgentId = null;        // 当前对话的居民 id
+const AUTO_INTERVALS = [{s:60,label:'1 分钟'},{s:300,label:'5 分钟'},{s:600,label:'10 分钟'}];
+const M_STATUS = {PENDING:'排队中', RUNNING:'进行中', DONE:'已结束', FAILED:'失败'};
+// ---- 会议像素舞台 / 回放 ----
+let stage = null;              // 舞台引擎实例 { actors, raf, ... }
+let replay = {                // 回放状态
+  playing:false, idx:-1, speaks:[], timer:null, speed:1, live:true
+};
+// ---- 模型选择 / 计费 ----
+let wModel = 'qwen-plus';       // 协作写作选中的模型
+let mModel = 'qwen-plus';       // 会议选中的模型
+// 群聊状态
+let gMembers = [];              // 创建群聊表单选中的居民 id
+let gModel = 'qwen-turbo';      // 群聊模型(默认最便宜)
+let groupChat = null;           // 当前打开的群聊
+// 模型档位(name→展示),价位徽标按输入单价粗分四档
+const MODEL_TIERS = [
+  {name:'qwen-turbo', label:'Turbo', tier:'💰',      hint:'便宜快'},
+  {name:'qwen-plus',  label:'Plus',  tier:'💰💰',    hint:'均衡(默认)'},
+  {name:'qwen-max',   label:'Max',   tier:'💰💰💰',  hint:'最强'},
+  {name:'qwen-long',  label:'Long',  tier:'💰',      hint:'长文本'}];
+function renderModelChips(elId, selected, onpick) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = MODEL_TIERS.map(m =>
+    `<span class="chip ${selected===m.name?'on':''}" title="${m.hint}" onclick="${onpick}('${m.name}')">${m.label} ${m.tier}</span>`).join('');
+}
+// 会议/写作结束后的 token·费用 一行
+function costLine(o) {
+  if (!o) return '';
+  const inn = o.inputTokens || 0, out = o.outputTokens || 0;
+  const cost = (o.costRmb != null) ? Number(o.costRmb) : 0;
+  const model = o.model || 'qwen-plus';
+  return `💰 <b>${esc(model)}</b> · 输入 ${inn} / 输出 ${out} tokens · 费用 ¥${cost.toFixed(4)}`;
+}
 const QUOTES = [
   '今天多记一点,明天少慌一点。',
   '好记性不如烂笔头,你已经赢在起跑线。',
@@ -1159,7 +1604,7 @@ async function nbMgrDelete(id) {
 
 // ---- views / cards ----
 function setActiveNav(elId) {
-  ['view-home','view-all','view-studio','view-writing'].forEach(id => {
+  ['view-home','view-all','view-studio','view-writing','view-world'].forEach(id => {
     const e = document.getElementById(id); if (e) e.classList.toggle('active', id === elId);
   });
 }
@@ -1167,6 +1612,7 @@ function setActiveNav(elId) {
 function selectHome() {
   document.body.classList.remove('studio');
   document.body.classList.remove('writing');
+  document.body.classList.remove('world');
   document.body.classList.remove('home');
   document.body.classList.add('home');
   setActiveNav('view-home');
@@ -1251,6 +1697,7 @@ async function openNewsNote(notebookId, noteId) {
   document.body.classList.remove('home');
   document.body.classList.remove('studio');
   document.body.classList.remove('writing');
+  document.body.classList.remove('world');
   await loadNotebooks();
   currentNb = nbById(notebookId) || null;
   setActiveNav('');
@@ -1270,6 +1717,7 @@ async function selectAll() {
   document.body.classList.remove('home');
   document.body.classList.remove('studio');
   document.body.classList.remove('writing');
+  document.body.classList.remove('world');
   currentNb = null;
   setActiveNav('view-all');
   document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
@@ -1282,6 +1730,7 @@ async function selectNb(id) {
   document.body.classList.remove('home');
   document.body.classList.remove('studio');
   document.body.classList.remove('writing');
+  document.body.classList.remove('world');
   currentNb = nbById(id) || null;
   document.getElementById('view-home').classList.remove('active');
   document.getElementById('view-all').classList.remove('active');
@@ -1838,6 +2287,7 @@ function renderScript(s) {
 function selectStudio() {
   document.body.classList.remove('home');
   document.body.classList.remove('writing');
+  document.body.classList.remove('world');
   document.body.classList.add('studio');
   setActiveNav('view-studio');
   currentNb = null;
@@ -2115,6 +2565,7 @@ async function deleteWork(id) {
 function selectWriting() {
   document.body.classList.remove('home');
   document.body.classList.remove('studio');
+  document.body.classList.remove('world');
   document.body.classList.add('writing');
   setActiveNav('view-writing');
   currentNb = null;
@@ -2123,6 +2574,7 @@ function selectWriting() {
   document.getElementById('wworksPanel').classList.add('hidden');
   renderWGenres();
   renderWRoundChips();
+  renderWModelChips();
   if (writing) renderWriting(); else newWriting();
   closeNav();
 }
@@ -2137,6 +2589,7 @@ function newWriting() {
   document.getElementById('wForm').classList.remove('hidden');
   renderWGenres();
   renderWRoundChips();
+  renderWModelChips();
 }
 function renderWGenres() {
   const el = document.getElementById('wGenreCards');
@@ -2153,6 +2606,8 @@ function renderWRoundChips() {
     `<span class="chip ${wRounds===n?'on':''}" onclick="pickRounds(${n})">${n} 轮</span>`).join('');
 }
 function pickRounds(n) { wRounds = n; renderWRoundChips(); }
+function renderWModelChips() { renderModelChips('wModelChips', wModel, 'pickWModel'); }
+function pickWModel(n) { wModel = n; renderWModelChips(); }
 async function submitWriting() {
   const topic = document.getElementById('wTopic').value.trim();
   if (!topic) { toast('请输入写作主题', 'info'); return; }
@@ -2162,7 +2617,7 @@ async function submitWriting() {
     writing = await j(`${API}/studio/writing`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({topic, genre: wGenre, maxRounds: wRounds})
+      body: JSON.stringify({topic, genre: wGenre, maxRounds: wRounds, model: wModel})
     });
     document.getElementById('wForm').classList.add('hidden');
     document.getElementById('wRun').classList.remove('hidden');
@@ -2213,6 +2668,7 @@ function renderWriting() {
     const badge = document.getElementById('wApprovedBadge');
     badge.textContent = writing.approved ? '主编 APPROVE' : '轮数用尽·当前最佳稿';
     badge.style.color = writing.approved ? '#22c55e' : 'var(--mut)';
+    document.getElementById('wCost').innerHTML = costLine(writing);
   } else {
     fb.classList.add('hidden');
   }
@@ -2291,6 +2747,1371 @@ async function deleteWWork(id) {
     toast('已删除', 'ok');
     if (writing && writing.id === id) newWriting();
     loadWWorks();
+  } catch (e) { toast('删除失败:' + errText(e), 'err'); }
+}
+
+// ---- 工作台 · 智能体小世界 ----
+function selectWorld() {
+  document.body.classList.remove('home');
+  document.body.classList.remove('studio');
+  document.body.classList.remove('writing');
+  document.body.classList.add('world');
+  setActiveNav('view-world');
+  currentNb = null;
+  document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
+  document.getElementById('meetingsPanel').classList.add('hidden');
+  renderAutoIntervalChips();
+  renderModelChips('autoModelChips', (worldSettings && worldSettings.model) || 'qwen-turbo', 'pickAutoModel');
+  switchWorldTab(worldTab);
+  loadTownMap();
+  loadAgents();
+  loadWorldSettings();
+  startFeedLoop();
+  closeNav();
+}
+
+async function loadTownMap() {
+  if (townMap) return townMap;
+  try { townMap = await j(`${API}/world/places`); }
+  catch (e) { townMap = { worldW:960, worldH:640, places:[] }; }
+  return townMap;
+}
+
+async function loadWorldSettings() {
+  try {
+    worldSettings = await j(`${API}/world/settings`);
+    const t = document.getElementById('autoToggle');
+    if (t) t.checked = !!worldSettings.autonomousEnabled;
+    renderAutoIntervalChips();
+    renderModelChips('autoModelChips', worldSettings.model || 'qwen-turbo', 'pickAutoModel');
+    updateAutoState();
+  } catch (e) { /* 忽略 */ }
+}
+function updateAutoState() {
+  const el = document.getElementById('autoState');
+  if (!el || !worldSettings) return;
+  el.textContent = worldSettings.autonomousEnabled
+    ? `运行中 · 每 ${Math.round((worldSettings.intervalSeconds||600)/60)} 分钟一位居民行动`
+    : '已暂停';
+}
+function renderAutoIntervalChips() {
+  const el = document.getElementById('autoIntervalChips');
+  if (!el) return;
+  const cur = worldSettings ? worldSettings.intervalSeconds : 600;
+  el.innerHTML = AUTO_INTERVALS.map(x =>
+    `<span class="chip ${cur===x.s?'on':''}" onclick="pickAutoInterval(${x.s})">${x.label}</span>`).join('');
+}
+function pickAutoModel(m) { saveWorldSettings({model:m}); }
+function pickAutoInterval(s) { saveWorldSettings({intervalSeconds:s}); }
+async function toggleAutonomous(on) { await saveWorldSettings({autonomousEnabled:on}); }
+async function stopAllAutonomous() {
+  await saveWorldSettings({autonomousEnabled:false});
+  const t = document.getElementById('autoToggle'); if (t) t.checked = false;
+  toast('已停止全部自主行动', 'ok');
+}
+async function saveWorldSettings(patch) {
+  try {
+    worldSettings = await j(`${API}/world/settings`, {method:'PUT',
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify(patch)});
+    const t = document.getElementById('autoToggle'); if (t) t.checked = !!worldSettings.autonomousEnabled;
+    renderAutoIntervalChips();
+    renderModelChips('autoModelChips', worldSettings.model || 'qwen-turbo', 'pickAutoModel');
+    updateAutoState();
+  } catch (e) { toast('设置失败:' + errText(e), 'err'); }
+}
+
+// ---- 实时动态 feed(自主行动 + 记忆合流) ----
+function startFeedLoop() {
+  if (feedTimer) clearInterval(feedTimer);
+  pollFeed();
+  feedTimer = setInterval(() => {
+    if (!document.body.classList.contains('world')) { clearInterval(feedTimer); feedTimer = null; return; }
+    pollFeed();
+  }, 3000);
+}
+async function pollFeed() {
+  try {
+    const items = await j(`${API}/world/feed${feedSince?`?since=${feedSince}`:''}`);
+    if (items && items.length) {
+      items.forEach(it => { if (it.createdAt) feedSince = Math.max(feedSince, new Date(it.createdAt).getTime()); });
+      feedItems = dedupeFeed(feedItems.concat(items)).slice(-40);
+      // 有动作发生 → 刷新居民坐标/心情
+      if (items.some(it => it.source === 'action')) loadAgents();
+      // talk 行动 → 在地图对应地点浮出场景卡
+      if (worldTab === 'map') {
+        items.forEach(it => {
+          if (it.source === 'action' && it.kind === 'talk' && it.place) spawnSceneCard(it);
+        });
+      }
+      if (worldTab === 'map') renderFeed();
+    }
+  } catch (e) { /* 忽略 */ }
+}
+// 一次自主行动会同时落 action + 孪生 memory(内容相同),feed 里去重:同一居民+同内容只留一条(优先 action)。
+function dedupeFeed(list) {
+  const seen = new Map(); const out = [];
+  for (const it of list) {
+    const key = it.agentId + '|' + (it.content || '').trim();
+    if (seen.has(key)) {
+      const prev = seen.get(key);
+      if (prev.source !== 'action' && it.source === 'action') out[prev.idx] = it; // action 覆盖 memory
+      continue;
+    }
+    seen.set(key, { source: it.source, idx: out.length });
+    out.push(it);
+  }
+  return out;
+}
+function renderFeed() {
+  const el = document.getElementById('worldFeed');
+  if (!el) return;
+  const byId = {}; agents.forEach(a => byId[String(a.id)] = a);
+  if (!feedItems.length) { el.innerHTML = `<div class="mut" style="font-size:12px">还没有动态。开启「自主行动」后,居民会开始在镇上活动。</div>`; return; }
+  const KIND = {action:'行动', dialogue:'对话', meeting:'会议', reflection:'反思', observation:'观察', move:'走动', think:'思考', talk:'交谈', reflect:'反思', goto:'前往'};
+  el.innerHTML = feedItems.slice().reverse().map(it => {
+    const a = byId[String(it.agentId)];
+    const who = a ? `${a.avatar||'🧑'} ${esc(a.name)}` : `#${it.agentId}`;
+    const tgt = it.targetAgentId && byId[String(it.targetAgentId)] ? ` → ${esc(byId[String(it.targetAgentId)].name)}` : '';
+    return `<div class="feed-item"><span class="fi-who">${who}</span><span class="fi-kind">${KIND[it.kind]||it.kind}</span>${tgt}<div>${esc((it.content||'').slice(0,140))}</div></div>`;
+  }).join('');
+}
+
+async function loadAgents() {
+  try { agents = await j(`${API}/world/agents`); }
+  catch (e) { agents = []; }
+  renderOffices();
+  if (worldTab === 'map') renderMap();
+  if (worldTab === 'jail') renderJail();
+}
+
+function renderOffices() {
+  const el = document.getElementById('officeGrid');
+  if (!el) return;
+  const speakingId = currentSpeakerId();
+  const lastText = lastSpeechFor(speakingId);
+  let html = agents.map(a => {
+    const speaking = speakingId && String(a.id) === String(speakingId);
+    const rc = a.color || '#2dd4bf';
+    const mood = a.mood ? `${a.moodEmoji||'🙂'} ${esc(a.mood)}` : '';
+    return `<div class="office-room ${speaking?'speaking':''}" style="--rc:${esc(rc)}">
+      ${speaking && lastText ? `<div class="speech-bubble">${esc(lastText.slice(0,80))}${lastText.length>80?'…':''}</div>` : ''}
+      <div class="ostatus"></div>
+      ${a.birthDate ? `<div class="obirth">🎂 ${esc(a.birthDate)}</div>` : ''}
+      <div class="oavatar">${esc(a.avatar||'🧑‍💼')}</div>
+      <div class="oname">${esc(a.name)}</div>
+      <div class="otitle">${esc(a.title||'居民')}</div>
+      ${mood ? `<div class="omood">${mood}</div>` : ''}
+      <div class="oacts">
+        <button onclick="openChat(${a.id})">对话</button>
+        <button class="sec" onclick="openAgentForm(${a.id})">编辑</button>
+        <button class="sec" onclick="deleteAgent(${a.id})">删除</button>
+      </div>
+    </div>`;
+  }).join('');
+  html += `<div class="office-room add-room" onclick="openAgentForm()">
+    <div class="plus">＋</div><div>新增居民</div></div>`;
+  el.innerHTML = html;
+}
+
+async function renderJail() {
+  const el = document.getElementById('jailGrid');
+  if (!el) return;
+  el.innerHTML = `<div class="mut">加载中…</div>`;
+  let jailed = [];
+  try { jailed = await j(`${API}/world/jail`); } catch (e) { jailed = []; }
+  if (!jailed.length) { el.innerHTML = `<div class="mut">小黑屋是空的。</div>`; return; }
+  el.innerHTML = jailed.map(a => {
+    const rc = a.color || '#64748b';
+    return `<div class="office-room" style="--rc:${esc(rc)};opacity:.75">
+      <div class="oavatar" style="filter:grayscale(.6)">${esc(a.avatar||'🧑‍💼')}</div>
+      <div class="oname">${esc(a.name)}</div>
+      <div class="otitle">${esc(a.title||'居民')}</div>
+      <div class="oacts"><button onclick="releaseAgent(${a.id})">释放</button></div>
+    </div>`;
+  }).join('');
+}
+async function releaseAgent(id) {
+  try {
+    await j(`${API}/world/agents/${id}/release`, {method:'POST'});
+    toast('已释放', 'ok');
+    await loadAgents();
+    renderJail();
+  } catch (e) { toast('释放失败:' + errText(e), 'err'); }
+}
+
+function switchWorldTab(tab) {
+  worldTab = tab;
+  document.querySelectorAll('#worldTabs .wtab').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === tab));
+  document.getElementById('mapPane').classList.toggle('hidden', tab !== 'map');
+  document.getElementById('jailPane').classList.toggle('hidden', tab !== 'jail');
+  if (tab === 'map') { renderOffices(); loadTownMap().then(() => { renderMap(); }); renderFeed(); }
+  else if (mapAnim) { cancelAnimationFrame(mapAnim); mapAnim = null; }
+  if (tab === 'jail') renderJail();
+}
+
+// 像素小镇:居民按 pos_x/y 世界坐标平滑走向目标,建筑由 /places 单一数据源绘制。
+let mapTargets = {};   // id -> {x,y} 世界坐标目标
+let mapPos = {};       // id -> {x,y} 世界坐标当前插值位置
+// 地点主题色(与建筑屋顶/墙体呼应)
+const PLACE_COLORS = {
+  townhall:'#f59e0b', cafe:'#c084fc', school:'#38bdf8', clinic:'#f87171', plaza:'#5eead4',
+  studio:'#f472b6', grocery:'#34d399', restaurant:'#fb7185', park:'#84cc16', repair:'#fbbf24'
+};
+function renderMap() {
+  const cv = document.getElementById('worldMap');
+  if (!cv) return;
+  const WW = (townMap && townMap.worldW) || 960, WH = (townMap && townMap.worldH) || 640;
+  agents.forEach(a => {
+    const tx = a.posX != null ? a.posX : WW/2;
+    const ty = a.posY != null ? a.posY : WH/2;
+    mapTargets[a.id] = {x:tx, y:ty};
+    if (!mapPos[a.id]) mapPos[a.id] = {x:tx, y:ty};
+  });
+  if (!mapAnim) animateMap();
+}
+// 世界坐标 → 画布坐标(画布按 world 尺寸等比 devicePixel 缩放,这里直接 1:1)
+function w2c(x, y) { return {x, y}; }
+
+function animateMap() {
+  const cv = document.getElementById('worldMap');
+  if (!cv || worldTab !== 'map') { mapAnim = null; return; }
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  const places = (townMap && townMap.places) || [];
+
+  drawGrass(ctx, W, H);
+  drawRoads(ctx, places);
+  // 装饰树:几处固定点缀
+  [[70,60],[900,70],[60,600],[905,590],[480,430],[300,240],[650,260]].forEach(([x,y]) => drawTree(ctx, x, y));
+  // 俯视小镇:park/plaza 为户外空间,其余为可见家具的房间内景
+  places.forEach(p => {
+    if (p.key === 'park' || p.key === 'plaza') drawOutdoor(ctx, p);
+    else drawRoom(ctx, p);
+  });
+
+  const speakingId = currentSpeakerId();
+  const blink = Math.floor(Date.now() / 400) % 2 === 0;
+  const now = Date.now();
+  const t = now / 240;
+  const idle = now / 1400;   // 慢速待机漂移相位
+  agents.forEach(a => {
+    const tgt = mapTargets[a.id] || {x:W/2,y:H/2};
+    const p = mapPos[a.id] || {x:tgt.x, y:tgt.y};
+    const dx = tgt.x - p.x, dy = tgt.y - p.y;
+    p.x += dx * 0.08; p.y += dy * 0.08;
+    mapPos[a.id] = p;
+    const moving = Math.hypot(dx, dy) > 1.2;
+    const seed = (a.id || 0);
+    // 待机时也在原地小幅晃动(门前踱步),不再是死图
+    const swayX = moving ? 0 : Math.sin(idle + seed) * 5;
+    const swayY = moving ? 0 : Math.cos(idle * 0.8 + seed * 1.7) * 3;
+    // 走路 bob 幅度大,待机 bob 幅度小但始终存在(呼吸感)
+    const bob = (moving ? 2.5 : 1) * Math.abs(Math.sin(t + seed));
+    const c = w2c(p.x + swayX, p.y + swayY);
+    const speaking = speakingId && String(a.id) === String(speakingId);
+    drawActor(ctx, {avatar:a.avatar||'🧑', name:a.name||'', color:a.color||'#2dd4bf'},
+      c.x, c.y - bob, speaking && blink);
+    if (a.mood) {
+      // 头顶思考气泡:emoji + 心情文字 + 两颗上升小圆点(Smallville thought bubble)
+      ctx.font = '11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const label = `${a.moodEmoji||'🙂'}${a.mood}`;
+      const mw = ctx.measureText(label).width + 14;
+      const by = c.y - 48 - bob;
+      ctx.fillStyle = 'rgba(0,0,0,.10)';
+      ctx.beginPath(); ctx.arc(c.x - mw/2 + 5, by + 12, 3, 0, Math.PI*2); ctx.arc(c.x - mw/2, by + 20, 2, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.94)';
+      roundRect(ctx, c.x - mw/2, by, mw, 18, 9); ctx.fill();
+      ctx.beginPath(); ctx.arc(c.x - mw/2 + 6, by + 22, 3.2, 0, Math.PI*2); ctx.arc(c.x - mw/2 + 1, by + 29, 2, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#173a34'; ctx.fillText(label, c.x, by + 9);
+    }
+  });
+  if (!agents.length) {
+    ctx.fillStyle = '#3a4a42'; ctx.font = '15px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('小镇还没有居民,先去居民视图新增几位吧', W/2, H/2);
+  }
+  positionSceneCards();
+  mapAnim = requestAnimationFrame(animateMap);
+}
+
+// 草地:分层绿 + 8px 棋盘微纹 + 点噪
+function drawGrass(ctx, W, H) {
+  ctx.fillStyle = '#8ec96a'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(122,183,92,.55)';
+  for (let y = 0; y < H; y += 16) for (let x = ((y/16)%2)*16; x < W; x += 32) ctx.fillRect(x, y, 16, 16);
+  ctx.fillStyle = 'rgba(60,110,45,.16)';
+  for (let i = 0; i < 260; i++) {
+    const gx = (i * 149) % W, gy = (i * 271) % H;
+    ctx.fillRect(gx, gy, 3, 3);
+  }
+}
+// 铺装步道:横竖石板路网连接各街区(Smallville 风格的石灰道)
+function drawRoads(ctx, places) {
+  const tw = 30;
+  // 石板带:底色 + 中缝虚线 + 边缘描线
+  const band = (x, y, w, h) => {
+    ctx.fillStyle = '#cdb88f'; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = 'rgba(120,90,40,.28)'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+    // 石板缝
+    ctx.strokeStyle = 'rgba(120,90,40,.16)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (w > h) { for (let gx = x + 26; gx < x + w; gx += 26) { ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); } }
+    else { for (let gy = y + 26; gy < y + h; gy += 26) { ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); } }
+    ctx.stroke();
+  };
+  // 三横两竖构成街区网格,穿过中心广场
+  band(40, 150 - tw/2, 880, tw);
+  band(40, 330 - tw/2, 880, tw);
+  band(40, 522 - tw/2, 880, tw);
+  band(180 - tw/2, 110, tw, 440);
+  band(480 - tw/2, 90, tw, 470);
+  band(810 - tw/2, 130, tw, 430);
+}
+function drawTree(ctx, x, y) {
+  ctx.fillStyle = '#6b4423'; ctx.fillRect(x - 3, y, 6, 12);
+  ctx.fillStyle = '#3f7d34';
+  ctx.beginPath(); ctx.moveTo(x, y - 22); ctx.lineTo(x - 14, y + 2); ctx.lineTo(x + 14, y + 2); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#4f9440';
+  ctx.beginPath(); ctx.moveTo(x, y - 12); ctx.lineTo(x - 11, y + 4); ctx.lineTo(x + 11, y + 4); ctx.closePath(); ctx.fill();
+}
+// 俯视房间内景(Smallville 招牌视角):地板 + 墙 + 家具 + 门牌
+// 每个地点是一间「顶视图房间」——能看到里面的桌椅家具,居民就站在房间里。
+const ROOM_W = 150, ROOM_H = 110;
+function drawRoom(ctx, p) {
+  const c = w2c(p.x, p.y);
+  const x = c.x - ROOM_W/2, y = c.y - ROOM_H/2;
+  const col = PLACE_COLORS[p.key] || '#94a3b8';
+  const floor = tint(col, 0.82), wall = tint(col, 0.55);
+  // 房间投影
+  ctx.fillStyle = 'rgba(0,0,0,.14)';
+  roundRect(ctx, x + 4, y + 6, ROOM_W, ROOM_H, 8); ctx.fill();
+  // 地板
+  ctx.fillStyle = floor;
+  roundRect(ctx, x, y, ROOM_W, ROOM_H, 8); ctx.fill();
+  // 地板木纹/瓷砖缝
+  ctx.strokeStyle = 'rgba(0,0,0,.06)'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let gy = y + 22; gy < y + ROOM_H - 4; gy += 22) { ctx.moveTo(x + 4, gy); ctx.lineTo(x + ROOM_W - 4, gy); }
+  ctx.stroke();
+  // 墙(上边与左边稍厚,营造俯视立体感)
+  ctx.strokeStyle = wall; ctx.lineWidth = 5;
+  roundRect(ctx, x + 2.5, y + 2.5, ROOM_W - 5, ROOM_H - 5, 7); ctx.stroke();
+  // 门口缺口(底边中央,朝向路网)
+  ctx.fillStyle = floor;
+  ctx.fillRect(c.x - 14, y + ROOM_H - 6, 28, 8);
+  // 家具:按地点类型摆设
+  drawFurniture(ctx, p.key, x, y, col);
+  // 门牌:emoji + 中文名(房间顶部标题条)
+  ctx.font = '700 12px sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+  const label = `${p.emoji||'🏠'} ${p.name}`;
+  const lw = ctx.measureText(label).width + 16;
+  ctx.fillStyle = 'rgba(255,255,255,.9)';
+  roundRect(ctx, c.x - lw/2, y - 10, lw, 20, 10); ctx.fill();
+  ctx.strokeStyle = wall; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle = '#173a34'; ctx.fillText(label, c.x, y + 1);
+}
+
+// 户外空间(公园 / 中心广场):草坪/水景 + 长椅/喷泉,不封墙
+function drawOutdoor(ctx, p) {
+  const c = w2c(p.x, p.y);
+  const R = 78;
+  if (p.key === 'park') {
+    // 草坪圆 + 池塘 + 长椅
+    ctx.fillStyle = '#7cc463';
+    ctx.beginPath(); ctx.ellipse(c.x, c.y, R, R*0.72, 0, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(60,110,45,.4)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#6cc7e0';
+    ctx.beginPath(); ctx.ellipse(c.x + 20, c.y + 10, 26, 16, 0, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(30,90,120,.4)'; ctx.stroke();
+    // 长椅
+    ctx.fillStyle = '#9c6b3f'; roundRect(ctx, c.x - 46, c.y - 24, 30, 8, 2); ctx.fill();
+    drawTree(ctx, c.x - 40, c.y + 22); drawTree(ctx, c.x + 46, c.y - 26);
+  } else {
+    // 中心广场:铺装圆盘 + 喷泉
+    ctx.fillStyle = '#dcd0b4';
+    ctx.beginPath(); ctx.arc(c.x, c.y, R, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(120,90,40,.3)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = 'rgba(120,90,40,.18)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(c.x, c.y, R*0.66, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = '#8fd4e8';
+    ctx.beginPath(); ctx.arc(c.x, c.y, 22, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#5fa8bf'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = '#bfe9f5';
+    ctx.beginPath(); ctx.arc(c.x, c.y, 9, 0, Math.PI*2); ctx.fill();
+  }
+  // 名牌
+  ctx.font = '700 12px sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+  const label = `${p.emoji||'🌳'} ${p.name}`;
+  const lw = ctx.measureText(label).width + 16;
+  ctx.fillStyle = 'rgba(255,255,255,.9)';
+  roundRect(ctx, c.x - lw/2, c.y - R - 20, lw, 20, 10); ctx.fill();
+  ctx.fillStyle = '#173a34'; ctx.fillText(label, c.x, c.y - R - 9);
+}
+
+// 房间家具:每种地点画几件标志性顶视家具,让房间「一眼能认出用途」
+function drawFurniture(ctx, key, x, y, col) {
+  const dk = tint(col, 0.42);
+  const rect = (rx, ry, w, h, fill, r=3) => { ctx.fillStyle = fill; roundRect(ctx, x+rx, y+ry, w, h, r); ctx.fill(); };
+  const wood = '#a9743f', woodDk = '#835626', metal = '#b8c0c6', cloth = tint(col, 0.5);
+  switch (key) {
+    case 'cafe': // 吧台 + 圆桌
+      rect(12, 14, ROOM_W-24, 16, woodDk, 3);
+      rect(30, 60, 24, 24, wood, 12); rect(ROOM_W-54, 60, 24, 24, wood, 12);
+      rect(70, 44, 18, 18, '#6b4a2a', 9);
+      break;
+    case 'restaurant': // 餐桌两张 + 灶台
+      rect(14, 14, ROOM_W-28, 14, metal, 2);
+      rect(26, 52, 30, 22, wood, 4); rect(ROOM_W-56, 52, 30, 22, wood, 4);
+      break;
+    case 'grocery': // 货架 + 收银台
+      rect(14, 16, ROOM_W-28, 12, woodDk, 2);
+      rect(14, 36, ROOM_W-28, 12, woodDk, 2);
+      rect(ROOM_W-52, 66, 36, 18, wood, 3);
+      break;
+    case 'clinic': // 病床 + 药柜
+      rect(16, 20, 40, 26, '#eef3f5', 4);
+      ctx.fillStyle = '#e15b64'; ctx.fillRect(x+30, y+26, 12, 4); ctx.fillRect(x+34, y+22, 4, 12);
+      rect(ROOM_W-46, 16, 30, 40, metal, 3);
+      break;
+    case 'school': // 黑板 + 课桌两排
+      rect(14, 12, ROOM_W-28, 14, '#2f5d3a', 2);
+      rect(24, 46, 22, 14, wood, 2); rect(58, 46, 22, 14, wood, 2); rect(92, 46, 22, 14, wood, 2);
+      rect(24, 72, 22, 14, wood, 2); rect(58, 72, 22, 14, wood, 2); rect(92, 72, 22, 14, wood, 2);
+      break;
+    case 'studio': // 画架 + 调色盘
+      ctx.fillStyle = wood; ctx.beginPath();
+      ctx.moveTo(x+40, y+18); ctx.lineTo(x+28, y+66); ctx.lineTo(x+52, y+66); ctx.closePath(); ctx.fill();
+      rect(30, 20, 30, 30, '#fdf7ee', 2);
+      ctx.fillStyle='#ec4899'; ctx.beginPath(); ctx.arc(x+ROOM_W-40, y+64, 12, 0, Math.PI*2); ctx.fill();
+      break;
+    case 'repair': // 工作台 + 工具板
+      rect(14, 60, ROOM_W-28, 22, woodDk, 3);
+      rect(20, 16, ROOM_W-40, 26, metal, 3);
+      ctx.fillStyle = dk; ctx.fillRect(x+30, y+22, 5, 14); ctx.fillRect(x+44, y+22, 5, 14);
+      break;
+    case 'townhall': // 会议长桌 + 讲台
+      rect(24, 40, ROOM_W-48, 32, wood, 6);
+      rect(ROOM_W/2-16, 14, 32, 14, woodDk, 3);
+      break;
+    default: // 通用:一桌两椅
+      rect(ROOM_W/2-24, 40, 48, 30, wood, 5);
+      rect(ROOM_W/2-34, 48, 10, 14, cloth, 3); rect(ROOM_W/2+24, 48, 10, 14, cloth, 3);
+  }
+}
+
+// 颜色向白色混合:t=0 原色,t=1 纯白。用于从主题色派生地板/墙浅色。
+function tint(hex, t) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const r = (n>>16)&255, g = (n>>8)&255, b = n&255;
+  const mix = (v) => Math.round(v + (255 - v) * t);
+  return `rgb(${mix(r)},${mix(g)},${mix(b)})`;
+}
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r); ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r); ctx.closePath();
+}
+
+// ---- 浮动场景卡:talk 行动在地图对应地点浮出,8s 后淡出,最多同时 3 张 ----
+function spawnSceneCard(it) {
+  const layer = document.getElementById('sceneLayer');
+  if (!layer || !townMap) return;
+  const place = (townMap.places||[]).find(p => p.key === it.place);
+  if (!place) return;
+  const byId = {}; agents.forEach(a => byId[String(a.id)] = a);
+  const speaker = byId[String(it.agentId)];
+  const target = it.targetAgentId ? byId[String(it.targetAgentId)] : null;
+  const title = it.scene || `在${place.name}`;
+  const speakerName = speaker ? speaker.name : `#${it.agentId}`;
+  const card = document.createElement('div');
+  card.className = 'scene-card';
+  const lines = [`<div class="sc-line"><b>${esc(speakerName)}</b>:${esc((it.content||'').slice(0,60))}</div>`];
+  if (target) lines.push(`<div class="sc-line" style="color:var(--mut)">🗣 与 ${esc(target.name)} 交谈</div>`);
+  card.innerHTML = `<div class="sc-head"><span class="sc-emoji">${place.emoji||'💬'}</span>${esc(title)}</div>
+    <div class="sc-body">${lines.join('')}</div>`;
+  layer.appendChild(card);
+  const entry = { el: card, x: place.x, y: place.y - 44, timer: null };
+  sceneCards.push(entry);
+  positionSceneCards();
+  requestAnimationFrame(() => card.classList.add('in'));
+  // 超过 3 张移除最旧
+  while (sceneCards.length > 3) { const old = sceneCards.shift(); removeSceneCard(old); }
+  entry.timer = setTimeout(() => {
+    const idx = sceneCards.indexOf(entry);
+    if (idx >= 0) sceneCards.splice(idx, 1);
+    removeSceneCard(entry);
+  }, 8000);
+}
+function removeSceneCard(entry) {
+  if (!entry || !entry.el) return;
+  entry.el.classList.remove('in'); entry.el.classList.add('out');
+  setTimeout(() => { if (entry.el && entry.el.parentNode) entry.el.parentNode.removeChild(entry.el); }, 420);
+}
+// 场景卡按世界坐标→画布显示尺寸换算定位(画布 CSS 宽被拉伸,需按比例)
+function positionSceneCards() {
+  const cv = document.getElementById('worldMap');
+  if (!cv || !sceneCards.length) return;
+  const rect = cv.getBoundingClientRect();
+  const sx = rect.width / cv.width, sy = rect.height / cv.height;
+  sceneCards.forEach(e => {
+    if (!e.el) return;
+    e.el.style.left = (e.x * sx) + 'px';
+    e.el.style.top = (e.y * sy) + 'px';
+  });
+}
+// 点击画布小人 → 命中最近的居民(24px 内)→ 打开 1:1 对话
+function mapClick(ev) {
+  const cv = document.getElementById('worldMap');
+  if (!cv) return;
+  const rect = cv.getBoundingClientRect();
+  const wx = (ev.clientX - rect.left) / rect.width * cv.width;
+  const wy = (ev.clientY - rect.top) / rect.height * cv.height;
+  let hit = null, best = 26;
+  agents.forEach(a => {
+    const p = mapPos[a.id]; if (!p) return;
+    const d = Math.hypot(p.x - wx, p.y - wy - 12); // -12 对齐头部
+    if (d < best) { best = d; hit = a; }
+  });
+  if (hit) openChat(hit.id);
+}
+
+// 当前正在发言的员工 id(会议进行中取最后一个 speak 事件)
+function currentSpeakerId() {
+  if (!meeting || (meeting.status !== 'RUNNING' && meeting.status !== 'PENDING')) return null;
+  const evs = parseEvents(meeting);
+  for (let i = evs.length - 1; i >= 0; i--) {
+    if (evs[i].type === 'speak') return evs[i].speakerId;
+  }
+  return null;
+}
+function lastSpeechFor(id) {
+  if (!id || !meeting) return '';
+  const evs = parseEvents(meeting);
+  for (let i = evs.length - 1; i >= 0; i--) {
+    if (evs[i].type === 'speak' && String(evs[i].speakerId) === String(id)) return evs[i].text || '';
+  }
+  return '';
+}
+function parseEvents(m) {
+  try { return m && m.events ? JSON.parse(m.events) : []; } catch (e) { return []; }
+}
+
+// ==== 会议像素舞台引擎 ====
+// 只把参会者聚到一起,围坐一张圆桌;当前发言者起身走向桌心并冒出气泡,其余人回座待机。
+function participantsOf(m) {
+  let ids = [];
+  try { ids = m && m.participantIds ? JSON.parse(m.participantIds) : []; } catch (e) { ids = []; }
+  const byId = {}; agents.forEach(a => byId[String(a.id)] = a);
+  const out = [];
+  ids.forEach(id => { const a = byId[String(id)]; if (a) out.push(a); });
+  // 兜底:参会者信息缺失时从 speak 事件里补
+  if (!out.length) {
+    const seen = {};
+    parseEvents(m).forEach(ev => {
+      if (ev.type === 'speak' && ev.speakerId && !seen[ev.speakerId]) {
+        seen[ev.speakerId] = 1;
+        out.push({ id: ev.speakerId, name: ev.role, avatar: ev.avatar || '🧑', color: ev.color || '#2dd4bf' });
+      }
+    });
+  }
+  return out;
+}
+
+function stageDestroy() {
+  if (stage && stage.raf) cancelAnimationFrame(stage.raf);
+  stage = null;
+}
+
+// 用参会者初始化舞台;seatSpot=座位,talkSpot=起身发言位(略向桌心内移)
+function initStage(participants) {
+  const cv = document.getElementById('meetingStage');
+  if (!cv) return;
+  stageDestroy();
+  const W = cv.width, H = cv.height;
+  const cx = W / 2, cy = H * 0.57;
+  const rx = Math.min(W * 0.36, 300), ry = Math.min(H * 0.34, 132);
+  const n = Math.max(participants.length, 1);
+  // 讲台位:桌子正前方(靠下居中),发言者会走到这里面向大家发言
+  const podiumX = cx, podiumY = cy + ry + 30;
+  const actors = participants.map((p, i) => {
+    // 沿上半弧(约 200°)均匀就坐,下方留给讲台
+    const t = n === 1 ? 0.5 : i / (n - 1);
+    const ang = Math.PI * (-0.1) - t * Math.PI * 0.8; // 从右上扫到左上
+    const seatX = cx + Math.cos(ang) * rx, seatY = cy - Math.abs(Math.sin(ang)) * ry * 0.92;
+    return {
+      id: String(p.id), name: p.name || '', avatar: p.avatar || '🧑', color: p.color || '#2dd4bf',
+      seatX, seatY, x: seatX, y: seatY, tx: seatX, ty: seatY,
+      speaking: false, bubble: '', phase: Math.random() * Math.PI * 2, moving: false
+    };
+  });
+  stage = { cv, ctx: cv.getContext('2d'), W, H, cx, cy, rx, ry, podiumX, podiumY, actors, raf: null, speakerId: null, t0: performance.now() };
+  loopStage();
+}
+
+function stageSetSpeaker(id, text) {
+  if (!stage) return;
+  stage.speakerId = id == null ? null : String(id);
+  stage.actors.forEach(a => {
+    const on = stage.speakerId && a.id === stage.speakerId;
+    a.speaking = !!on;
+    a.bubble = on ? (text || '') : '';
+    // 发言者起身走到讲台位(桌子正前方),其余人回到各自座位
+    a.tx = on ? stage.podiumX : a.seatX;
+    a.ty = on ? stage.podiumY : a.seatY;
+  });
+}
+
+function loopStage() {
+  if (!stage) return;
+  const { ctx, W, H, cx, cy, rx, ry, actors, podiumX, podiumY } = stage;
+  const now = performance.now();
+  ctx.clearRect(0, 0, W, H);
+
+  // 圆桌
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(1, ry / rx);
+  ctx.beginPath(); ctx.arc(0, 0, rx - 58, 0, Math.PI * 2);
+  ctx.fillStyle = '#20323a'; ctx.fill();
+  ctx.lineWidth = 4; ctx.strokeStyle = '#2e4650'; ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle = 'rgba(255,255,255,.06)';
+  ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('☕', cx, cy);
+
+  // 讲台标记(发言者会走到这里)
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,.10)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(podiumX, podiumY + 8, 26, 8, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+
+  // 先画后排(y 小)再画前排,产生遮挡层次
+  const order = [...actors].sort((a, b) => a.y - b.y);
+  order.forEach(a => {
+    // 朝目标移动(走速加快,走动更明显)
+    const dx = a.tx - a.x, dy = a.ty - a.y, dist = Math.hypot(dx, dy);
+    a.moving = dist > 1.5;
+    if (a.moving) { const sp = Math.min(dist, 4.5); a.x += dx / dist * sp; a.y += dy / dist * sp; }
+    a.phase += 0.08;
+    const bob = a.moving ? Math.abs(Math.sin(now / 70)) * 4 : Math.sin(a.phase) * 1.6; // 走路跳动 / 待机呼吸
+    drawActor(ctx, a, a.x, a.y - bob, a.speaking);
+  });
+
+  // 气泡画在最上层(避免被前排遮住)
+  order.forEach(a => { if (a.speaking && a.bubble) drawBubble(ctx, a, a.x, a.y, W); });
+
+  stage.raf = requestAnimationFrame(loopStage);
+}
+
+function drawActor(ctx, a, x, y, speaking) {
+  const headR = 11;
+  const col = a.color || '#2dd4bf';
+  const dark = shade(col, 0.72), light = shade(col, 1.14);
+  // 影子
+  ctx.fillStyle = 'rgba(0,0,0,.26)';
+  ctx.beginPath(); ctx.ellipse(x, y + 22, 13, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+  if (speaking) { ctx.shadowColor = col; ctx.shadowBlur = 16; }
+  // 腿(两条,着地)
+  ctx.fillStyle = dark;
+  roundRect(ctx, x - 6, y + 12, 4.5, 9, 2); ctx.fill();
+  roundRect(ctx, x + 1.5, y + 12, 4.5, 9, 2); ctx.fill();
+  // 躯干(上宽下窄的小马甲,带肩线),不再是方框
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.moveTo(x - 9, y - 1);           // 左肩
+  ctx.quadraticCurveTo(x - 11, y + 3, x - 7.5, y + 14);  // 左侧收腰
+  ctx.lineTo(x + 7.5, y + 14);
+  ctx.quadraticCurveTo(x + 11, y + 3, x + 9, y - 1);     // 右侧
+  ctx.quadraticCurveTo(x, y - 5, x - 9, y - 1);          // 圆肩
+  ctx.closePath(); ctx.fill();
+  // 高光(左半身)
+  ctx.fillStyle = light;
+  ctx.beginPath();
+  ctx.moveTo(x - 9, y - 1);
+  ctx.quadraticCurveTo(x - 11, y + 3, x - 7.5, y + 14);
+  ctx.lineTo(x - 2, y + 14);
+  ctx.lineTo(x - 2, y - 3);
+  ctx.quadraticCurveTo(x - 6, y - 4, x - 9, y - 1);
+  ctx.closePath(); ctx.fill();
+  // 手臂(两侧小圆条)
+  ctx.fillStyle = dark;
+  roundRect(ctx, x - 11.5, y + 1, 4, 10, 2); ctx.fill();
+  roundRect(ctx, x + 7.5, y + 1, 4, 10, 2); ctx.fill();
+  ctx.shadowBlur = 0;
+  // 脖子
+  ctx.fillStyle = '#e9d9c4'; ctx.fillRect(x - 2.5, y - 6, 5, 4);
+  // 头(圆底 + emoji 脸)
+  ctx.fillStyle = '#f2e6d4';
+  ctx.beginPath(); ctx.arc(x, y - headR - 3, headR, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(a.avatar, x, y - headR - 2);
+  // 名字牌
+  ctx.font = '700 11px sans-serif';
+  ctx.fillStyle = speaking ? col : '#d7e0da';
+  ctx.textBaseline = 'top';
+  ctx.fillText(a.name, x, y + 24);
+}
+
+// 颜色明暗:t<1 变暗,t>1 提亮。用于给小人躯干加高光/阴影。
+function shade(hex, t) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const cl = (v) => Math.max(0, Math.min(255, Math.round(v * t)));
+  return `rgb(${cl((n>>16)&255)},${cl((n>>8)&255)},${cl(n&255)})`;
+}
+
+function drawBubble(ctx, a, x, y, W) {
+  const txt = String(a.bubble).replace(/\s+/g, ' ').trim();
+  if (!txt) return;
+  ctx.font = '12px sans-serif';
+  const maxW = 210, padX = 10, padY = 8, lh = 17;
+  const lines = wrapCanvasText(ctx, txt, maxW);
+  const shown = lines.slice(0, 3);
+  if (lines.length > 3) shown[2] = shown[2].replace(/.$/, '') + '…';
+  const bw = Math.min(maxW, Math.max(...shown.map(l => ctx.measureText(l).width))) + padX * 2;
+  const bh = shown.length * lh + padY * 2;
+  let bx = x - bw / 2; let by = y - 34 - bh;
+  bx = Math.max(6, Math.min(bx, W - bw - 6));
+  if (by < 4) by = y + 30;
+  // 气泡
+  ctx.fillStyle = 'rgba(20,32,36,.96)';
+  ctx.strokeStyle = a.color; ctx.lineWidth = 1.5;
+  roundRect(ctx, bx, by, bw, bh, 9); ctx.fill(); ctx.stroke();
+  // 小三角
+  ctx.beginPath(); ctx.moveTo(x - 6, by + bh); ctx.lineTo(x + 6, by + bh); ctx.lineTo(x, by + bh + 8); ctx.closePath();
+  ctx.fillStyle = 'rgba(20,32,36,.96)'; ctx.fill();
+  // 文字
+  ctx.fillStyle = '#e8edef'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  shown.forEach((l, i) => ctx.fillText(l, bx + padX, by + padY + i * lh));
+}
+
+function wrapCanvasText(ctx, text, maxW) {
+  const lines = []; let cur = '';
+  for (const ch of text) {
+    if (ctx.measureText(cur + ch).width > maxW && cur) { lines.push(cur); cur = ch; }
+    else cur += ch;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+// ---- 员工表单 ----
+function openAgentForm(id) {
+  editingAgentId = id || null;
+  const a = id ? agents.find(x => x.id === id) : null;
+  document.getElementById('agentModalTitle').textContent = a ? '编辑居民' : '＋ 新增居民';
+  document.getElementById('agentAvatar').value = a ? (a.avatar || '') : '🧑‍💼';
+  document.getElementById('agentName').value = a ? (a.name || '') : '';
+  document.getElementById('agentTitle').value = a ? (a.title || '') : '';
+  document.getElementById('agentPersona').value = a ? (a.persona || '') : '';
+  document.getElementById('agentColor').value = a ? (a.color || '#2dd4bf') : '#2dd4bf';
+  document.getElementById('agentBirth').value = a ? (a.birthDate || '') : '';
+  document.getElementById('agentMood').value = a ? (a.mood || '') : '平静';
+  document.getElementById('agentMoodEmoji').value = a ? (a.moodEmoji || '') : '🙂';
+  document.getElementById('agentModal').classList.remove('hidden');
+}
+function closeAgentForm() { document.getElementById('agentModal').classList.add('hidden'); }
+async function saveAgent() {
+  const body = {
+    name: document.getElementById('agentName').value.trim(),
+    avatar: document.getElementById('agentAvatar').value.trim(),
+    title: document.getElementById('agentTitle').value.trim(),
+    persona: document.getElementById('agentPersona').value.trim(),
+    color: document.getElementById('agentColor').value,
+    birthDate: document.getElementById('agentBirth').value || null,
+    mood: document.getElementById('agentMood').value.trim(),
+    moodEmoji: document.getElementById('agentMoodEmoji').value.trim()
+  };
+  if (!body.name) { toast('请填写名字', 'info'); return; }
+  const btn = document.getElementById('agentSaveBtn');
+  btn.disabled = true; btn.textContent = '保存中…';
+  try {
+    if (editingAgentId) await j(`${API}/world/agents/${editingAgentId}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    else await j(`${API}/world/agents`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    toast('已保存', 'ok');
+    closeAgentForm();
+    await loadAgents();
+  } catch (e) { toast('保存失败:' + errText(e), 'err'); }
+  finally { btn.disabled = false; btn.textContent = '保存'; }
+}
+async function deleteAgent(id) {
+  if (!await confirmDialog('确定把这名居民关进小黑屋?数据会保留,可随时释放。', {title:'关进小黑屋', okText:'关进去'})) return;
+  try {
+    await j(`${API}/world/agents/${id}`, {method:'DELETE'});
+    toast('已关进小黑屋', 'ok');
+    await loadAgents();
+  } catch (e) { toast('操作失败:' + errText(e), 'err'); }
+}
+
+// ---- 1:1 对话 ----
+async function openChat(id) {
+  chatAgentId = id;
+  const a = agents.find(x => x.id === id);
+  document.getElementById('chatModalTitle').textContent = `💬 与 ${a ? (a.avatar||'') + ' ' + a.name : '居民'} 对话`;
+  document.getElementById('chatInput').value = '';
+  document.getElementById('chatCost').textContent = '';
+  document.getElementById('chatLog').innerHTML = `<div class="mut">加载中…</div>`;
+  document.getElementById('chatModal').classList.remove('hidden');
+  try {
+    const hist = await j(`${API}/world/agents/${id}/chat`);
+    renderChatLog(hist);
+  } catch (e) { document.getElementById('chatLog').innerHTML = `<div class="mut">暂无历史</div>`; }
+  document.getElementById('chatInput').focus();
+}
+function closeChat() { document.getElementById('chatModal').classList.add('hidden'); chatAgentId = null; }
+function renderChatLog(msgs) {
+  const el = document.getElementById('chatLog');
+  if (!msgs || !msgs.length) { el.innerHTML = `<div class="mut">还没聊过,打个招呼吧。</div>`; return; }
+  el.innerHTML = msgs.map(m =>
+    `<div class="chat-msg ${m.role === 'user' ? 'user' : 'agent'}">${esc(m.content||'')}</div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg || chatAgentId == null) return;
+  const btn = document.getElementById('chatSendBtn');
+  btn.disabled = true; input.disabled = true;
+  const log = document.getElementById('chatLog');
+  if (log.querySelector('.mut')) log.innerHTML = '';
+  log.insertAdjacentHTML('beforeend', `<div class="chat-msg user">${esc(msg)}</div>`);
+  log.insertAdjacentHTML('beforeend', `<div class="chat-msg agent" id="chatPending">…</div>`);
+  log.scrollTop = log.scrollHeight;
+  input.value = '';
+  try {
+    const r = await j(`${API}/world/agents/${chatAgentId}/chat`, {method:'POST',
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:msg})});
+    document.getElementById('chatPending').outerHTML = `<div class="chat-msg agent">${esc(r.content||'(沉默)')}</div>`;
+    document.getElementById('chatCost').innerHTML = costLine({inputTokens:r.inputTokens, outputTokens:r.outputTokens, costRmb:r.costRmb, model:(worldSettings&&worldSettings.model)||'qwen-turbo'});
+    log.scrollTop = log.scrollHeight;
+  } catch (e) {
+    const p = document.getElementById('chatPending'); if (p) p.outerHTML = `<div class="chat-msg agent">(出错了:${esc(errText(e))})</div>`;
+  } finally { btn.disabled = false; input.disabled = false; input.focus(); }
+}
+
+// ---- 会议表单 ----
+function openMeetingForm() {
+  if (agents.length < 2) { toast('至少需要 2 名员工才能开会,请先新增员工', 'info'); return; }
+  mMembers = []; mRounds = 3;
+  document.getElementById('meetingTopicInput').value = '';
+  renderMeetingChips();
+  renderMeetingRoundChips();
+  renderMeetingModelChips();
+  document.getElementById('meetingModal').classList.remove('hidden');
+}
+function closeMeetingForm() { document.getElementById('meetingModal').classList.add('hidden'); }
+function renderMeetingChips() {
+  const el = document.getElementById('meetingAgentChips');
+  el.innerHTML = agents.map(a => {
+    const on = mMembers.includes(a.id);
+    const c = a.color || '#2dd4bf';
+    const persona = (a.persona || '').trim() || '（未设置人设）';
+    const pos = `工位 (${(a.officeX ?? 0) + 1},${(a.officeY ?? 0) + 1})`;
+    return `<div class="mcard ${on?'on':''}" style="--rc:${esc(c)}" onclick="toggleMember(${a.id})" title="${esc(persona)}">
+      <div class="mcard-head">
+        <span class="mcard-ava">${esc(a.avatar || '🧑')}</span>
+        <span class="mcard-name">${esc(a.name)}</span>
+        <span class="mcard-check">✓</span>
+      </div>
+      <div class="mcard-title" style="color:${esc(c)}">${esc(a.title || '成员')}</div>
+      <div class="mcard-persona">${esc(persona)}</div>
+      <div class="mcard-pos">📍 ${esc(pos)}</div>
+    </div>`;
+  }).join('');
+  const hint = document.getElementById('meetingPickHint');
+  if (hint) hint.textContent = `已选 ${mMembers.length} / ${agents.length} 人`;
+}
+function toggleMember(id) {
+  const i = mMembers.indexOf(id);
+  if (i >= 0) mMembers.splice(i, 1); else mMembers.push(id);
+  renderMeetingChips();
+}
+function renderMeetingRoundChips() {
+  document.getElementById('meetingRoundChips').innerHTML = [1,2,3,4,5].map(n =>
+    `<span class="chip ${mRounds===n?'on':''}" onclick="pickMRounds(${n})">${n} 轮</span>`).join('');
+}
+function pickMRounds(n) { mRounds = n; renderMeetingRoundChips(); }
+function renderMeetingModelChips() { renderModelChips('meetingModelChips', mModel, 'pickMModel'); }
+function pickMModel(n) { mModel = n; renderMeetingModelChips(); }
+async function startMeeting() {
+  const topic = document.getElementById('meetingTopicInput').value.trim();
+  if (mMembers.length < 2) { toast('请至少选择 2 名参会员工', 'info'); return; }
+  const btn = document.getElementById('meetingStartBtn');
+  btn.disabled = true; btn.textContent = '启动中…';
+  try {
+    meeting = await j(`${API}/world/meetings`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({topic, participantIds: mMembers, maxRounds: mRounds, model: mModel})
+    });
+    closeMeetingForm();
+    document.getElementById('meetingRun').classList.remove('hidden');
+    renderMeeting();
+    pollMeeting();
+  } catch (e) { toast('发起失败:' + errText(e), 'err'); }
+  finally { btn.disabled = false; btn.textContent = '✦ 开始会议'; }
+}
+function pollMeeting() {
+  if (meetingPoll) { clearTimeout(meetingPoll); meetingPoll = null; }
+  if (!meeting) return;
+  const active = meeting.status === 'PENDING' || meeting.status === 'RUNNING';
+  if (!active) { renderOffices(); if (worldTab==='map') renderMap(); return; }
+  meetingPoll = setTimeout(async () => {
+    try {
+      meeting = await j(`${API}/world/meetings/${meeting.id}`);
+      renderMeeting();
+      pollMeeting();
+    } catch (e) { pollMeeting(); }
+  }, 2000);
+}
+function renderMeeting() {
+  if (!meeting) return;
+  document.getElementById('meetingRun').classList.remove('hidden');
+  document.getElementById('meetingTopic').textContent = '议题:' + (meeting.topic || '');
+  const running = meeting.status === 'PENDING' || meeting.status === 'RUNNING';
+  const hint = document.getElementById('meetingStatusHint');
+  if (meeting.status === 'FAILED') hint.innerHTML = `<span class="xerr">✗ ${esc(meeting.errorMsg||'会议失败')}</span>`;
+  else hint.innerHTML = running ? `<span class="wspin"></span> ${M_STATUS[meeting.status]||meeting.status}…` : `✓ ${M_STATUS[meeting.status]||meeting.status}`;
+  renderMeetingTimeline();
+  syncStage(running);
+  const sb = document.getElementById('meetingSummaryBox');
+  if (meeting.status === 'DONE' && meeting.summary) {
+    sb.classList.remove('hidden');
+    document.getElementById('meetingSummary').textContent = meeting.summary;
+  } else sb.classList.add('hidden');
+  document.getElementById('meetingCost').innerHTML =
+    meeting.status === 'DONE' ? costLine(meeting) : '';
+  // 发言时高亮办公室/地图
+  renderOffices();
+  if (worldTab === 'map') renderMap();
+}
+
+// 舞台与会议状态同步:直播跟随发言者;结束后进入可回放态。
+function syncStage(running) {
+  const parts = participantsOf(meeting);
+  // 切换会议、或之前建成了空舞台(参会者当时没就绪)时重建
+  const needRebuild = !stage || stage.meetingId !== meeting.id
+    || (stage.actors.length === 0 && parts.length > 0);
+  if (needRebuild) {
+    stopReplayTimer();
+    initStage(parts);
+    if (stage) stage.meetingId = meeting.id;
+    replay = { playing:false, idx:-1, speaks:[], timer:null, speed: replay.speed || 1, live: running };
+  }
+  const speaks = parseEvents(meeting).filter(ev => ev.type === 'speak');
+  replay.speaks = speaks;
+  const bar = document.getElementById('stageBar');
+  const badge = document.getElementById('stageBadge');
+  if (running) {
+    // 直播:跟随最后一条 speak;控件隐藏
+    replay.live = true;
+    bar.style.display = 'none';
+    const sid = currentSpeakerId();
+    stageSetSpeaker(sid, sid ? lastSpeechFor(sid) : '');
+    badge.textContent = meeting.status === 'PENDING' ? '⏳ 参会者入场中…' : '🔴 会议直播中';
+  } else {
+    // 已结束/失败:显示回放控件
+    bar.style.display = 'flex';
+    if (!replay.playing) { stageSetSpeaker(null, ''); }
+    badge.textContent = replay.playing ? '▶ 回放中' : (speaks.length ? '🎬 点「回放」重看这场会议' : '会议已结束');
+    renderReplayControls();
+  }
+}
+
+function renderReplayControls() {
+  const slider = document.getElementById('replaySlider');
+  const counter = document.getElementById('replayCounter');
+  const btn = document.getElementById('replayPlayBtn');
+  const n = replay.speaks.length;
+  slider.max = String(Math.max(n - 1, 0));
+  slider.value = String(Math.max(replay.idx, 0));
+  counter.textContent = `${Math.min(replay.idx + 1, n)} / ${n}`;
+  btn.textContent = replay.playing ? '⏸ 暂停' : (replay.idx >= n - 1 && replay.idx >= 0 ? '↻ 重放' : '▶ 回放');
+  btn.disabled = n === 0;
+  // 倍速
+  const sp = document.getElementById('replaySpeeds');
+  sp.innerHTML = [1, 2, 4].map(s =>
+    `<span class="chip ${replay.speed===s?'on':''}" onclick="setReplaySpeed(${s})">${s}×</span>`).join('');
+}
+
+function speakDurationMs(text) {
+  const base = Math.max(1600, Math.min((text || '').length * 60, 6000));
+  return base / (replay.speed || 1);
+}
+function stopReplayTimer() { if (replay.timer) { clearTimeout(replay.timer); replay.timer = null; } }
+
+function toggleReplay() {
+  if (!replay.speaks.length) return;
+  if (replay.playing) { replay.playing = false; stopReplayTimer(); renderReplayControls(); syncBadge(); return; }
+  // 播完了则从头
+  if (replay.idx >= replay.speaks.length - 1) replay.idx = -1;
+  replay.playing = true;
+  advanceReplay();
+}
+function advanceReplay() {
+  if (!replay.playing) return;
+  replay.idx++;
+  if (replay.idx >= replay.speaks.length) { replay.playing = false; replay.idx = replay.speaks.length - 1; renderReplayControls(); syncBadge(); return; }
+  const ev = replay.speaks[replay.idx];
+  stageSetSpeaker(ev.speakerId, ev.text || '');
+  renderReplayControls(); syncBadge();
+  replay.timer = setTimeout(advanceReplay, speakDurationMs(ev.text));
+}
+function seekReplay(v) {
+  const i = parseInt(v, 10);
+  replay.playing = false; stopReplayTimer();
+  replay.idx = i;
+  const ev = replay.speaks[i];
+  if (ev) stageSetSpeaker(ev.speakerId, ev.text || '');
+  renderReplayControls(); syncBadge();
+}
+function setReplaySpeed(s) {
+  replay.speed = s; renderReplayControls();
+  if (replay.playing) { stopReplayTimer(); replay.timer = setTimeout(advanceReplay, 400); }
+}
+function syncBadge() {
+  const badge = document.getElementById('stageBadge');
+  if (!badge || !meeting) return;
+  if (meeting.status === 'PENDING' || meeting.status === 'RUNNING') return;
+  badge.textContent = replay.playing ? '▶ 回放中' : (replay.speaks.length ? '🎬 点「回放」重看这场会议' : '会议已结束');
+}
+function renderMeetingTimeline() {
+  const el = document.getElementById('meetingTimeline');
+  if (!el) return;
+  const evs = parseEvents(meeting);
+  const running = meeting.status === 'PENDING' || meeting.status === 'RUNNING';
+  let html = evs.map((ev, i) => {
+    const sys = ev.speakerId === 'system';
+    const live = running && i === evs.length - 1 && ev.type === 'think';
+    return `<div class="tl-ev ${sys?'system':''} ${live?'live':''}" ${sys?'':`style="--dc:${esc(ev.color||'#2dd4bf')}"`}>
+      <div class="tl-text">${live?'<span class="wspin"></span> ':''}${!sys?`<b style="color:${esc(ev.color||'#2dd4bf')}">${esc(ev.avatar||'')} ${esc(ev.role)}:</b> `:''}${esc(ev.text)}</div>
+    </div>`;
+  }).join('');
+  if (running) html += `<div class="tl-ev system live"><div class="tl-text"><span class="wspin"></span> 智能体思考发言中…</div></div>`;
+  if (!html) html = '<div class="mut">等待会议开始…</div>';
+  el.innerHTML = html;
+}
+
+// ---- 历史会议 ----
+function toggleMeetings() {
+  const panel = document.getElementById('meetingsPanel');
+  const show = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !show);
+  if (show) loadMeetings();
+}
+async function loadMeetings() {
+  const list = document.getElementById('meetingsList');
+  try {
+    const items = await j(`${API}/world/meetings`);
+    if (!items.length) { list.innerHTML = '<div class="mut">还没有会议,点「发起会议」开始。</div>'; return; }
+    list.innerHTML = items.map(m => {
+      const cls = m.status === 'DONE' ? 'done' : m.status === 'FAILED' ? 'failed' : 'running';
+      return `<div class="m-work-item" onclick="openMeeting(${m.id})">
+        <span class="mtopic">${esc(m.topic)}</span>
+        <span class="mbadge ${cls}">${M_STATUS[m.status]||m.status}</span>
+        <button class="sec" onclick="event.stopPropagation();deleteMeeting(${m.id})">删除</button>
+      </div>`;
+    }).join('');
+  } catch (e) { list.innerHTML = '<div class="xerr">加载失败</div>'; }
+}
+async function openMeeting(id) {
+  if (meetingPoll) { clearTimeout(meetingPoll); meetingPoll = null; }
+  try {
+    meeting = await j(`${API}/world/meetings/${id}`);
+    document.getElementById('meetingsPanel').classList.add('hidden');
+    renderMeeting();
+    pollMeeting();
+    document.getElementById('meetingRun').scrollIntoView({behavior:'smooth'});
+  } catch (e) { toast('打开失败:' + errText(e), 'err'); }
+}
+async function deleteMeeting(id) {
+  if (!await confirmDialog('确定删除这场会议?', {title:'删除会议', okText:'删除'})) return;
+  try {
+    await j(`${API}/world/meetings/${id}`, {method:'DELETE'});
+    toast('已删除', 'ok');
+    if (meeting && meeting.id === id) {
+      meeting = null;
+      stopReplayTimer(); stageDestroy();
+      document.getElementById('meetingRun').classList.add('hidden');
+    }
+    loadMeetings();
+  } catch (e) { toast('删除失败:' + errText(e), 'err'); }
+}
+
+// ---- 村民动态:全量流水 + 搜索/类型/村民筛选 ----
+let activityItems = [];          // GET /world/activity 缓存
+const ACT_KIND = {action:'行动', dialogue:'对话', meeting:'会议', reflection:'内省', observation:'观察',
+  move:'走动', think:'思考', talk:'交谈', reflect:'反思', goto:'移动'};
+function toggleActivity() {
+  const panel = document.getElementById('activityPanel');
+  const show = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !show);
+  if (show) loadActivity();
+}
+async function loadActivity() {
+  const list = document.getElementById('activityList');
+  list.innerHTML = '<div class="mut">加载中…</div>';
+  // 村民下拉:用当前 agents + 小黑屋无关,直接用在册居民
+  const sel = document.getElementById('actAgent');
+  const keep = sel.value;
+  sel.innerHTML = '<option value="">全部村民</option>' +
+    agents.map(a => `<option value="${a.id}">${esc(a.avatar||'')} ${esc(a.name)}</option>`).join('');
+  sel.value = keep;
+  try {
+    activityItems = await j(`${API}/world/activity`);
+    renderActivity();
+  } catch (e) { list.innerHTML = `<div class="xerr">加载失败:${errText(e)}</div>`; }
+}
+function renderActivity() {
+  const list = document.getElementById('activityList');
+  if (!list) return;
+  const kw = (document.getElementById('actSearch').value || '').trim().toLowerCase();
+  const type = document.getElementById('actType').value;
+  const aid = document.getElementById('actAgent').value;
+  const byId = {}; agents.forEach(a => byId[String(a.id)] = a);
+  const rows = activityItems.filter(it => {
+    if (type && it.kind !== type) return false;
+    if (aid && String(it.agentId) !== String(aid)) return false;
+    if (kw && !((it.content||'').toLowerCase().includes(kw))) return false;
+    return true;
+  });
+  if (!rows.length) { list.innerHTML = '<div class="mut">没有匹配的动态记录。</div>'; return; }
+  list.innerHTML = rows.map(it => {
+    const a = byId[String(it.agentId)];
+    const ava = a ? (a.avatar||'🧑') : '👤';
+    const name = a ? esc(a.name) : `#${it.agentId}`;
+    const tgt = it.targetAgentId && byId[String(it.targetAgentId)]
+      ? `<span class="ar-tgt"> → ${esc(byId[String(it.targetAgentId)].name)}</span>` : '';
+    const place = it.place ? `<span class="ar-kind">📍${esc(placeName(it.place))}</span>` : '';
+    const srcCls = it.source === 'action' ? 'k-source' : '';
+    return `<div class="act-row">
+      <span class="ar-ava">${ava}</span>
+      <div class="ar-main">
+        <div class="ar-head">
+          <span class="ar-name">${name}</span>${tgt}
+          <span class="ar-kind ${srcCls}">${ACT_KIND[it.kind]||it.kind}</span>${place}
+          <span class="ar-time">${fmtTime(it.createdAt)}</span>
+        </div>
+        <div class="ar-content">${esc(it.content||'')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function placeName(key) {
+  if (townMap && townMap.places) { const p = townMap.places.find(x => x.key === key); if (p) return p.name; }
+  return key;
+}
+function fmtTime(t) {
+  if (!t) return '';
+  const d = new Date(t);
+  if (isNaN(d)) return '';
+  const p = n => String(n).padStart(2,'0');
+  return `${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+// ---- 群聊:创建 / 会话 / 成员增减 ----
+function openGroupChatForm() {
+  if (!agents.length) { toast('先新增居民才能发起群聊', 'info'); return; }
+  gMembers = []; gModel = 'qwen-turbo';
+  document.getElementById('groupTitleInput').value = '';
+  renderGroupChips();
+  renderModelChips('groupModelChips', gModel, 'pickGModel');
+  document.getElementById('groupFormModal').classList.remove('hidden');
+}
+function closeGroupForm() { document.getElementById('groupFormModal').classList.add('hidden'); }
+function pickGModel(n) { gModel = n; renderModelChips('groupModelChips', gModel, 'pickGModel'); }
+function renderGroupChips() {
+  const el = document.getElementById('groupAgentChips');
+  el.innerHTML = agents.map(a => {
+    const on = gMembers.includes(a.id);
+    const c = a.color || '#2dd4bf';
+    const persona = (a.persona || '').trim() || '（未设置人设）';
+    return `<div class="mcard ${on?'on':''}" style="--rc:${esc(c)}" onclick="toggleGMember(${a.id})" title="${esc(persona)}">
+      <div class="mcard-head">
+        <span class="mcard-ava">${esc(a.avatar || '🧑')}</span>
+        <span class="mcard-name">${esc(a.name)}</span>
+        <span class="mcard-check">✓</span>
+      </div>
+      <div class="mcard-title" style="color:${esc(c)}">${esc(a.title || '成员')}</div>
+      <div class="mcard-persona">${esc(persona)}</div>
+    </div>`;
+  }).join('');
+  const hint = document.getElementById('groupPickHint');
+  if (hint) hint.textContent = `已选 ${gMembers.length} / ${agents.length} 人`;
+}
+function toggleGMember(id) {
+  const i = gMembers.indexOf(id);
+  if (i >= 0) gMembers.splice(i, 1); else gMembers.push(id);
+  renderGroupChips();
+}
+async function startGroup() {
+  if (!gMembers.length) { toast('请至少选择 1 名居民', 'info'); return; }
+  const title = document.getElementById('groupTitleInput').value.trim();
+  const btn = document.getElementById('groupStartBtn');
+  btn.disabled = true; btn.textContent = '创建中…';
+  try {
+    const c = await j(`${API}/world/groups`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({title, memberIds: gMembers, model: gModel})
+    });
+    closeGroupForm();
+    openGroup(c.id);
+  } catch (e) { toast('创建失败:' + errText(e), 'err'); }
+  finally { btn.disabled = false; btn.textContent = '✦ 创建群聊'; }
+}
+async function openGroup(id) {
+  try {
+    groupChat = await j(`${API}/world/groups/${id}`);
+    document.getElementById('groupRunTitle').textContent = `👥 ${groupChat.title || '群聊'}`;
+    document.getElementById('groupInput').value = '';
+    document.getElementById('groupCost').innerHTML = costLine({
+      inputTokens: groupChat.inputTokens, outputTokens: groupChat.outputTokens,
+      costRmb: groupChat.costRmb, model: groupChat.model || 'qwen-turbo'});
+    document.getElementById('groupLog').innerHTML = `<div class="mut">加载中…</div>`;
+    document.getElementById('groupRunModal').classList.remove('hidden');
+    renderGroupMembers();
+    const hist = await j(`${API}/world/groups/${id}/messages`);
+    renderGroupLog(hist);
+    document.getElementById('groupInput').focus();
+  } catch (e) { toast('打开失败:' + errText(e), 'err'); }
+}
+function closeGroupRun() {
+  document.getElementById('groupRunModal').classList.add('hidden');
+  groupChat = null;
+}
+function groupMemberIds() {
+  if (!groupChat || !groupChat.memberIds) return [];
+  try { return JSON.parse(groupChat.memberIds); } catch (e) { return []; }
+}
+function renderGroupMembers() {
+  const el = document.getElementById('groupMembers');
+  const ids = groupMemberIds();
+  const byId = {}; agents.forEach(a => byId[String(a.id)] = a);
+  const chips = ids.map(id => {
+    const a = byId[String(id)];
+    const c = a ? (a.color || '#2dd4bf') : '#888';
+    const nm = a ? `${a.avatar||'🧑'} ${esc(a.name)}` : `#${id}`;
+    return `<span class="gc-chip" style="--rc:${esc(c)}">${nm}<button class="gc-rm" title="移出群聊" onclick="removeGroupMember(${id})">×</button></span>`;
+  }).join('');
+  el.innerHTML = chips + `<button class="gc-add" onclick="openGroupAdd()">＋ 邀请</button>`;
+}
+function renderGroupLog(msgs) {
+  const el = document.getElementById('groupLog');
+  if (!msgs || !msgs.length) { el.innerHTML = `<div class="mut">群聊刚建好,说句话开场吧。</div>`; return; }
+  const byId = {}; agents.forEach(a => byId[String(a.id)] = a);
+  el.innerHTML = msgs.map(m => groupMsgHtml(m, byId)).join('');
+  el.scrollTop = el.scrollHeight;
+}
+function groupMsgHtml(m, byId) {
+  if (m.role === 'system') return `<div class="chat-msg system">${esc(m.content||'')}</div>`;
+  if (m.role === 'user') return `<div class="chat-msg user">${esc(m.content||'')}</div>`;
+  const a = m.agentId != null ? byId[String(m.agentId)] : null;
+  const who = a ? `${a.avatar||'🧑'} ${esc(a.name)}` : '居民';
+  return `<div class="chat-msg agent"><span class="cm-who">${who}</span>${esc(m.content||'')}</div>`;
+}
+async function sendGroup() {
+  const input = document.getElementById('groupInput');
+  const msg = input.value.trim();
+  if (!msg || !groupChat) return;
+  const btn = document.getElementById('groupSendBtn');
+  btn.disabled = true; input.disabled = true;
+  const log = document.getElementById('groupLog');
+  if (log.querySelector('.mut')) log.innerHTML = '';
+  log.insertAdjacentHTML('beforeend', `<div class="chat-msg user">${esc(msg)}</div>`);
+  log.insertAdjacentHTML('beforeend', `<div class="chat-msg agent" id="groupPending"><span class="cm-who">居民们</span>…</div>`);
+  log.scrollTop = log.scrollHeight;
+  input.value = '';
+  try {
+    const arr = await j(`${API}/world/groups/${groupChat.id}/messages`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message: msg})});
+    const pend = document.getElementById('groupPending'); if (pend) pend.remove();
+    const byId = {}; agents.forEach(a => byId[String(a.id)] = a);
+    // 后端返回本轮全部新消息(含用户消息),用户消息已乐观渲染 → 只补 agent/system 回复
+    (arr || []).filter(m => m.role !== 'user').forEach(m =>
+      log.insertAdjacentHTML('beforeend', groupMsgHtml(m, byId)));
+    log.scrollTop = log.scrollHeight;
+    // 刷新累计费用
+    try { groupChat = await j(`${API}/world/groups/${groupChat.id}`); } catch (e) {}
+    document.getElementById('groupCost').innerHTML = costLine({
+      inputTokens: groupChat.inputTokens, outputTokens: groupChat.outputTokens,
+      costRmb: groupChat.costRmb, model: groupChat.model || 'qwen-turbo'});
+  } catch (e) {
+    const p = document.getElementById('groupPending'); if (p) p.outerHTML = `<div class="chat-msg agent">(出错了:${esc(errText(e))})</div>`;
+  } finally { btn.disabled = false; input.disabled = false; input.focus(); }
+}
+function openGroupAdd() {
+  const el = document.getElementById('groupAddChips');
+  const inGroup = groupMemberIds().map(String);
+  const cand = agents.filter(a => !inGroup.includes(String(a.id)));
+  if (!cand.length) { toast('所有居民都已在群里', 'info'); return; }
+  el.innerHTML = cand.map(a => {
+    const c = a.color || '#2dd4bf';
+    const persona = (a.persona || '').trim() || '（未设置人设）';
+    return `<div class="mcard" style="--rc:${esc(c)}" onclick="addGroupMember(${a.id})" title="${esc(persona)}">
+      <div class="mcard-head">
+        <span class="mcard-ava">${esc(a.avatar || '🧑')}</span>
+        <span class="mcard-name">${esc(a.name)}</span>
+      </div>
+      <div class="mcard-title" style="color:${esc(c)}">${esc(a.title || '成员')}</div>
+      <div class="mcard-persona">${esc(persona)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('groupAddModal').classList.remove('hidden');
+}
+function closeGroupAdd() { document.getElementById('groupAddModal').classList.add('hidden'); }
+async function addGroupMember(agentId) {
+  if (!groupChat) return;
+  try {
+    groupChat = await j(`${API}/world/groups/${groupChat.id}/members/${agentId}`, {method:'POST'});
+    renderGroupMembers();
+    const hist = await j(`${API}/world/groups/${groupChat.id}/messages`);
+    renderGroupLog(hist);
+    openGroupAdd(); // 刷新可选列表
+  } catch (e) { toast('添加失败:' + errText(e), 'err'); }
+}
+async function removeGroupMember(agentId) {
+  if (!groupChat) return;
+  if (groupMemberIds().length <= 1) { toast('群里至少保留 1 名居民', 'info'); return; }
+  try {
+    groupChat = await j(`${API}/world/groups/${groupChat.id}/members/${agentId}`, {method:'DELETE'});
+    renderGroupMembers();
+    const hist = await j(`${API}/world/groups/${groupChat.id}/messages`);
+    renderGroupLog(hist);
+  } catch (e) { toast('移除失败:' + errText(e), 'err'); }
+}
+function toggleGroups() {
+  const panel = document.getElementById('groupsPanel');
+  const show = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !show);
+  if (show) loadGroups();
+}
+async function loadGroups() {
+  const list = document.getElementById('groupsList');
+  try {
+    const items = await j(`${API}/world/groups`);
+    if (!items.length) { list.innerHTML = '<div class="mut">还没有群聊,点「群聊」发起一个。</div>'; return; }
+    list.innerHTML = items.map(c => {
+      let n = 0; try { n = (JSON.parse(c.memberIds||'[]')||[]).length; } catch (e) {}
+      return `<div class="g-work-item" onclick="openGroup(${c.id})">
+        <span class="gtitle">${esc(c.title||'群聊')}</span>
+        <span class="gcount">${n} 名居民</span>
+        <button class="sec" onclick="event.stopPropagation();deleteGroup(${c.id})">删除</button>
+      </div>`;
+    }).join('');
+  } catch (e) { list.innerHTML = '<div class="xerr">加载失败</div>'; }
+}
+async function deleteGroup(id) {
+  if (!await confirmDialog('确定删除这个群聊?聊天记录将一并清除。', {title:'删除群聊', okText:'删除'})) return;
+  try {
+    await j(`${API}/world/groups/${id}`, {method:'DELETE'});
+    toast('已删除', 'ok');
+    if (groupChat && groupChat.id === id) closeGroupRun();
+    loadGroups();
   } catch (e) { toast('删除失败:' + errText(e), 'err'); }
 }
 

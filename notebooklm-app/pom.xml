@@ -107,6 +107,12 @@
             <artifactId>agentscope-extensions-rag-simple</artifactId>
             <version>${agentscope.version}</version>
         </dependency>
+        <!-- AgentScope: Harness(HarnessAgent 长跑/工作区/长期记忆/上下文压缩) -->
+        <dependency>
+            <groupId>io.agentscope</groupId>
+            <artifactId>agentscope-harness</artifactId>
+            <version>${agentscope.version}</version>
+        </dependency>
 
         <!-- Milvus SDK(向量库客户端) -->
         <dependency>

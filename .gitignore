@@ -9,4 +9,5 @@ dist/
 /uploads/
 /audio/
 /images/
+/data/
 *.log

@@ -59,6 +59,12 @@ notebooklm:
     tts-model: cosyvoice-v1
     tts-voice-a: longwan     # 主持人 A 音色
     tts-voice-b: longcheng   # 主持人 B 音色
+    # 可选文本模型及商用单价(元 / 1000 token),供会议/写作选用与 token→元 换算;以百炼控制台实际为准
+    pricing:
+      - { name: qwen-turbo, label: "Qwen Turbo · 便宜快", input-per1k: 0.0003, output-per1k: 0.0006 }
+      - { name: qwen-plus,  label: "Qwen Plus · 均衡",   input-per1k: 0.0008, output-per1k: 0.002 }
+      - { name: qwen-max,   label: "Qwen Max · 最强",    input-per1k: 0.0024, output-per1k: 0.0096 }
+      - { name: qwen-long,  label: "Qwen Long · 长文本", input-per1k: 0.0005, output-per1k: 0.002 }
   milvus:
     host: ${MILVUS_HOST:127.0.0.1}
     port: ${MILVUS_PORT:19530}
@@ -68,6 +74,9 @@ notebooklm:
     upload-dir: ${UPLOAD_DIR:./uploads}
     audio-dir: ${AUDIO_DIR:./audio}
     image-dir: ${IMAGE_DIR:./images}
+  world:
+    workspace-root: ${WORLD_WORKSPACE_ROOT:./data/agents}   # HarnessAgent 每位居民的独立工作区(长期记忆落盘)
+    autonomous-model: ${WORLD_AUTONOMOUS_MODEL:qwen-turbo}   # 自主行动/1:1对话默认最便宜模型
   auth:
     jwt-secret: ${JWT_SECRET:change-me-in-prod-at-least-32-bytes-long-secret}
     jwt-expiry-seconds: ${JWT_EXPIRY_SECONDS:604800}   # 7 天
