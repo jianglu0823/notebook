@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS writing_project (
 -- 智能体小世界:员工(可配置人设的 ReActAgent)
 CREATE TABLE IF NOT EXISTS agent_employee (
     id             BIGINT PRIMARY KEY AUTO_INCREMENT,
-    owner_id       VARCHAR(64)   NOT NULL COMMENT '主体:斯坦福小镇模式下统一为 world(全局共享)',
+    owner_id       VARCHAR(64)   NOT NULL COMMENT '主体:鹿匠小镇模式下统一为 world(全局共享)',
     name           VARCHAR(64)   NOT NULL COMMENT '员工名字',
     avatar         VARCHAR(16)   NULL COMMENT '头像 emoji',
     title          VARCHAR(64)   NULL COMMENT '职位/角色',
@@ -188,6 +188,7 @@ CREATE TABLE IF NOT EXISTS agent_employee (
     pos_x          DOUBLE        NULL COMMENT '地图漫游当前 x',
     pos_y          DOUBLE        NULL COMMENT '地图漫游当前 y',
     location       VARCHAR(32)   NULL COMMENT '当前所在具名地点 key(见 TownMap)',
+    life_summary   TEXT          NULL COMMENT '进小黑屋(软删除)时生成的第三人称一生回顾',
     created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_agent_owner (owner_id),

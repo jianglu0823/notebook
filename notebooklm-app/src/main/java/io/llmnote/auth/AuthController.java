@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /** 注册 / 登录 / 当前身份。 */
@@ -50,15 +51,23 @@ public class AuthController {
         return tokenResponse(u);
     }
 
-    /** 当前身份:注册用户返回 userId+username,游客返回 guest=true。 */
+    /** 当前身份:注册用户返回 userId+username+ownerId,游客返回 guest=true+ownerId(g:uuid)。 */
     @GetMapping("/me")
     public Map<String, Object> me(Principal principal) {
-        if (principal == null || principal.guest()) {
+        if (principal == null) {
             return Map.of("guest", true);
+        }
+        if (principal.guest()) {
+            return Map.of("guest", true, "ownerId", principal.ownerId());
         }
         String username = userRepo.findById(principal.userId())
                 .map(User::getUsername).orElse(null);
-        return Map.of("guest", false, "userId", principal.userId(), "username", username);
+        Map<String, Object> out = new HashMap<>();
+        out.put("guest", false);
+        out.put("userId", principal.userId());
+        out.put("username", username);
+        out.put("ownerId", principal.ownerId());
+        return out;
     }
 
     private Map<String, Object> tokenResponse(User u) {

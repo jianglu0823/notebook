@@ -251,6 +251,16 @@
   .office-room.add-room { display:flex; flex-direction:column; align-items:center; justify-content:center; border-style:dashed; border-top-style:dashed; border-top-color:var(--line); cursor:pointer; color:var(--mut); min-height:120px; }
   .office-room.add-room:hover { color:var(--accent); border-color:var(--accent); }
   .office-room.add-room .plus { font-size:30px; line-height:1; margin-bottom:6px; }
+  /* 小黑屋:盖棺定论卡,展示一生回顾 */
+  .jail-card { border:1px solid var(--line); border-left:3px solid var(--rc,#64748b); border-radius:var(--radius); background:var(--panel2); padding:14px; opacity:.9; }
+  .jail-card .jc-head { display:flex; align-items:center; gap:10px; }
+  .jail-card .oavatar { font-size:30px; line-height:1; }
+  .jail-card .oname { font-weight:750; font-size:14px; color:var(--fg); }
+  .jail-card .otitle { font-size:12px; color:var(--mut); }
+  .jail-card .jc-eulogy { margin:10px 0; font-size:12.5px; line-height:1.7; color:var(--fg); font-style:italic; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+  .jail-card .jc-eulogy.mut { color:var(--mut); font-style:normal; }
+  .jail-card .oacts { display:flex; }
+  .jail-card .oacts button { padding:4px 12px; font-size:11px; }
   .map-wrap { margin-top:6px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:#0d1512; }
   #worldMap { display:block; width:100%; height:auto; image-rendering:pixelated; cursor:pointer; }
   /* 像素小镇容器 + 浮动场景卡覆盖层 */
@@ -526,6 +536,15 @@
   .modal .box { background:var(--panel); border:1px solid var(--line-strong); border-radius:var(--radius-lg); padding:var(--sp-3); width:340px; box-shadow:var(--shadow); animation:popIn .2s cubic-bezier(.2,.8,.3,1); }
   .modal .box.box-wide { width:min(680px,92vw); max-height:90vh; overflow-y:auto; }
   .modal h2 { font-size:16px; margin-bottom:var(--sp-2); }
+  .rules-logo { background:transparent; border:1px solid var(--line); border-radius:8px; font-size:14px; padding:2px 7px; cursor:pointer; line-height:1.4; transition:all .18s ease-in-out; }
+  .rules-logo:hover { border-color:var(--accent); box-shadow:0 2px 8px rgba(0,0,0,.18); }
+  .rules-body { font-size:13px; line-height:1.75; color:var(--fg); }
+  .rules-body h3 { font-size:13.5px; margin:16px 0 6px; color:var(--accent); }
+  .rules-body p { margin:0 0 8px; color:var(--mut); }
+  .rules-body ul { margin:0 0 8px; padding-left:20px; color:var(--mut); }
+  .rules-body li { margin:3px 0; }
+  .rules-places { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 8px; }
+  .rules-place { background:var(--panel2); border:1px solid var(--line); border-radius:16px; padding:3px 10px; font-size:12px; }
   .modal .row { margin-bottom:12px; }
   @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
   @keyframes popIn { from { opacity:0; transform:scale(.94) translateY(8px); } to { opacity:1; transform:none; } }
@@ -639,12 +658,6 @@
           <button class="tbtn" onclick="createNote('MARKDOWN')"><span class="ti">⬇️</span><span class="tl">Markdown</span></button>
           <button class="tbtn" onclick="startVoiceNote()"><span class="ti">🎙️</span><span class="tl">语音笔记</span></button>
           <button class="tbtn" onclick="openNbManager()"><span class="ti">📓</span><span class="tl">笔记本</span></button>
-          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">🧠</span><span class="tl">思维导图</span></button>
-          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">📑</span><span class="tl">大纲笔记</span></button>
-          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">📚</span><span class="tl">模板库</span></button>
-          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">🧩</span><span class="tl">我的模板</span></button>
-          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">🏷️</span><span class="tl">桌面便签</span></button>
-          <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">⏺️</span><span class="tl">录屏</span></button>
         </div>
         <div class="home-grid">
           <div class="stat clk" onclick="selectAll()">
@@ -676,8 +689,6 @@
             <button class="tbtn" onclick="selectStudio()"><span class="ti">📱</span><span class="tl">小红书文案</span></button>
             <button class="tbtn" onclick="selectWriting()"><span class="ti">✍️</span><span class="tl">协作写作</span></button>
             <button class="tbtn" onclick="selectWorld()"><span class="ti">🏙️</span><span class="tl">智能体小世界</span></button>
-            <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">🎬</span><span class="tl">短视频生成</span></button>
-            <button class="tbtn disabled" disabled title="敬请期待"><span class="ti">📊</span><span class="tl">公众号排版</span></button>
           </div>
         </div>
       </div>
@@ -739,7 +750,6 @@
             <div class="wd">AI 从文案提炼画面,用通义万相生成 1~3 张配图。</div>
             <div class="img-actions">
               <button id="imgBtn" onclick="genImages()">🎨 生成配图</button>
-              <button class="sec" disabled title="敬请期待">🎬 合成短视频</button>
             </div>
             <div id="imagesStage"></div>
           </div>
@@ -897,7 +907,9 @@
 
         <!-- 小镇视图:像素地图 + 居民列表聚合在一起 -->
         <div class="widget" id="mapPane">
-          <div class="wt">🗺 斯坦福小镇</div>
+          <div class="wt" style="display:flex;align-items:center;gap:8px">🗺 鹿匠小镇
+            <button class="rules-logo" onclick="openRules()" title="世界规则">📜</button>
+          </div>
           <div class="wd">居民按坐标在镇上走动,头顶显示心情。开启「自主行动」后他们会自己思考、漫步、串门聊天;下方是实时动态。</div>
           <div class="map-wrap"><div class="town-wrap"><canvas id="worldMap" width="960" height="640" onclick="mapClick(event)"></canvas><div class="scene-layer" id="sceneLayer"></div></div></div>
           <div class="feed-box" id="worldFeed"></div>
@@ -944,7 +956,6 @@
     <nav id="nav">
       <div class="primary">
         <button onclick="createNote()">✚ 新建笔记</button>
-        <button class="sec" onclick="triggerUpload()">↑ 上传文件</button>
         <input type="file" id="fileInput" class="hidden" onchange="uploadFile()">
       </div>
 
@@ -1114,6 +1125,14 @@
   </div>
 </div>
 
+<div id="rulesModal" class="modal hidden">
+  <div class="box box-wide">
+    <h2>📜 鹿匠小镇 · 世界规则</h2>
+    <div id="rulesBody" class="rules-body"></div>
+    <div class="row" style="margin-top:14px"><button class="sec" onclick="closeRules()" style="flex:1">明白了</button></div>
+  </div>
+</div>
+
 <div id="confirmModal" class="modal hidden">
   <div class="box">
     <h2 id="confirmTitle">确认操作</h2>
@@ -1190,6 +1209,23 @@
     <div class="row" style="gap:8px">
       <button onclick="saveAgent()" id="agentSaveBtn" style="flex:1">保存</button>
       <button class="sec" onclick="closeAgentForm()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 对话捏人:和助手聊天,逐步定人设,ready 后预填上面的表单确认落库 -->
+<div id="builderModal" class="modal hidden">
+  <div class="box box-wide">
+    <h2>🪄 对话捏人 · 新增居民</h2>
+    <div class="wd" style="margin-bottom:8px">和助手聊聊你想要一位怎样的居民——名字、身份、性格、脾气…… 助手会追问细节,想好了就把草案预填进表单让你确认。</div>
+    <div class="chat-log" id="builderLog"><div class="mut">正在打招呼…</div></div>
+    <div class="row" style="gap:8px">
+      <input id="builderInput" placeholder="描述你想要的居民…" style="flex:1" onkeydown="if(event.key==='Enter')sendBuilder()">
+      <button onclick="sendBuilder()" id="builderSendBtn">发送</button>
+      <button class="sec" onclick="closeBuilder()">关闭</button>
+    </div>
+    <div id="builderReady" class="hidden" style="margin-top:10px">
+      <button onclick="applyBuilderDraft()" style="width:100%">✓ 草案已就绪,填入表单确认创建</button>
     </div>
   </div>
 </div>
@@ -1293,6 +1329,8 @@ let qaSession = null, aiTab = 'qa', pollTimer = null, authMode = 'login';
 let newsPreset = '';           // 选中的预设方向;空 = 用自定义输入
 let newsTimer = null;          // 新闻任务轮询
 let currentUser = null;        // 当前登录用户 {username, guest}
+let myOwnerId = null;          // 当前身份 ownerId(u:<id> 或 g:<uuid>)
+let isAdmin = false;           // 是否管理员(jianglu),可维护所有居民
 let quoteTimer = null;         // 首页鸡汤语句轮询
 let xhs = null;                // 当前小红书项目
 let xhsPoll = null;            // 小红书阶段轮询定时器
@@ -1472,12 +1510,14 @@ async function loadMe() {
     const me = await j(`${API}/auth/me`);
     const guest = me.guest;
     currentUser = { username: me.username, guest };
+    myOwnerId = me.ownerId || null;
+    isAdmin = !guest && me.username === 'jianglu';
     document.getElementById('whoami').textContent = guest ? '游客模式' : ('👤 ' + me.username);
     document.getElementById('loginBtn').classList.toggle('hidden', !guest);
     document.getElementById('registerBtn').classList.toggle('hidden', !guest);
     document.getElementById('logoutBtn').classList.toggle('hidden', guest);
     renderGreet();
-  } catch (e) { document.getElementById('whoami').textContent = '游客模式'; currentUser = { username:'', guest:true }; }
+  } catch (e) { document.getElementById('whoami').textContent = '游客模式'; currentUser = { username:'', guest:true }; myOwnerId = null; isAdmin = false; }
 }
 function openAuth(mode) {
   authMode = mode;
@@ -1489,6 +1529,45 @@ function openAuth(mode) {
   document.getElementById('authUser').focus();
 }
 function closeAuth() { document.getElementById('authModal').classList.add('hidden'); }
+
+async function openRules() {
+  const body = document.getElementById('rulesBody');
+  document.getElementById('rulesModal').classList.remove('hidden');
+  const tm = await loadTownMap();
+  const places = (tm && tm.places) ? tm.places : [];
+  const placeChips = places.length
+    ? `<div class="rules-places">${places.map(p => `<span class="rules-place">${p.emoji||'🏠'} ${esc(p.name)}</span>`).join('')}</div>`
+    : '<p>（地点加载中…）</p>';
+  body.innerHTML = `
+    <h3>🌍 世界观</h3>
+    <p>鹿匠小镇是一座由智能体居民组成的小世界。每位居民都是一个拥有独立性格、心情与长期记忆的智能体,在镇上生活、走动、串门、闲聊。居民与记忆<b>全局共享</b>——所有访客看到的是同一个持续演进的小镇。</p>
+    <h3>🏘 镇上的地点</h3>
+    <p>居民会在这些具名地点之间往来:</p>
+    ${placeChips}
+    <h3>🤖 自主行动</h3>
+    <ul>
+      <li>开启「自主行动」后,小镇按固定间隔轮流唤醒一位居民,由他自己决定做什么。</li>
+      <li>行动类型:<b>goto</b>(走去某地)、<b>talk</b>(找人搭话)、<b>think</b>(自我思考)、<b>reflect</b>(回顾沉淀)。</li>
+      <li>轮转间隔与所用模型可在世界设置中调整,想省 token 就调长间隔、用便宜模型。</li>
+    </ul>
+    <h3>🧠 长期记忆与动态</h3>
+    <p>居民的对话、行动、反思都会沉淀为长期记忆,并汇入「村民动态」时间线,可按类型与居民搜索筛选。「对话记忆」默认不出现在全部动态里,需单独选择该类型查看。</p>
+    <h3>💬 会议 / 群聊 / 1:1 对话</h3>
+    <ul>
+      <li><b>1:1 对话</b>:点某位居民「对话」,和他单独聊天。</li>
+      <li><b>会议</b>:给定话题,拉多名居民围绕话题轮流发言,你在旁围观。</li>
+      <li><b>群聊</b>:交互式多智能体聊天,可中途增减成员。</li>
+    </ul>
+    <h3>🚫 小黑屋与「一生回顾」</h3>
+    <p>「删除」居民其实是<b>软删除</b>——把他关进小黑屋,数据保留,可随时释放。居民进小黑屋前,镇史官会为他写下一段第三人称的「一生回顾」,盖棺定论,留个念想。</p>
+    <h3>🔑 归属与权限</h3>
+    <ul>
+      <li>管理员(jianglu)可维护<b>所有</b>居民。</li>
+      <li>其他登录用户与游客,只能编辑/删除<b>自己创建</b>的居民。</li>
+      <li>新增居民可以用「对话捏人」的方式,和助手聊着聊着就把人设定下来。</li>
+    </ul>`;
+}
+function closeRules() { document.getElementById('rulesModal').classList.add('hidden'); }
 async function submitAuth() {
   const username = document.getElementById('authUser').value.trim();
   const password = document.getElementById('authPass').value;
@@ -2903,14 +2982,20 @@ function renderOffices() {
       ${mood ? `<div class="omood">${mood}</div>` : ''}
       <div class="oacts">
         <button onclick="openChat(${a.id})">对话</button>
-        <button class="sec" onclick="openAgentForm(${a.id})">编辑</button>
-        <button class="sec" onclick="deleteAgent(${a.id})">删除</button>
+        ${canManageAgent(a) ? `<button class="sec" onclick="openAgentForm(${a.id})">编辑</button>
+        <button class="sec" onclick="deleteAgent(${a.id})">删除</button>` : ''}
       </div>
     </div>`;
   }).join('');
   html += `<div class="office-room add-room" onclick="openAgentForm()">
     <div class="plus">＋</div><div>新增居民</div></div>`;
   el.innerHTML = html;
+}
+
+/** 当前身份是否可维护该居民:管理员放行全部,否则要求 creator == 自己 ownerId。 */
+function canManageAgent(a) {
+  if (isAdmin) return true;
+  return myOwnerId && a && a.creator && a.creator === myOwnerId;
 }
 
 async function renderJail() {
@@ -2922,10 +3007,17 @@ async function renderJail() {
   if (!jailed.length) { el.innerHTML = `<div class="mut">小黑屋是空的。</div>`; return; }
   el.innerHTML = jailed.map(a => {
     const rc = a.color || '#64748b';
-    return `<div class="office-room" style="--rc:${esc(rc)};opacity:.75">
-      <div class="oavatar" style="filter:grayscale(.6)">${esc(a.avatar||'🧑‍💼')}</div>
-      <div class="oname">${esc(a.name)}</div>
-      <div class="otitle">${esc(a.title||'居民')}</div>
+    const sum = a.lifeSummary ? esc(a.lifeSummary) : '';
+    return `<div class="jail-card" style="--rc:${esc(rc)}">
+      <div class="jc-head">
+        <div class="oavatar" style="filter:grayscale(.6)">${esc(a.avatar||'🧑‍💼')}</div>
+        <div>
+          <div class="oname">${esc(a.name)}</div>
+          <div class="otitle">${esc(a.title||'居民')}</div>
+        </div>
+      </div>
+      ${sum ? `<div class="jc-eulogy" title="${sum}">🕯 ${sum}</div>`
+            : `<div class="jc-eulogy mut">（这位居民没有留下一生回顾）</div>`}
       <div class="oacts"><button onclick="releaseAgent(${a.id})">释放</button></div>
     </div>`;
   }).join('');
@@ -3502,11 +3594,17 @@ function wrapCanvasText(ctx, text, maxW) {
 }
 
 // ---- 员工表单 ----
+// 新增走「对话捏人」,编辑仍走原表单。
 function openAgentForm(id) {
+  if (id) { openAgentFormRaw(id); return; }
+  openBuilder();
+}
+// 打开原始表单(编辑,或捏人 draft 预填后确认)。draft 为可选预填对象。
+function openAgentFormRaw(id, draft) {
   editingAgentId = id || null;
-  const a = id ? agents.find(x => x.id === id) : null;
-  document.getElementById('agentModalTitle').textContent = a ? '编辑居民' : '＋ 新增居民';
-  document.getElementById('agentAvatar').value = a ? (a.avatar || '') : '🧑‍💼';
+  const a = id ? agents.find(x => x.id === id) : (draft || null);
+  document.getElementById('agentModalTitle').textContent = id ? '编辑居民' : '＋ 确认新居民';
+  document.getElementById('agentAvatar').value = a ? (a.avatar || '🧑‍💼') : '🧑‍💼';
   document.getElementById('agentName').value = a ? (a.name || '') : '';
   document.getElementById('agentTitle').value = a ? (a.title || '') : '';
   document.getElementById('agentPersona').value = a ? (a.persona || '') : '';
@@ -3517,6 +3615,69 @@ function openAgentForm(id) {
   document.getElementById('agentModal').classList.remove('hidden');
 }
 function closeAgentForm() { document.getElementById('agentModal').classList.add('hidden'); }
+
+// ---- 对话捏人 ----
+let builderHistory = [];       // [{role:'user'|'assistant', content}]
+let builderDraft = null;       // 最近一次 ready 的草案
+function openBuilder() {
+  builderHistory = [];
+  builderDraft = null;
+  document.getElementById('builderInput').value = '';
+  document.getElementById('builderReady').classList.add('hidden');
+  document.getElementById('builderLog').innerHTML = '';
+  document.getElementById('builderModal').classList.remove('hidden');
+  pushBuilderMsg('assistant', '嗨!想给鹿匠小镇添位怎样的新居民?先跟我说说他大概是个什么样的人吧——比如叫什么、做什么的、什么脾气。');
+  document.getElementById('builderInput').focus();
+}
+function closeBuilder() { document.getElementById('builderModal').classList.add('hidden'); }
+function pushBuilderMsg(role, text) {
+  const log = document.getElementById('builderLog');
+  const who = role === 'user' ? '你' : '🪄 捏人助手';
+  const cls = role === 'user' ? 'user' : 'agent';
+  const div = document.createElement('div');
+  div.className = `chat-msg ${cls}`;
+  div.innerHTML = `<span class="cm-who">${who}</span>${esc(text)}`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+async function sendBuilder() {
+  const inp = document.getElementById('builderInput');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  pushBuilderMsg('user', msg);
+  builderHistory.push({ role:'user', content: msg });
+  inp.value = '';
+  const btn = document.getElementById('builderSendBtn');
+  btn.disabled = true; btn.textContent = '思考…';
+  try {
+    const resp = await j(`${API}/world/agent-builder/chat`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ history: builderHistory, message: msg })
+    });
+    const reply = resp.reply || '(沉默)';
+    pushBuilderMsg('assistant', reply);
+    builderHistory.push({ role:'assistant', content: reply });
+    if (resp.ready && resp.draft) {
+      builderDraft = resp.draft;
+      document.getElementById('builderReady').classList.remove('hidden');
+    }
+  } catch (e) { pushBuilderMsg('assistant', '(助手走神了,请再说一次)'); }
+  finally { btn.disabled = false; btn.textContent = '发送'; }
+}
+function applyBuilderDraft() {
+  if (!builderDraft) return;
+  closeBuilder();
+  openAgentFormRaw(null, {
+    name: builderDraft.name || '',
+    title: builderDraft.title || '',
+    persona: builderDraft.persona || '',
+    avatar: builderDraft.avatar || '🧑‍💼',
+    color: builderDraft.color || '#2dd4bf',
+    mood: builderDraft.mood || '平静',
+    moodEmoji: builderDraft.moodEmoji || '🙂',
+    birthDate: builderDraft.birthDate || ''
+  });
+}
 async function saveAgent() {
   const body = {
     name: document.getElementById('agentName').value.trim(),
@@ -3875,6 +4036,7 @@ function renderActivity() {
   const aid = document.getElementById('actAgent').value;
   const byId = {}; agents.forEach(a => byId[String(a.id)] = a);
   const rows = activityItems.filter(it => {
+    if (!type && it.kind === 'dialogue') return false;   // 默认隐藏对话记忆,选中该类型才显示
     if (type && it.kind !== type) return false;
     if (aid && String(it.agentId) !== String(aid)) return false;
     if (kw && !((it.content||'').toLowerCase().includes(kw))) return false;
@@ -4145,7 +4307,7 @@ loadMe();
 loadNotebooks().then(async () => {
   await loadCards();                                  // 预取卡片用于首页统计
   if (!aiDrawerMode()) { populateAi(true); aiSwitch('qa'); }  // 桌面常驻:直接呈现
-  selectHome();                                       // 默认进入首页
+  selectWorld();                                      // 默认进入智能体小世界
 });
 // 断点跨越时,退出抽屉的临时状态,保持面板正确形态
 window.addEventListener('resize', () => {
