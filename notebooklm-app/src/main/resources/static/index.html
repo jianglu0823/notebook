@@ -3168,7 +3168,7 @@ function updateTownClock() {
   const hh = String(Math.floor(min / 60)).padStart(2, '0');
   const mm = String(min % 60).padStart(2, '0');
   const season = worldSettings.season ? `${seasonEmoji(worldSettings.season)}${worldSettings.season}季` : '';
-  const weather = worldSettings.weather ? `${weatherEmoji(worldSettings.weather)}${worldSettings.weather}` : '';
+  const weather = worldSettings.weather ? `${weatherEmoji(worldSettings.weather)}${worldSettings.weather}${worldSettings.temperature != null ? ' ' + worldSettings.temperature + '℃' : ''}` : '';
   const date = worldSettings.simDate || '';
   el.textContent = `⏰ ${date} ${hh}:${mm}${season ? ' · ' + season : ''}${weather ? ' ' + weather : ''}`;
 }
@@ -3684,7 +3684,7 @@ async function loadReports() {
   listEl.innerHTML = reportsCache.map(r => `
     <div class="report-item" onclick="openReport('${r.simDate}',this)">
       <div class="ri-date">${esc(r.simDate)}</div>
-      <div class="ri-wx">${seasonEmoji(r.season)} ${esc(r.season||'')}·${weatherEmoji(r.weather)} ${esc(r.weather||'')}</div>
+      <div class="ri-wx">${seasonEmoji(r.season)} ${esc(r.season||'')}·${weatherEmoji(r.weather)} ${esc(r.weather||'')}${r.temperature != null ? ' ' + r.temperature + '℃' : ''}</div>
     </div>`).join('');
   openReport(reportsCache[0].simDate, listEl.querySelector('.report-item'));
 }
@@ -3714,7 +3714,7 @@ async function openReport(date, el) {
     : '';
   box.innerHTML = `
     <div class="rd-head">
-      <div class="rd-title">${seasonEmoji(r.season)} ${esc(r.simDate)} <span class="mut">${esc(r.season||'')}季 · ${esc(r.weather||'')}</span></div>
+      <div class="rd-title">${seasonEmoji(r.season)} ${esc(r.simDate)} <span class="mut">${esc(r.season||'')}季 · ${weatherEmoji(r.weather)} ${esc(r.weather||'')}${r.temperature != null ? ' ' + r.temperature + '℃' : ''}</span></div>
     </div>
     <div class="rd-narrative">${esc(r.narrative||'（今日无叙事）')}</div>
     <div class="rd-stats">
