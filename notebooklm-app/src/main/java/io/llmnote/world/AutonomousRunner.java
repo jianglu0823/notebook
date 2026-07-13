@@ -94,7 +94,7 @@ public class AutonomousRunner {
             date = date.plusDays(1);
             try {
                 WorldDailyReport r = simEngine.dailySettlement(prev);
-                if (r != null) { s.setSeason(r.getSeason()); s.setWeather(r.getWeather()); }
+                if (r != null) { s.setSeason(r.getSeason()); s.setWeather(r.getWeather()); s.setTemperature(r.getTemperature()); }
             } catch (Exception ex) {
                 log.warn("daily settlement failed for {}", prev, ex);
             }
@@ -203,6 +203,7 @@ public class AutonomousRunner {
         String phase = phaseOf(min, actor.getScheduleJson());
         String season = s.getSeason() == null ? "" : s.getSeason() + "季";
         String weather = s.getWeather() == null ? "" : s.getWeather();
+        if (s.getTemperature() != null) weather = weather + " " + s.getTemperature() + "℃";
         String occ = actor.getOccupation();
         String occLine = occ == null || occ.isBlank() ? ""
                 : "你的职业是「" + occLabel(occ) + "」,工作时段可以专注本职创作。\n";
