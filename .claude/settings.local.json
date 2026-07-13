@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m ' *)"
+    ]
+  },
+  "enabledPlugins": {
+    "spec-superflow@spec-superflow": true
+  }
+}

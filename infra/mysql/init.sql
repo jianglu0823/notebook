@@ -312,6 +312,7 @@ CREATE TABLE IF NOT EXISTS agent_world_settings (
     minutes_per_tick   INT         NOT NULL DEFAULT 120 COMMENT '每个 tick 推进的内在分钟',
     season             VARCHAR(8)  NULL COMMENT '当前季节(春/夏/秋/冬)',
     weather            VARCHAR(16) NULL COMMENT '当前天气',
+    temperature        INT         NULL COMMENT '当前温度(℃,可空)',
     updated_at         DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 INSERT IGNORE INTO agent_world_settings (id, autonomous_enabled, interval_seconds, model)
@@ -342,6 +343,7 @@ CREATE TABLE IF NOT EXISTS world_daily_report (
     sim_date            DATE          NOT NULL UNIQUE COMMENT '小镇日期',
     season              VARCHAR(8)    NULL COMMENT '季节',
     weather             VARCHAR(16)   NULL COMMENT '天气',
+    temperature         INT           NULL COMMENT '当日温度(℃,可空)',
     highlights_json     TEXT          NULL COMMENT '杰出成就 JSON',
     stats_json          TEXT          NULL COMMENT '统计 JSON(新章/新歌/出生/死亡/结婚数)',
     news_json           TEXT          NULL COMMENT '突发新闻 JSON',

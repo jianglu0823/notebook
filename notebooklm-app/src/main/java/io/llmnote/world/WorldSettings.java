@@ -44,6 +44,10 @@ public class WorldSettings {
     @Column(length = 16)
     private String weather;
 
+    /** 当前温度(℃,可空=未知,兼容旧行)。 */
+    @Column(name = "temperature")
+    private Integer temperature;
+
     @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 }

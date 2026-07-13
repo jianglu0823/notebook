@@ -29,6 +29,10 @@ public class WorldDailyReport {
     @Column(length = 16)
     private String weather;
 
+    /** 当日温度(℃,可空=未知,兼容旧日报)。 */
+    @Column(name = "temperature")
+    private Integer temperature;
+
     /** 杰出成就 JSON 数组。 */
     @Column(name = "highlights_json", columnDefinition = "TEXT")
     private String highlightsJson;
