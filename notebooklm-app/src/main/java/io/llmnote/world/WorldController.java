@@ -11,7 +11,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 智能体小世界入口。居民(智能体)CRUD + 1:1 对话 + 话题会议 + 自主行动世界设置 + 实时事件流。
@@ -32,6 +34,7 @@ public class WorldController {
     private final UserRepository userRepo;
     private final WorldDailyReportRepository reportRepo;
     private final AgentProductRepository productRepo;
+    private final AgentCommentRepository commentRepo;
     private final RelationshipService relationshipService;
     private final SandboxService sandboxService;
     private final io.llmnote.llm.ZhipuMediaClient mediaClient;
@@ -199,6 +202,127 @@ public class WorldController {
                 .body(res);
     }
 
+    // ---- 作品馆(全站作品浏览:画作 / 短片 / 歌曲 / 小说连载) ----
+
+    /**
+     * 作品馆按类目取作品(倒序)。category:image(画作,含 image+artwork)/video(短片)/song(歌曲)。
+     * 每条附作者名/头像与评论数,供网格卡片展示。
+     */
+    @GetMapping("/gallery")
+    public List<ProductCard> gallery(@RequestParam(defaultValue = "image") String category) {
+        List<AgentProduct> list = switch (category) {
+            case "video" -> productRepo.findByKindOrderByIdDesc("video");
+            case "song" -> productRepo.findByKindOrderByIdDesc("song");
+            default -> productRepo.findByKindInOrderByIdDesc(List.of("image", "artwork"));
+        };
+        List<ProductCard> out = new ArrayList<>();
+        for (AgentProduct p : list) out.add(toCard(p));
+        return out;
+    }
+
+    /** 连载书籍列表:按作者聚合其小说章节,给出书名(取首章标题)、章节数、最新章。 */
+    @GetMapping("/books")
+    public List<BookCard> books() {
+        Map<Long, List<AgentProduct>> byAgent = new LinkedHashMap<>();
+        for (AgentProduct p : productRepo.findByKindOrderByIdDesc("chapter")) {
+            byAgent.computeIfAbsent(p.getAgentId(), k -> new ArrayList<>()).add(p);
+        }
+        List<BookCard> out = new ArrayList<>();
+        for (Map.Entry<Long, List<AgentProduct>> en : byAgent.entrySet()) {
+            List<AgentProduct> chapters = en.getValue();
+            chapters.sort(Comparator.comparing(AgentProduct::getSeq,
+                    Comparator.nullsLast(Comparator.naturalOrder())));
+            AgentProduct first = chapters.get(0);
+            AgentProduct last = chapters.get(chapters.size() - 1);
+            AgentEmployee author = safeAgent(en.getKey());
+            BookCard c = new BookCard();
+            c.setAgentId(en.getKey());
+            c.setAuthorName(author == null ? "神秘作者" : author.getName());
+            c.setAuthorAvatar(author == null ? "📖" : author.getAvatar());
+            c.setChapterCount(chapters.size());
+            c.setLatestTitle(last.getTitle());
+            c.setUpdatedAt(last.getCreatedAt());
+            out.add(c);
+        }
+        out.sort(Comparator.comparing(BookCard::getUpdatedAt,
+                Comparator.nullsLast(Comparator.reverseOrder())));
+        return out;
+    }
+
+    /** 某作者的连载全书:章节目录 + 每章正文(供阅读器翻页)。 */
+    @GetMapping("/books/{agentId}")
+    public BookDetail book(@PathVariable Long agentId) {
+        AgentEmployee author = safeAgent(agentId);
+        BookDetail d = new BookDetail();
+        d.setAgentId(agentId);
+        d.setAuthorName(author == null ? "神秘作者" : author.getName());
+        d.setAuthorAvatar(author == null ? "📖" : author.getAvatar());
+        d.setChapters(productRepo.findByAgentIdAndKindOrderBySeqAscIdAsc(agentId, "chapter"));
+        return d;
+    }
+
+    /** 单个作品详情(帖子头):作品本体 + 作者名/头像 + 评论数。 */
+    @GetMapping("/products/{id}")
+    public ProductCard product(@PathVariable Long id) {
+        AgentProduct p = productRepo.findById(id).orElse(null);
+        if (p == null) return null;
+        return toCard(p);
+    }
+
+    private ProductCard toCard(AgentProduct p) {
+        AgentEmployee a = safeAgent(p.getAgentId());
+        ProductCard c = new ProductCard();
+        c.setProduct(p);
+        c.setAuthorName(a == null ? "神秘居民" : a.getName());
+        c.setAuthorAvatar(a == null ? "🧑‍🎨" : a.getAvatar());
+        c.setCommentCount(commentRepo.countByTargetTypeAndTargetId("product", p.getId()));
+        return c;
+    }
+
+    private AgentEmployee safeAgent(Long id) {
+        try { return employeeService.get(id); }
+        catch (Exception e) { return null; }
+    }
+
+    // ---- 自由评价(对作品 / 居民的评论) ----
+
+    /** 取某对象的评论列表(倒序)。targetType:product / agent。 */
+    @GetMapping("/comments")
+    public List<AgentComment> comments(@RequestParam String targetType, @RequestParam Long targetId) {
+        return commentRepo.findByTargetTypeAndTargetIdOrderByIdDesc(targetType, targetId);
+    }
+
+    /** 发表评论。作者由 Principal 解析(用户名 / 游客)。 */
+    @PostMapping("/comments")
+    public AgentComment addComment(@RequestBody CommentReq req, Principal principal) {
+        if (req == null || req.getContent() == null || req.getContent().isBlank()) {
+            throw new IllegalArgumentException("评论内容不能为空");
+        }
+        String type = req.getTargetType();
+        if (!"product".equals(type) && !"agent".equals(type)) {
+            throw new IllegalArgumentException("非法的评论对象");
+        }
+        AgentComment c = new AgentComment();
+        c.setTargetType(type);
+        c.setTargetId(req.getTargetId());
+        c.setAuthorId(principal == null ? null : principal.ownerId());
+        c.setAuthorName(resolveOwnerName(principal == null ? null : principal.ownerId()));
+        c.setContent(req.getContent().trim());
+        return commentRepo.save(c);
+    }
+
+    /** 删除评论:仅本人或管理员。 */
+    @DeleteMapping("/comments/{id}")
+    public void deleteComment(@PathVariable Long id, Principal principal) {
+        AgentComment c = commentRepo.findById(id).orElse(null);
+        if (c == null) return;
+        boolean admin = employeeService.isAdmin(principal);
+        boolean owner = principal != null && principal.ownerId() != null
+                && principal.ownerId().equals(c.getAuthorId());
+        if (!admin && !owner) throw new IllegalStateException("无权删除该评论");
+        commentRepo.deleteById(id);
+    }
+
     // ---- 世界设置(自主行动总开关/间隔/模型) ----
 
     @GetMapping("/settings")
@@ -241,17 +365,25 @@ public class WorldController {
     @GetMapping("/activity")
     public List<FeedItem> activity() {
         List<FeedItem> out = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        // action 源优先入列并登记指纹;memory 源若与某条 action 同一居民+同一文案则视为重复,跳过
         for (AgentAction a : actionRepo.findTop300ByOrderByIdDesc()) {
+            seen.add(dedupKey(a.getAgentId(), a.getContent()));
             out.add(FeedItem.of("action", a.getId(), a.getAgentId(), a.getType(),
                     a.getContent(), a.getTargetAgentId(), a.getPlace(), a.getScene(), a.getCreatedAt()));
         }
         for (AgentMemory mem : memoryRepo.findTop300ByOrderByIdDesc()) {
+            if (seen.contains(dedupKey(mem.getAgentId(), mem.getContent()))) continue;
             out.add(FeedItem.of("memory", mem.getId(), mem.getAgentId(), mem.getKind(),
                     mem.getContent(), mem.getRelatedAgentId(), null, null, mem.getCreatedAt()));
         }
         out.sort(Comparator.comparing(FeedItem::getCreatedAt,
                 Comparator.nullsLast(Comparator.reverseOrder())));
         return out;
+    }
+
+    private static String dedupKey(Long agentId, String content) {
+        return agentId + "|" + (content == null ? "" : content.trim());
     }
 
     // ---- 沙盒快进(隔离模拟,不影响真实世界;每人限一次,管理员不限) ----
@@ -424,6 +556,43 @@ public class WorldController {
     public static class ReportDetail {
         private WorldDailyReport report;
         private List<AgentProduct> products;
+    }
+
+    /** 作品馆卡片 / 帖子头:作品本体 + 作者展示信息 + 评论数。 */
+    @Data
+    public static class ProductCard {
+        private AgentProduct product;
+        private String authorName;
+        private String authorAvatar;
+        private long commentCount;
+    }
+
+    /** 连载书籍卡片:作者 + 章节数 + 最新章。 */
+    @Data
+    public static class BookCard {
+        private Long agentId;
+        private String authorName;
+        private String authorAvatar;
+        private int chapterCount;
+        private String latestTitle;
+        private LocalDateTime updatedAt;
+    }
+
+    /** 连载全书:作者信息 + 章节(含正文,供阅读器翻页)。 */
+    @Data
+    public static class BookDetail {
+        private Long agentId;
+        private String authorName;
+        private String authorAvatar;
+        private List<AgentProduct> chapters;
+    }
+
+    /** 发表评论请求体。 */
+    @Data
+    public static class CommentReq {
+        private String targetType;   // product / agent
+        private Long targetId;
+        private String content;
     }
 
     /** feed 统一条目:动作/记忆合流,前端据此驱动地图动画与时间线。 */

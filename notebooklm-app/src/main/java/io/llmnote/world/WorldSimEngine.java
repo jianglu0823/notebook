@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.message.TextBlock;
-import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.ChatUsage;
 
@@ -52,6 +51,7 @@ public class WorldSimEngine {
     private final AgentEmployeeService employeeService;
     private final io.llmnote.llm.ZhipuMediaClient mediaClient;
     private final WorldMediaRunner mediaRunner;
+    private final AgentCommentRepository commentRepo;
 
     /** 由日期求季节(北半球:3-5春 6-8夏 9-11秋 12-2冬)。 */
     public static String seasonOf(LocalDate d) {
@@ -72,41 +72,26 @@ public class WorldSimEngine {
         List<AgentEmployee> active = employeeRepo.findByStatusOrderByIdAsc("active");
 
         List<Map<String, Object>> highlights = new ArrayList<>();
-        int chapters = 0, songs = 0, artworks = 0, films = 0;
+        int chapters = 0, songs = 0, artworks = 0, films = 0, learns = 0;
 
         for (AgentEmployee e : active) {
-            String occ = e.getOccupation();
-            if (occ == null || occ.isBlank()) { payWages(e, date, "岗位收入", 60 + rnd(40)); continue; }
-            switch (occ) {
-                case "writer" -> {
-                    AgentProduct p = produce(e, date, "chapter", "novel", tok);
-                    if (p != null) { chapters++; addHighlight(highlights, e, "连载小说", p.getTitle()); }
-                    payWages(e, date, "稿费", 80 + rnd(120));
+            // 工资/岗位收入(按职业风味给点钱,不再由职业决定产物)
+            payWages(e, date, wageReason(e.getOccupation()), 60 + rnd(120));
+
+            // 每日自学:升级已有技能 / 偶尔习得新技能(所有居民都能创作)
+            com.fasterxml.jackson.databind.node.ObjectNode skills = ensureSkills(e);
+            learns += learnDaily(e, skills);
+
+            // 技能驱动的创作事件:当日至多产出一件作品(按技能等级加权抽取)
+            AgentProduct p = maybeCreate(e, date, skills, tok);
+            if (p != null) {
+                switch (p.getKind()) {
+                    case "chapter" -> { chapters++; addHighlight(highlights, e, "连载小说", p.getTitle()); }
+                    case "song" -> { songs++; addHighlight(highlights, e, "新歌", p.getTitle()); }
+                    case "image", "artwork" -> { artworks++; addHighlight(highlights, e, "画作", p.getTitle()); }
+                    case "video" -> { films++; addHighlight(highlights, e, "短片", p.getTitle()); }
+                    default -> { }
                 }
-                case "singer" -> {
-                    // 歌手每 3 天出一首新歌
-                    if (date.toEpochDay() % 3 == e.getId() % 3) {
-                        AgentProduct p = produce(e, date, "song", "song", tok);
-                        if (p != null) { songs++; addHighlight(highlights, e, "新歌", p.getTitle()); }
-                    }
-                    payWages(e, date, "演出收入", 70 + rnd(100));
-                }
-                case "painter" -> {
-                    if (date.toEpochDay() % 2 == e.getId() % 2) {
-                        AgentProduct p = produceArtwork(e, date, tok);
-                        if (p != null) { artworks++; addHighlight(highlights, e, "画作", p.getTitle()); }
-                    }
-                    payWages(e, date, "卖画收入", 60 + rnd(90));
-                }
-                case "director" -> {
-                    // 影像居民每 3 天出一部短片(视频异步分钟级)
-                    if (date.toEpochDay() % 3 == e.getId() % 3) {
-                        AgentProduct p = produceVideo(e, date, tok);
-                        if (p != null) { films++; addHighlight(highlights, e, "短片", p.getTitle()); }
-                    }
-                    payWages(e, date, "创作收入", 70 + rnd(110));
-                }
-                default -> payWages(e, date, "岗位收入", 60 + rnd(60));
             }
         }
 
@@ -115,6 +100,7 @@ public class WorldSimEngine {
         stats.put("songs", songs);
         stats.put("artworks", artworks);
         stats.put("films", films);
+        stats.put("learns", learns);
         stats.put("residents", active.size());
 
         // ---- Phase C:关系推进(婚礼)/ 生子 / 死亡 / 随机突发事件 ----
@@ -126,6 +112,10 @@ public class WorldSimEngine {
         stats.put("marriages", marriages);
         stats.put("births", births);
         stats.put("deaths", deaths);
+
+        // ---- Phase D:村民互评(每人 50% 几率评论近期作品,互相讨论)----
+        int comments = villagerComments(active, date, tok);
+        stats.put("comments", comments);
 
         String narrative = writeNarrative(date, season, weather, highlights, stats, news, tok);
 
@@ -141,9 +131,240 @@ public class WorldSimEngine {
         r.setTotalOutputTokens(tok[1]);
         r.setTotalCostRmb(BigDecimal.valueOf(modelFactory.costRmb(modelFactory.defaultTextModel(), tok[0], tok[1])));
         WorldDailyReport saved = reportRepo.save(r);
-        log.info("dailySettlement date={} season={} weather={} chapters={} songs={} artworks={} films={} marriages={} births={} deaths={} tokens={}/{}",
-                date, season, weather, chapters, songs, artworks, films, marriages, births, deaths, tok[0], tok[1]);
+        log.info("dailySettlement date={} season={} weather={} chapters={} songs={} artworks={} films={} learns={} marriages={} births={} deaths={} tokens={}/{}",
+                date, season, weather, chapters, songs, artworks, films, learns, marriages, births, deaths, tok[0], tok[1]);
         return saved;
+    }
+
+    // ---- 创作技能:每日自学 + 技能驱动创作 ----
+
+    /** 四种创作技能 key。music 产歌词(song),novel 产小说(chapter),image 产画作,video 产短片。 */
+    static final String[] SKILL_KEYS = {"novel", "image", "video", "music"};
+
+    static boolean isCreativeSkill(String k) {
+        return "novel".equals(k) || "image".equals(k) || "video".equals(k) || "music".equals(k);
+    }
+
+    static String skillLabel(String k) {
+        return switch (k) {
+            case "novel" -> "写作"; case "image" -> "绘画"; case "video" -> "影像"; case "music" -> "音乐"; default -> k;
+        };
+    }
+
+    /** 各技能的缺省风格提示词(新居民未指定时的兜底)。 */
+    static String defaultStyle(String k) {
+        return switch (k) {
+            case "novel" -> "温情写实的小镇故事";
+            case "image" -> "清新治愈的水彩风";
+            case "video" -> "生活流纪实短片";
+            case "music" -> "温暖治愈的民谣";
+            default -> "";
+        };
+    }
+
+    private static String skillForOccupation(String occ) {
+        if (occ == null) return null;
+        return switch (occ) {
+            case "writer" -> "novel"; case "singer" -> "music"; case "painter" -> "image"; case "director" -> "video";
+            default -> null;
+        };
+    }
+
+    private static String skillOfKind(String kind) {
+        return switch (kind) {
+            case "chapter" -> "novel"; case "song" -> "music"; case "image", "artwork" -> "image"; case "video" -> "video";
+            default -> kind;
+        };
+    }
+
+    private static String wageReason(String occ) {
+        if (occ == null) return "岗位收入";
+        return switch (occ) {
+            case "writer" -> "稿费"; case "singer" -> "演出收入"; case "painter" -> "卖画收入"; case "director" -> "创作收入";
+            default -> "岗位收入";
+        };
+    }
+
+    /**
+     * 取得(必要时初始化)居民的技能 JSON。空则按职业种一门起手技能(无职业则按 id 分配一门),
+     * 熟练度 3 级,并落库。返回可变的 {@link ObjectNode}。
+     */
+    private com.fasterxml.jackson.databind.node.ObjectNode ensureSkills(AgentEmployee e) {
+        com.fasterxml.jackson.databind.node.ObjectNode node = null;
+        String raw = e.getSkillsJson();
+        if (raw != null && !raw.isBlank()) {
+            try {
+                com.fasterxml.jackson.databind.JsonNode n = objectMapper.readTree(raw);
+                if (n.isObject()) node = (com.fasterxml.jackson.databind.node.ObjectNode) n;
+            } catch (Exception ignore) { }
+        }
+        if (node == null || node.size() == 0) {
+            node = objectMapper.createObjectNode();
+            String seed = skillForOccupation(e.getOccupation());
+            if (seed == null) seed = SKILL_KEYS[(int) (Math.abs(e.getId()) % SKILL_KEYS.length)];
+            com.fasterxml.jackson.databind.node.ObjectNode s = objectMapper.createObjectNode();
+            s.put("lv", 3);
+            s.put("style", defaultStyle(seed));
+            node.set(seed, s);
+            e.setSkillsJson(node.toString());
+            employeeRepo.save(e);
+        }
+        return node;
+    }
+
+    /**
+     * 每日自学:40% 精进一门已有技能(+1 级,上限 10),8% 习得一门新技能(至多 4 门)。
+     * 变更落库并写进个人记忆。返回今日学习事件数。
+     */
+    private int learnDaily(AgentEmployee e, com.fasterxml.jackson.databind.node.ObjectNode skills) {
+        int events = 0;
+        List<String> owned = new ArrayList<>();
+        skills.fieldNames().forEachRemaining(owned::add);
+        if (!owned.isEmpty() && rnd(100) < 40) {
+            String k = owned.get(rnd(owned.size()));
+            com.fasterxml.jackson.databind.node.ObjectNode s = (com.fasterxml.jackson.databind.node.ObjectNode) skills.get(k);
+            int lv = s.path("lv").asInt(1);
+            if (lv < 10) {
+                s.put("lv", lv + 1);
+                events++;
+                memoryService.record(e.getId(), "reflection", "我的" + skillLabel(k) + "技艺精进到了 " + (lv + 1) + " 级。", 5, null);
+            }
+        }
+        if (owned.size() < SKILL_KEYS.length && rnd(100) < 8) {
+            List<String> shuffled = new ArrayList<>(List.of(SKILL_KEYS));
+            java.util.Collections.shuffle(shuffled);
+            for (String k : shuffled) {
+                if (!skills.has(k)) {
+                    com.fasterxml.jackson.databind.node.ObjectNode s = objectMapper.createObjectNode();
+                    s.put("lv", 1);
+                    s.put("style", defaultStyle(k));
+                    skills.set(k, s);
+                    events++;
+                    memoryService.record(e.getId(), "reflection", "我开始学习" + skillLabel(k) + "了!", 6, null);
+                    break;
+                }
+            }
+        }
+        if (events > 0) {
+            e.setSkillsJson(skills.toString());
+            employeeRepo.save(e);
+        }
+        return events;
+    }
+
+    /**
+     * 技能驱动的创作事件:按技能等级加权抽一门技能,再按 (20 + lv*5)% 触发创作,
+     * 用该技能的风格提示词生成对应作品。当日至多一件。无作品返回 null。
+     */
+    private AgentProduct maybeCreate(AgentEmployee e, LocalDate date,
+                                     com.fasterxml.jackson.databind.node.ObjectNode skills, long[] tok) {
+        List<String> pool = new ArrayList<>();
+        skills.fieldNames().forEachRemaining(k -> {
+            if (isCreativeSkill(k)) {
+                int lv = skills.get(k).path("lv").asInt(1);
+                for (int i = 0; i < lv; i++) pool.add(k);
+            }
+        });
+        if (pool.isEmpty()) return null;
+        String skill = pool.get(rnd(pool.size()));
+        int lv = skills.get(skill).path("lv").asInt(1);
+        if (rnd(100) >= 20 + lv * 5) return null;
+        String style = skills.get(skill).path("style").asText("");
+        return switch (skill) {
+            case "novel" -> produce(e, date, "chapter", "novel", style, tok);
+            case "music" -> produce(e, date, "song", "song", style, tok);
+            case "image" -> produceArtwork(e, date, style, tok);
+            case "video" -> produceVideo(e, date, style, tok);
+            default -> null;
+        };
+    }
+
+    /** 计算某居民某类作品的下一序号(image/artwork 视为同一连载序列)。 */
+    private int nextSeq(Long agentId, String kind) {
+        int n = productRepo.findByAgentIdAndKindOrderBySeqAscIdAsc(agentId, kind).size();
+        if ("image".equals(kind)) n += productRepo.findByAgentIdAndKindOrderBySeqAscIdAsc(agentId, "artwork").size();
+        else if ("artwork".equals(kind)) n += productRepo.findByAgentIdAndKindOrderBySeqAscIdAsc(agentId, "image").size();
+        return n + 1;
+    }
+
+    // ---- Phase D:村民互评 / 讨论 ----
+
+    /** agent 作者身份约定:authorId = "agent:&lt;id&gt;",与用户 u:/游客 g: 区分,前端仅展示 authorName。 */
+    static String agentAuthorId(long agentId) { return "agent:" + agentId; }
+
+    /**
+     * 每位在册居民当日有 50% 几率评论一件近期作品(图片/短片/小说等),写进 {@link AgentComment}。
+     * 评论时会带上已有评论作为上下文,让居民「互相讨论」。返回今日新增评论数。
+     */
+    private int villagerComments(List<AgentEmployee> active, LocalDate date, long[] tok) {
+        if (active.size() < 2) return 0;
+        // 候选作品:最近 3 天可评论的产物(排除空占位视频)
+        List<AgentProduct> pool = new ArrayList<>();
+        for (int d = 0; d <= 3; d++) {
+            for (AgentProduct p : productRepo.findBySimDateOrderByIdAsc(date.minusDays(d))) {
+                if (p.getTitle() == null || p.getTitle().isBlank()) continue;
+                pool.add(p);
+            }
+        }
+        if (pool.isEmpty()) return 0;
+        int count = 0;
+        for (AgentEmployee e : active) {
+            if (rnd(100) >= 50) continue; // 每人当日 50% 几率发言
+            AgentProduct target = pool.get(rnd(pool.size()));
+            if (target.getAgentId() != null && target.getAgentId().equals(e.getId())) continue; // 不评自己
+            String text = writeVillagerComment(e, target, tok);
+            if (text == null || text.isBlank()) continue;
+            AgentComment c = new AgentComment();
+            c.setTargetType("product");
+            c.setTargetId(target.getId());
+            c.setAuthorId(agentAuthorId(e.getId()));
+            c.setAuthorName((e.getAvatar() == null ? "" : e.getAvatar() + " ") + e.getName());
+            c.setContent(text.trim());
+            commentRepo.save(c);
+            memoryService.record(e.getId(), "observation",
+                    "我看了《" + target.getTitle() + "》,评论道:" + text.trim(), 5, target.getAgentId());
+            count++;
+        }
+        return count;
+    }
+
+    /** 让某居民对某作品写一句 15~40 字的评论,带上已有评论以形成讨论氛围。 */
+    private String writeVillagerComment(AgentEmployee e, AgentProduct p, long[] tok) {
+        AgentEmployee author = safeAgent(p.getAgentId());
+        StringBuilder prev = new StringBuilder();
+        int shown = 0;
+        for (AgentComment c : commentRepo.findByTargetTypeAndTargetIdOrderByIdDesc("product", p.getId())) {
+            if (shown >= 3) break;
+            prev.append("· ").append(safe(c.getAuthorName())).append(":").append(safe(c.getContent())).append("\n");
+            shown++;
+        }
+        String system = "你在扮演智能体小镇的一位居民,正在作品评论区留言。"
+                + "请用第一人称写一句 15~40 字的短评,可以夸赞、吐槽、追问或回应他人评论,口语、自然、有个性。"
+                + "只输出评论本身,不要引号、不要前缀、不要 markdown。";
+        String user = "你是「" + safe(e.getName()) + "」,身份「" + safe(e.getTitle()) + "」,人设:" + brief2(e.getPersona()) + "。\n"
+                + "作品:《" + safe(p.getTitle()) + "》(" + kindLabel(p.getKind()) + "),作者:"
+                + (author == null ? "某位居民" : safe(author.getName())) + "。\n"
+                + (p.getContent() != null && !p.getContent().isBlank() && !looksLikePath(p.getContent())
+                    ? "作品内容:" + brief2(p.getContent()) + "\n" : "")
+                + (prev.length() == 0 ? "评论区还没人说话,你来开个头。\n" : "已有评论:\n" + prev + "你可以回应其中某条,或另起话题。\n")
+                + "请留下你的评论。";
+        return call(system, user, tok);
+    }
+
+    private static boolean looksLikePath(String s) {
+        String t = s.trim();
+        return t.startsWith("world/") || t.startsWith("/") || t.endsWith(".png") || t.endsWith(".mp4") || t.endsWith(".jpg");
+    }
+
+    private static String brief2(String s) {
+        if (s == null || s.isBlank()) return "";
+        String t = s.trim();
+        return t.length() > 80 ? t.substring(0, 80) : t;
+    }
+
+    private AgentEmployee safeAgent(Long id) {
+        if (id == null) return null;
+        try { return employeeService.get(id); } catch (Exception ex) { return null; }
     }
 
     // ---- Phase C:关系/婚育/死亡/随机事件(纯规则,不调 LLM,省 token) ----
@@ -290,14 +511,15 @@ public class WorldSimEngine {
         return opts[ThreadLocalRandom.current().nextInt(opts.length)];
     }
 
-    /** 用 qwen-turbo 为居民生成一件职业产物(控字数省 token)。 */
-    private AgentProduct produce(AgentEmployee e, LocalDate date, String kind, String theme, long[] tok) {
-        long seq = productRepo.countByAgentIdAndOccupation(e.getId(), e.getOccupation()) + 1;
+    /** 用默认文本模型为居民生成一件作品(小说章节/歌曲歌词),style 为该技能的风格提示词。 */
+    private AgentProduct produce(AgentEmployee e, LocalDate date, String kind, String theme, String style, long[] tok) {
+        long seq = nextSeq(e.getId(), kind);
+        String styleHint = (style == null || style.isBlank()) ? "" : "风格倾向:" + style.trim() + "。";
         String system = switch (theme) {
             case "novel" -> "你是小说家的创作助手。请为一部连载小说写「第 " + seq + " 章」的章节标题与一段 80~140 字的精彩梗概。";
             case "song" -> "你是作词人。请为一首新歌写歌名与一段 60~100 字的歌词片段(有画面感)。";
             default -> "你是艺术评论助手。请为一幅新画作起标题并写一段 60~100 字的画面描述。";
-        } + "只输出 JSON:{\"title\":\"标题\",\"content\":\"正文\",\"quality\":1到10的整数}。简体中文,不要 markdown 围栏。";
+        } + styleHint + "只输出 JSON:{\"title\":\"标题\",\"content\":\"正文\",\"quality\":1到10的整数}。简体中文,不要 markdown 围栏。";
         String user = "创作者「" + safe(e.getName()) + "」,身份「" + safe(e.getTitle()) + "」,人设:" + safe(e.getPersona())
                 + "。今天是" + date + "(" + seasonOf(date) + "季)。请创作。";
         String raw = call(system, user, tok);
@@ -306,7 +528,7 @@ public class WorldSimEngine {
         AgentProduct p = new AgentProduct();
         p.setAgentId(e.getId());
         p.setSimDate(date);
-        p.setOccupation(e.getOccupation());
+        p.setOccupation(skillOfKind(kind));
         p.setKind(kind);
         p.setSeq((int) seq);
         p.setTitle(txt(j, "title", "无题"));
@@ -319,13 +541,14 @@ public class WorldSimEngine {
     }
 
     /**
-     * 画师产画作:先 GLM 生成标题 + 文生图 prompt,再调 CogView 出图、落盘,content 存相对路径。
+     * 产画作:先 GLM 生成标题 + 文生图 prompt(注入风格提示词),再调 CogView 出图、落盘,content 存相对路径。
      * 图片生成失败则退回纯文字画作(content 存画面描述)。CogView Flash 秒级,可同步跑。
      */
-    private AgentProduct produceArtwork(AgentEmployee e, LocalDate date, long[] tok) {
-        long seq = productRepo.countByAgentIdAndOccupation(e.getId(), e.getOccupation()) + 1;
+    private AgentProduct produceArtwork(AgentEmployee e, LocalDate date, String style, long[] tok) {
+        long seq = nextSeq(e.getId(), "image");
+        String styleHint = (style == null || style.isBlank()) ? "" : "整体风格:" + style.trim() + "。";
         String system = "你是画师的创作助手。请为一幅新画作起一个富有意境的标题,并写一段可直接用于文生图的画面描述"
-                + "(含主体、场景、风格、光线、构图,尽量具体)。只输出 JSON:"
+                + "(含主体、场景、风格、光线、构图,尽量具体)。" + styleHint + "只输出 JSON:"
                 + "{\"title\":\"标题\",\"prompt\":\"文生图画面描述\",\"quality\":1到10的整数}。简体中文,不要 markdown 围栏。";
         String user = "画师「" + safe(e.getName()) + "」,身份「" + safe(e.getTitle()) + "」,人设:" + safe(e.getPersona())
                 + "。今天是" + date + "(" + seasonOf(date) + "季)。请构思今日画作。";
@@ -338,7 +561,7 @@ public class WorldSimEngine {
         AgentProduct p = new AgentProduct();
         p.setAgentId(e.getId());
         p.setSimDate(date);
-        p.setOccupation(e.getOccupation());
+        p.setOccupation("image");
         p.setKind("image");
         p.setSeq((int) seq);
         p.setTitle(title);
@@ -364,13 +587,14 @@ public class WorldSimEngine {
     }
 
     /**
-     * 影像居民产短片:GLM 生成标题 + 分镜 prompt,先落一条占位视频产物(content 空),
+     * 产短片:GLM 生成标题 + 分镜 prompt(注入风格提示词),先落一条占位视频产物(content 空),
      * 交 {@link WorldMediaRunner} 后台 submit→poll→download→回填。视频分钟级,不阻塞结算。
      */
-    private AgentProduct produceVideo(AgentEmployee e, LocalDate date, long[] tok) {
-        long seq = productRepo.countByAgentIdAndOccupation(e.getId(), e.getOccupation()) + 1;
+    private AgentProduct produceVideo(AgentEmployee e, LocalDate date, String style, long[] tok) {
+        long seq = nextSeq(e.getId(), "video");
+        String styleHint = (style == null || style.isBlank()) ? "" : "整体风格:" + style.trim() + "。";
         String system = "你是短片导演的创作助手。请为一部新短片起一个有画面感的标题,并写一段可直接用于文生视频的分镜描述"
-                + "(含主体、动作、场景、镜头运动、光线、风格,尽量具体,单个连续镜头)。只输出 JSON:"
+                + "(含主体、动作、场景、镜头运动、光线、风格,尽量具体,单个连续镜头)。" + styleHint + "只输出 JSON:"
                 + "{\"title\":\"标题\",\"prompt\":\"文生视频分镜描述\",\"quality\":1到10的整数}。简体中文,不要 markdown 围栏。";
         String user = "影像创作者「" + safe(e.getName()) + "」,身份「" + safe(e.getTitle()) + "」,人设:" + safe(e.getPersona())
                 + "。今天是" + date + "(" + seasonOf(date) + "季)。请构思今日短片。";
@@ -383,7 +607,7 @@ public class WorldSimEngine {
         AgentProduct p = new AgentProduct();
         p.setAgentId(e.getId());
         p.setSimDate(date);
-        p.setOccupation(e.getOccupation());
+        p.setOccupation("video");
         p.setKind("video");
         p.setSeq((int) seq);
         p.setTitle(title);
@@ -444,11 +668,10 @@ public class WorldSimEngine {
 
     private String call(String system, String user, long[] tok) {
         try {
-            ChatModelBase model = modelFactory.forModel(modelFactory.normalize(modelFactory.defaultTextModel()));
             List<Msg> messages = List.of(
                     Msg.builder().role(MsgRole.SYSTEM).content(TextBlock.builder().text(system).build()).build(),
                     Msg.builder().role(MsgRole.USER).content(TextBlock.builder().text(user).build()).build());
-            List<ChatResponse> responses = modelFactory.streamText(model, messages);
+            List<ChatResponse> responses = modelFactory.streamTextWithFallback(modelFactory.defaultTextModel(), messages);
             StringBuilder sb = new StringBuilder();
             if (responses != null) {
                 for (ChatResponse r : responses) {

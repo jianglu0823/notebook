@@ -12,4 +12,12 @@ public interface AgentProductRepository extends JpaRepository<AgentProduct, Long
     List<AgentProduct> findBySimDateOrderByIdAsc(LocalDate simDate);
 
     long countByAgentIdAndOccupation(Long agentId, String occupation);
+
+    /** 作品馆:按类型倒序取全部(image/artwork/video/song/chapter)。 */
+    List<AgentProduct> findByKindOrderByIdDesc(String kind);
+
+    List<AgentProduct> findByKindInOrderByIdDesc(List<String> kinds);
+
+    /** 连载书籍:某作者的全部章节,按序正序。 */
+    List<AgentProduct> findByAgentIdAndKindOrderBySeqAscIdAsc(Long agentId, String kind);
 }

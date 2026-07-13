@@ -309,10 +309,65 @@
   .rd-prod-media img, .rd-prod-media video { width:100%; max-width:360px; border-radius:var(--radius); border:1px solid var(--line); display:block; background:var(--panel2); }
   .rd-cost { margin-top:14px; padding-top:10px; border-top:1px dashed var(--line); font-size:12px; color:var(--mut); }
   @media (max-width:640px){ .report-layout { grid-template-columns:1fr; } }
+  /* 作品馆 */
+  .gallery-tabs { display:inline-flex; gap:4px; margin:4px 0 14px; background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:3px; }
+  .gallery-tabs .gtab { border:none; background:transparent; color:var(--mut); font-weight:650; font-size:13px; padding:6px 14px; border-radius:calc(var(--radius) - 3px); cursor:pointer; transition:all .15s ease-in-out; }
+  .gallery-tabs .gtab:hover { color:var(--fg); }
+  .gallery-tabs .gtab.active { background:var(--accent); color:#04211d; }
+  .gal-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; }
+  .gal-card { border:1px solid var(--line); border-radius:var(--radius); background:var(--panel2); overflow:hidden; cursor:pointer; transition:all .18s ease-in-out; }
+  .gal-card:hover { border-color:var(--line-strong); transform:translateY(-2px); box-shadow:var(--shadow); }
+  .gal-thumb { width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:var(--panel); }
+  .gal-thumb.gal-song { display:flex; align-items:center; justify-content:center; font-size:52px; color:var(--mut); }
+  .gal-meta { padding:10px 12px; }
+  .gal-meta .gm-title { font-weight:700; font-size:13.5px; color:var(--fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .gal-meta .gm-sub { font-size:11.5px; color:var(--mut); margin-top:4px; display:flex; align-items:center; gap:8px; justify-content:space-between; }
+  .book-card { display:flex; gap:12px; align-items:center; }
+  .book-card .bc-cover { width:56px; height:72px; border-radius:6px; background:linear-gradient(135deg,var(--accent),#0b4d43); display:flex; align-items:center; justify-content:center; font-size:30px; flex-shrink:0; }
+  /* 帖子查看 */
+  .post-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .post-head .ph-avatar { font-size:30px; }
+  .post-head .ph-title { font-weight:750; font-size:17px; }
+  .post-head .ph-sub { font-size:12px; color:var(--mut); margin-top:2px; }
+  .post-media { margin:10px 0; }
+  .post-media img, .post-media video { width:100%; max-height:60vh; object-fit:contain; border-radius:var(--radius); border:1px solid var(--line); background:var(--panel2); display:block; }
+  .post-text { font-size:14px; line-height:1.85; white-space:pre-wrap; color:var(--fg); background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; }
+  /* 阅读器 */
+  .reader-box { width:min(880px,94vw); }
+  .reader-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .reader-title { font-weight:750; font-size:16px; }
+  .reader-layout { display:grid; grid-template-columns:180px 1fr; gap:16px; }
+  .reader-toc { display:flex; flex-direction:column; gap:4px; max-height:64vh; overflow-y:auto; border-right:1px solid var(--line); padding-right:10px; }
+  .reader-toc .rt-item { text-align:left; border:none; background:transparent; color:var(--mut); font-size:12.5px; padding:7px 9px; border-radius:6px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .reader-toc .rt-item:hover { color:var(--fg); background:var(--panel2); }
+  .reader-toc .rt-item.active { background:var(--accent); color:#04211d; font-weight:650; }
+  .reader-main { min-width:0; }
+  .reader-content { font-size:15px; line-height:2; white-space:pre-wrap; color:var(--fg); max-height:52vh; overflow-y:auto; padding-right:6px; }
+  .reader-content .rc-chap-t { font-weight:750; font-size:17px; margin-bottom:14px; color:var(--fg); }
+  .reader-nav { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+  .reader-pos { font-size:12px; }
+  .reader-comments { margin-top:16px; }
+  @media (max-width:640px){ .reader-layout { grid-template-columns:1fr; } .reader-toc { max-height:120px; border-right:none; border-bottom:1px solid var(--line); padding-right:0; padding-bottom:8px; } }
+  /* 评论区(通用) */
+  .cmt-wrap { margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); }
+  .cmt-wrap .cmt-t { font-weight:700; font-size:13.5px; margin-bottom:10px; }
+  .cmt-form { display:flex; gap:8px; margin-bottom:12px; }
+  .cmt-form textarea { flex:1; resize:vertical; min-height:38px; max-height:120px; background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); color:var(--fg); padding:8px 10px; font-size:13px; font-family:inherit; }
+  .cmt-list { display:flex; flex-direction:column; gap:10px; }
+  .cmt-item { background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:9px 12px; }
+  .cmt-item .ci-head { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--mut); margin-bottom:4px; }
+  .cmt-item .ci-author { font-weight:700; color:var(--fg); }
+  .cmt-item .ci-tag { font-weight:600; font-size:10.5px; padding:1px 6px; margin-left:4px; border-radius:8px; background:rgba(13,148,136,.14); color:#0d9488; }
+  .cmt-item .ci-del { margin-left:auto; border:none; background:transparent; color:var(--mut); cursor:pointer; font-size:12px; }
+  .cmt-item .ci-del:hover { color:var(--err); }
+  .cmt-item .ci-body { font-size:13.5px; line-height:1.7; color:var(--fg); white-space:pre-wrap; }
   /* 沙盒快进 */
   .sbx-layout { display:grid; grid-template-columns:1fr 240px; gap:16px; margin-top:8px; }
   .sbx-block { margin-bottom:16px; }
   .sbx-label { font-weight:750; font-size:13px; color:var(--fg); margin-bottom:8px; }
+  .sbx-selall { float:right; display:inline-flex; gap:6px; }
+  .sbx-mini { font-size:11.5px; padding:3px 11px; border-radius:14px; border:1px solid var(--line); background:var(--panel2); color:var(--mut); cursor:pointer; font-weight:600; transition:all .15s ease; }
+  .sbx-mini:hover { border-color:var(--accent); color:var(--accent); }
   .sbx-members { display:flex; flex-wrap:wrap; gap:8px; }
   .sbx-chip { font-size:12.5px; padding:6px 12px; border-radius:20px; border:1px solid var(--line); background:var(--panel2); color:var(--fg); cursor:pointer; transition:all .15s ease-in-out; }
   .sbx-chip:hover { border-color:var(--line-strong); }
@@ -368,6 +423,19 @@
   .auto-bar .ab-title { font-weight:750; font-size:13.5px; color:var(--fg); }
   .auto-bar .ab-sep { width:1px; height:18px; background:var(--line); }
   .auto-bar .ab-state { font-size:12px; }
+  .auto-bar .chips { margin-bottom:0; }
+  /* 间隔:分段选择器(segmented control)+ 自定义输入,替代零散圆角 chip */
+  .seg { display:inline-flex; align-items:center; padding:2px; gap:2px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); }
+  .seg-item { padding:5px 12px; border-radius:8px; font-size:12.5px; font-weight:600; color:var(--mut); cursor:pointer; border:none; background:transparent; transition:all .12s ease; white-space:nowrap; }
+  .seg-item:hover { color:var(--fg); background:color-mix(in srgb,var(--fg) 6%,transparent); }
+  .seg-item.on { color:#fff; background:var(--accent); font-weight:700; box-shadow:0 1px 3px rgba(0,0,0,.18); }
+  .seg-item.disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+  .seg-custom { display:inline-flex; align-items:center; gap:0; margin-left:8px; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:var(--panel2); }
+  .seg-custom input { width:68px; padding:6px 9px; border:none; background:transparent; color:var(--fg); font-size:12.5px; text-align:center; -moz-appearance:textfield; }
+  .seg-custom input::-webkit-outer-spin-button, .seg-custom input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .seg-custom .seg-unit { color:var(--mut); font-size:11.5px; padding-right:8px; }
+  .seg-custom button { padding:6px 11px; border:none; border-left:1px solid var(--line); background:var(--accent-weak); color:var(--accent); font-size:12px; font-weight:700; cursor:pointer; transition:all .12s ease; }
+  .seg-custom button:hover { background:var(--accent); color:#fff; }
   .switch { position:relative; display:inline-block; width:42px; height:22px; flex:none; }
   .switch input { opacity:0; width:0; height:0; }
   .switch .slider { position:absolute; inset:0; background:var(--line-strong); border-radius:22px; transition:.2s; cursor:pointer; }
@@ -399,6 +467,13 @@
   .act-row .ar-tgt { color:var(--mut); }
   /* 居民卡上的心情/生日 */
   .office-room .omood { font-size:11.5px; color:var(--mut); margin-top:4px; }
+  /* 新增居民:创作技能勾选 */
+  .agent-skills { margin:10px 0; padding:10px 12px; background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); }
+  .skill-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .skill-row:last-child { margin-bottom:0; }
+  .skill-tick { flex:0 0 128px; display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; user-select:none; }
+  .skill-tick input { width:15px; height:15px; }
+  .skill-style { flex:1; font-size:12.5px; padding:6px 8px; }
   /* 1:1 对话 */
   .chat-log { max-height:48vh; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:4px 2px; margin-bottom:12px; }
   .chat-msg { max-width:78%; padding:9px 13px; border-radius:12px; font-size:13.5px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
@@ -935,7 +1010,9 @@
           <button class="sec" onclick="toggleMeetings()" id="meetingsToggle">📁 历史会议</button>
           <button class="sec" onclick="toggleActivity()" id="activityToggle">📊 村民动态</button>
           <div class="world-tabs" id="worldTabs">
-            <button class="wtab active" data-tab="map" onclick="switchWorldTab('map')">🗺 小镇</button>
+            <button class="wtab" data-tab="map" onclick="switchWorldTab('map')">🗺 小镇</button>
+            <button class="wtab" data-tab="residents" onclick="switchWorldTab('residents')">🏢 村民</button>
+            <button class="wtab" data-tab="gallery" onclick="switchWorldTab('gallery')">🖼 作品馆</button>
             <button class="wtab" data-tab="report" onclick="switchWorldTab('report')">📰 日报</button>
             <button class="wtab" data-tab="sandbox" onclick="switchWorldTab('sandbox')">🚀 沙盒快进</button>
             <button class="wtab" data-tab="jail" onclick="switchWorldTab('jail')">🚫 小黑屋</button>
@@ -996,10 +1073,14 @@
             <button class="rules-logo" onclick="openRules()" title="世界规则">📜</button>
             <span class="town-clock mut" id="townClock"></span>
           </div>
-          <div class="wd">居民按坐标在镇上走动,头顶显示心情。开启「自主行动」后他们会自己思考、漫步、串门聊天;下方是实时动态。</div>
-          <div class="map-wrap"><div class="town-wrap"><canvas id="worldMap" width="960" height="760" onclick="mapClick(event)"></canvas><div class="scene-layer" id="sceneLayer"></div></div></div>
+          <div class="wd">井字形街巷、山脚药王庙、中心古井广场——居民按坐标在镇上走动,头顶显示心情。开启「自主行动」后他们会自己思考、漫步、串门聊天;下方是实时动态。</div>
+          <div class="map-wrap"><div class="town-wrap"><canvas id="worldMap" width="1360" height="700" onclick="mapClick(event)"></canvas><div class="scene-layer" id="sceneLayer"></div></div></div>
           <div class="feed-box" id="worldFeed"></div>
-          <div class="wt" style="margin-top:var(--sp-4)">🏢 小镇居民</div>
+        </div>
+
+        <!-- 村民名单视图:居民卡片网格(原并入小镇,现独立成 tab) -->
+        <div class="widget hidden" id="residentsPane">
+          <div class="wt">🏢 小镇居民</div>
           <div class="wd">每位居民是一个带长期记忆、性格与心情的智能体。点「对话」和他单独聊,或发起会议围观群聊。会议进行中,发言者会高亮冒泡。</div>
           <div class="office-grid" id="officeGrid"><div class="mut">加载中…</div></div>
         </div>
@@ -1021,14 +1102,32 @@
           </div>
         </div>
 
+        <!-- 作品馆视图:小说连载 / 画作 / 短片 / 歌曲,分类浏览 + 帖子查看 -->
+        <div class="widget hidden" id="galleryPane">
+          <div class="wt">🖼 作品馆</div>
+          <div class="wd">小镇居民创作的全部作品都在这里陈列。切换分类浏览:小说连载可翻页阅读,画作/短片/歌曲点开进入帖子查看,每件作品下方都能自由评价。</div>
+          <div class="gallery-tabs" id="galleryTabs">
+            <button class="gtab active" data-cat="novel" onclick="switchGalleryCat('novel')">📖 小说连载</button>
+            <button class="gtab" data-cat="image" onclick="switchGalleryCat('image')">🎨 画作</button>
+            <button class="gtab" data-cat="video" onclick="switchGalleryCat('video')">🎬 短片</button>
+            <button class="gtab" data-cat="song" onclick="switchGalleryCat('song')">🎵 歌曲</button>
+          </div>
+          <div class="gallery-body" id="galleryBody"><div class="mut">加载中…</div></div>
+        </div>
+
         <!-- 沙盒快进视图:选居民 + 选年限 → 预估 → 确认开始 → 世界报告 + 回放 -->
         <div class="widget hidden" id="sandboxPane">
           <div class="wt">🚀 沙盒快进</div>
-          <div class="wd">选定几位居民,在<b>隔离沙盒</b>里快进若干年:关系、姻缘、新生、逝去、作品全由规则引擎推演,<b>完全不影响真实世界</b>。开始前预估花费,确认后异步运行,结束出一份世界报告并支持回放。每人限体验一次,管理员不限。</div>
+          <div class="wd">选定几位居民,在<b>隔离沙盒</b>里快进若干年:关系、姻缘、新生、逝去、作品全由规则引擎推演,<b>完全不影响真实世界</b>。统一使用默认免费模型,<b>所有人可无限次体验</b>,结束出一份世界报告并支持回放。</div>
           <div class="sbx-layout">
             <div class="sbx-form" id="sbxForm">
               <div class="sbx-block">
-                <div class="sbx-label">选择参与居民</div>
+                <div class="sbx-label">选择参与居民
+                  <span class="sbx-selall">
+                    <button class="sbx-mini" onclick="selectAllSbx(true)">全选</button>
+                    <button class="sbx-mini" onclick="selectAllSbx(false)">清空</button>
+                  </span>
+                </div>
                 <div class="sbx-members" id="sbxMembers"><div class="mut">加载中…</div></div>
               </div>
               <div class="sbx-block">
@@ -1347,6 +1446,10 @@
       <input id="agentColor" type="color" value="#2dd4bf" style="flex:0 0 48px;height:34px;padding:2px">
       <span class="mut" style="flex:1;font-size:12px">用于居民卡边框与地图小人着色</span>
     </div>
+    <div class="agent-skills">
+      <div class="mut" style="font-size:12px;margin-bottom:6px">创作技能(勾选后每日会自学、并触发对应作品的创作;可填风格提示词)</div>
+      <div id="skillRows"></div>
+    </div>
     <div class="row" style="gap:8px">
       <button onclick="saveAgent()" id="agentSaveBtn" style="flex:1">保存</button>
       <button class="sec" onclick="closeAgentForm()">取消</button>
@@ -1360,6 +1463,38 @@
     <div id="agentDetailBody"><div class="mut">加载中…</div></div>
     <div class="row" style="gap:8px;margin-top:10px">
       <button class="sec" onclick="closeAgentDetail()" style="flex:1">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 作品帖子查看:画作/短片/歌曲大图 + 评论区 -->
+<div id="postModal" class="modal hidden">
+  <div class="box box-wide">
+    <div id="postBody"><div class="mut">加载中…</div></div>
+    <div class="row" style="gap:8px;margin-top:10px">
+      <button class="sec" onclick="closePost()" style="flex:1">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 小说阅读器:左章节目录 + 右正文翻页 + 本章评论 -->
+<div id="readerModal" class="modal hidden">
+  <div class="box box-wide reader-box">
+    <div class="reader-head">
+      <div class="reader-title" id="readerTitle">加载中…</div>
+      <button class="sec" onclick="closeReader()">关闭</button>
+    </div>
+    <div class="reader-layout">
+      <div class="reader-toc" id="readerToc"></div>
+      <div class="reader-main">
+        <div class="reader-content" id="readerContent"><div class="mut">加载中…</div></div>
+        <div class="reader-nav">
+          <button class="sec" id="readerPrev" onclick="readerGo(-1)">← 上一章</button>
+          <span class="reader-pos mut" id="readerPos"></span>
+          <button class="sec" id="readerNext" onclick="readerGo(1)">下一章 →</button>
+        </div>
+        <div class="reader-comments" id="readerComments"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1524,7 +1659,7 @@ let mapAnim = null;            // 地图漫游 rAF 句柄
 let townMap = null;            // GET /world/places 缓存:{worldW,worldH,places}
 let sceneCards = [];           // 地图上浮动场景卡 {id,el,x,y,timer}
 let chatAgentId = null;        // 当前对话的居民 id
-const AUTO_INTERVALS = [{s:30,label:'30 秒'},{s:60,label:'1 分钟'},{s:300,label:'5 分钟'},{s:600,label:'10 分钟'},{s:3600,label:'1 小时'}];
+const AUTO_INTERVALS = [{s:1,label:'1 秒'},{s:5,label:'5 秒'},{s:10,label:'10 秒'},{s:30,label:'30 秒'},{s:60,label:'1 分钟'},{s:300,label:'5 分钟'},{s:600,label:'10 分钟'},{s:3600,label:'1 小时'}];
 const M_STATUS = {PENDING:'排队中', RUNNING:'进行中', DONE:'已结束', FAILED:'失败'};
 // ---- 会议像素舞台 / 回放 ----
 let stage = null;              // 舞台引擎实例 { actors, raf, ... }
@@ -1532,16 +1667,15 @@ let replay = {                // 回放状态
   playing:false, idx:-1, speaks:[], timer:null, speed:1, live:true
 };
 // ---- 模型选择 / 计费 ----
-let wModel = 'glm-4.5-flash';   // 协作写作选中的模型
-let mModel = 'glm-4.5-flash';   // 会议选中的模型
+let wModel = 'glm-4.7-flash';   // 协作写作选中的模型
+let mModel = 'glm-4.7-flash';   // 会议选中的模型
 // 群聊状态
 let gMembers = [];              // 创建群聊表单选中的居民 id
-let gModel = 'glm-4.5-flash';   // 群聊模型(默认智谱免费)
+let gModel = 'glm-4.7-flash';   // 群聊模型(默认智谱免费)
 let groupChat = null;           // 当前打开的群聊
 // 模型档位(name→展示),价位徽标按输入单价粗分四档
 const MODEL_TIERS = [
-  {name:'glm-4.5-flash', label:'GLM Flash', tier:'🆓',      hint:'智谱免费(默认)'},
-  {name:'glm-4.7-flash', label:'GLM 4.7',   tier:'🆓',      hint:'智谱免费·更强'},
+  {name:'glm-4.7-flash', label:'智谱免费模型', tier:'🆓', hint:'智谱免费·默认(失败自动降级备用免费模型)'},
   {name:'qwen-turbo', label:'Turbo', tier:'💰',      hint:'便宜快'},
   {name:'qwen-plus',  label:'Plus',  tier:'💰💰',    hint:'均衡'},
   {name:'qwen-max',   label:'Max',   tier:'💰💰💰',  hint:'最强'},
@@ -2999,7 +3133,7 @@ function selectWorld() {
   document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
   document.getElementById('meetingsPanel').classList.add('hidden');
   renderAutoIntervalChips();
-  renderModelChips('autoModelChips', (worldSettings && worldSettings.model) || 'glm-4.5-flash', 'pickAutoModel');
+  renderModelChips('autoModelChips', (worldSettings && worldSettings.model) || 'glm-4.7-flash', 'pickAutoModel');
   switchWorldTab(worldTab);
   loadTownMap();
   loadAgents();
@@ -3011,7 +3145,7 @@ function selectWorld() {
 async function loadTownMap() {
   if (townMap) return townMap;
   try { townMap = await j(`${API}/world/places`); }
-  catch (e) { townMap = { worldW:960, worldH:640, places:[] }; }
+  catch (e) { townMap = { worldW:1360, worldH:700, places:[] }; }
   return townMap;
 }
 
@@ -3021,7 +3155,7 @@ async function loadWorldSettings() {
     const t = document.getElementById('autoToggle');
     if (t) t.checked = !!worldSettings.autonomousEnabled;
     renderAutoIntervalChips();
-    renderModelChips('autoModelChips', worldSettings.model || 'glm-4.5-flash', 'pickAutoModel');
+    renderModelChips('autoModelChips', worldSettings.model || 'glm-4.7-flash', 'pickAutoModel');
     updateAutoState();
     updateTownClock();
   } catch (e) { /* 忽略 */ }
@@ -3054,22 +3188,28 @@ function renderAutoIntervalChips() {
   if (!el) return;
   const cur = worldSettings ? worldSettings.intervalSeconds : 600;
   const locked = !isAdmin;
-  const chips = AUTO_INTERVALS.map(x => {
-    const on = cur===x.s ? 'on' : '';
-    return locked
-      ? `<span class="chip ${on} disabled" title="仅管理员可调整频率">${x.label}</span>`
-      : `<span class="chip ${on}" onclick="pickAutoInterval(${x.s})">${x.label}</span>`;
+  const isPreset = AUTO_INTERVALS.some(x => x.s === cur);
+  const items = AUTO_INTERVALS.map(x => {
+    const on = cur === x.s ? ' on' : '';
+    const dis = locked ? ' disabled' : '';
+    const click = locked ? '' : ` onclick="pickAutoInterval(${x.s})"`;
+    return `<button class="seg-item${on}${dis}"${click} title="${locked ? '仅管理员可调整频率' : ''}">${x.label}</button>`;
   }).join('');
+  const seg = `<span class="seg">${items}</span>`;
   const custom = locked ? '' :
-    `<span class="chip-custom"><input id="autoIntervalInput" type="number" min="30" max="3600" step="1" placeholder="自定义秒" value="${cur}"><button onclick="applyCustomInterval()">确定</button></span>`;
-  el.innerHTML = chips + custom;
+    `<span class="seg-custom" title="自定义间隔秒数">
+       <input id="autoIntervalInput" type="number" min="1" max="3600" step="1" value="${isPreset ? '' : cur}" placeholder="自定义">
+       <span class="seg-unit">秒</span>
+       <button onclick="applyCustomInterval()">确定</button>
+     </span>`;
+  el.innerHTML = seg + custom;
 }
 function applyCustomInterval() {
   const inp = document.getElementById('autoIntervalInput');
   if (!inp) return;
   let v = Number(inp.value);
   if (!Number.isFinite(v)) { toast('请输入有效秒数', 'err'); return; }
-  v = Math.max(30, Math.min(3600, Math.round(v)));
+  v = Math.max(1, Math.min(3600, Math.round(v)));
   pickAutoInterval(v);
 }
 function pickAutoModel(m) { saveWorldSettings({model:m}); }
@@ -3086,7 +3226,7 @@ async function saveWorldSettings(patch) {
       headers:{'Content-Type':'application/json'}, body:JSON.stringify(patch)});
     const t = document.getElementById('autoToggle'); if (t) t.checked = !!worldSettings.autonomousEnabled;
     renderAutoIntervalChips();
-    renderModelChips('autoModelChips', worldSettings.model || 'glm-4.5-flash', 'pickAutoModel');
+    renderModelChips('autoModelChips', worldSettings.model || 'glm-4.7-flash', 'pickAutoModel');
     updateAutoState();
   } catch (e) { toast('设置失败:' + errText(e), 'err'); }
 }
@@ -3290,11 +3430,192 @@ async function openAgentDetail(id) {
       </div>
       ${relBlock}
       ${prodBlock}
-    </div>`;
+    </div>
+    <div id="agentComments"></div>`;
+  mountComments(document.getElementById('agentComments'), 'agent', a.id);
 }
 function closeAgentDetail() {
   document.getElementById('agentDetailModal').classList.add('hidden');
 }
+
+// ==== 作品馆:小说连载 / 画作 / 短片 / 歌曲 ====
+let galleryCat = 'novel';
+function switchGalleryCat(cat) {
+  galleryCat = cat;
+  document.querySelectorAll('#galleryTabs .gtab').forEach(b =>
+    b.classList.toggle('active', b.dataset.cat === cat));
+  loadGallery();
+}
+async function loadGallery() {
+  const box = document.getElementById('galleryBody');
+  box.innerHTML = `<div class="mut">加载中…</div>`;
+  try {
+    if (galleryCat === 'novel') return renderBooks(box);
+    const cards = await j(`${API}/world/gallery?category=${galleryCat}`);
+    if (!cards.length) { box.innerHTML = `<div class="mut">这个分类还没有作品。开启「自主行动」让居民创作起来吧。</div>`; return; }
+    box.innerHTML = `<div class="gal-grid">${cards.map(c => galCard(c, galleryCat)).join('')}</div>`;
+  } catch (e) { box.innerHTML = `<div class="mut">加载失败。</div>`; }
+}
+function galCard(c, cat) {
+  const p = c.product || {};
+  let thumb;
+  if (cat === 'image' && p.content && p.content.indexOf('/') >= 0) {
+    thumb = `<img class="gal-thumb" src="${API}/world/products/${p.id}/media" alt="${esc(p.title)}" loading="lazy" onerror="this.outerHTML='<div class=&quot;gal-thumb gal-song&quot;>🎨</div>'">`;
+  } else if (cat === 'video' && p.content && p.content.indexOf('/') >= 0) {
+    thumb = `<video class="gal-thumb" src="${API}/world/products/${p.id}/media" preload="metadata" muted></video>`;
+  } else {
+    thumb = `<div class="gal-thumb gal-song">${cat === 'video' ? '🎬' : cat === 'song' ? '🎵' : '🎨'}</div>`;
+  }
+  return `<div class="gal-card" onclick="openPost(${p.id})">
+    ${thumb}
+    <div class="gal-meta">
+      <div class="gm-title">${esc(p.title || '无题')}</div>
+      <div class="gm-sub"><span>${esc(c.authorAvatar || '🧑‍🎨')} ${esc(c.authorName || '')}</span><span>💬 ${c.commentCount || 0}</span></div>
+    </div>
+  </div>`;
+}
+async function renderBooks(box) {
+  let books = [];
+  try { books = await j(`${API}/world/books`); }
+  catch (e) { box.innerHTML = `<div class="mut">加载失败。</div>`; return; }
+  if (!books.length) { box.innerHTML = `<div class="mut">还没有连载小说。让作家居民开始创作吧。</div>`; return; }
+  box.innerHTML = `<div class="gal-grid">${books.map(b => `
+    <div class="gal-card" onclick="openReader(${b.agentId})">
+      <div class="gal-meta book-card">
+        <div class="bc-cover">📖</div>
+        <div style="min-width:0">
+          <div class="gm-title">${esc(b.authorName)}的连载</div>
+          <div class="gm-sub"><span>${esc(b.authorAvatar || '📖')} ${b.chapterCount} 章</span></div>
+          <div class="gm-sub" style="margin-top:2px"><span title="${esc(b.latestTitle||'')}">最新《${esc(b.latestTitle || '')}》</span></div>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+// ==== 作品帖子查看(画作/短片/歌曲) ====
+async function openPost(id) {
+  const modal = document.getElementById('postModal');
+  const body = document.getElementById('postBody');
+  body.innerHTML = `<div class="mut">加载中…</div>`;
+  modal.classList.remove('hidden');
+  let c;
+  try { c = await j(`${API}/world/products/${id}`); }
+  catch (e) { body.innerHTML = `<div class="mut">加载失败。</div>`; return; }
+  const p = c.product || {};
+  let media = '';
+  if (p.kind === 'image' && p.content && p.content.indexOf('/') >= 0) {
+    media = `<div class="post-media"><img src="${API}/world/products/${p.id}/media" alt="${esc(p.title)}"></div>`;
+  } else if (p.kind === 'video' && p.content && p.content.indexOf('/') >= 0) {
+    media = `<div class="post-media"><video controls preload="metadata" src="${API}/world/products/${p.id}/media"></video></div>`;
+  } else if (p.kind === 'video') {
+    media = `<div class="post-text mut">🎬 短片生成中…</div>`;
+  }
+  const text = (p.kind === 'song' || p.kind === 'artwork' || (p.content && p.content.indexOf('/') < 0))
+    ? `<div class="post-text">${esc(p.content || '')}</div>` : '';
+  body.innerHTML = `
+    <div class="post-head">
+      <div class="ph-avatar">${esc(c.authorAvatar || '🧑‍🎨')}</div>
+      <div>
+        <div class="ph-title">《${esc(p.title || '无题')}》</div>
+        <div class="ph-sub">${esc(c.authorName || '')} · ${prodKind(p.kind)}${p.seq ? ' #'+p.seq : ''}${p.quality ? ' · 质量 '+p.quality : ''}${p.simDate ? ' · '+esc(p.simDate) : ''}</div>
+      </div>
+    </div>
+    ${media}${text}
+    <div id="postComments"></div>`;
+  mountComments(document.getElementById('postComments'), 'product', p.id);
+}
+function closePost() { document.getElementById('postModal').classList.add('hidden'); }
+
+// ==== 小说阅读器(连载书籍) ====
+let readerChapters = [], readerIdx = 0, readerAgentId = null;
+async function openReader(agentId) {
+  readerAgentId = agentId;
+  const modal = document.getElementById('readerModal');
+  modal.classList.remove('hidden');
+  document.getElementById('readerTitle').textContent = '加载中…';
+  document.getElementById('readerToc').innerHTML = '';
+  document.getElementById('readerContent').innerHTML = `<div class="mut">加载中…</div>`;
+  document.getElementById('readerComments').innerHTML = '';
+  let d;
+  try { d = await j(`${API}/world/books/${agentId}`); }
+  catch (e) { document.getElementById('readerContent').innerHTML = `<div class="mut">加载失败。</div>`; return; }
+  readerChapters = d.chapters || [];
+  document.getElementById('readerTitle').textContent = `${d.authorAvatar || '📖'} ${d.authorName} 的连载`;
+  if (!readerChapters.length) { document.getElementById('readerContent').innerHTML = `<div class="mut">暂无章节。</div>`; return; }
+  document.getElementById('readerToc').innerHTML = readerChapters.map((ch, i) =>
+    `<button class="rt-item" data-i="${i}" onclick="readerOpen(${i})">第${ch.seq || i+1}章 ${esc(ch.title || '')}</button>`).join('');
+  readerOpen(0);
+}
+function readerOpen(i) {
+  if (i < 0 || i >= readerChapters.length) return;
+  readerIdx = i;
+  const ch = readerChapters[i];
+  document.querySelectorAll('#readerToc .rt-item').forEach(b =>
+    b.classList.toggle('active', +b.dataset.i === i));
+  const el = document.getElementById('readerContent');
+  el.innerHTML = `<div class="rc-chap-t">第${ch.seq || i+1}章 ${esc(ch.title || '')}</div>${esc(ch.content || '')}`;
+  el.scrollTop = 0;
+  document.getElementById('readerPos').textContent = `${i+1} / ${readerChapters.length}`;
+  document.getElementById('readerPrev').disabled = i === 0;
+  document.getElementById('readerNext').disabled = i === readerChapters.length - 1;
+  mountComments(document.getElementById('readerComments'), 'product', ch.id);
+}
+function readerGo(delta) { readerOpen(readerIdx + delta); }
+function closeReader() { document.getElementById('readerModal').classList.add('hidden'); }
+
+// ==== 通用评论组件 ====
+async function mountComments(container, targetType, targetId) {
+  container.innerHTML = `<div class="cmt-wrap">
+    <div class="cmt-t">💬 评价</div>
+    <div class="cmt-form">
+      <textarea id="cmt-input-${targetType}-${targetId}" placeholder="说点什么…"></textarea>
+      <button onclick="submitComment('${targetType}',${targetId},this)">发表</button>
+    </div>
+    <div class="cmt-list" id="cmt-list-${targetType}-${targetId}"><div class="mut">加载中…</div></div>
+  </div>`;
+  await loadComments(targetType, targetId);
+}
+async function loadComments(targetType, targetId) {
+  const listEl = document.getElementById(`cmt-list-${targetType}-${targetId}`);
+  if (!listEl) return;
+  let list = [];
+  try { list = await j(`${API}/world/comments?targetType=${targetType}&targetId=${targetId}`); }
+  catch (e) { listEl.innerHTML = `<div class="mut">加载失败。</div>`; return; }
+  if (!list.length) { listEl.innerHTML = `<div class="mut">还没有评价,来做第一个。</div>`; return; }
+  listEl.innerHTML = list.map(c => {
+    const canDel = isAdmin || (myOwnerId && myOwnerId === c.authorId);
+    const isVillager = (c.authorId || '').startsWith('agent:');
+    return `<div class="cmt-item">
+      <div class="ci-head">
+        <span class="ci-author">${esc(c.authorName || '匿名')}${isVillager ? ' <span class="ci-tag">村民</span>' : ''}</span>
+        <span>${esc((c.createdAt || '').replace('T',' ').slice(0,16))}</span>
+        ${canDel ? `<button class="ci-del" onclick="delComment(${c.id},'${targetType}',${targetId})">删除</button>` : ''}
+      </div>
+      <div class="ci-body">${esc(c.content || '')}</div>
+    </div>`;
+  }).join('');
+}
+async function submitComment(targetType, targetId, btn) {
+  const input = document.getElementById(`cmt-input-${targetType}-${targetId}`);
+  const content = (input.value || '').trim();
+  if (!content) { toast('评论不能为空', 'err'); return; }
+  btn.disabled = true;
+  try {
+    await j(`${API}/world/comments`, { method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ targetType, targetId, content }) });
+    input.value = '';
+    await loadComments(targetType, targetId);
+  } catch (e) { toast('发表失败:' + errText(e), 'err'); }
+  finally { btn.disabled = false; }
+}
+async function delComment(id, targetType, targetId) {
+  try {
+    await j(`${API}/world/comments/${id}`, { method:'DELETE' });
+    await loadComments(targetType, targetId);
+  } catch (e) { toast('删除失败:' + errText(e), 'err'); }
+}
+
 
 async function renderJail() {
   const el = document.getElementById('jailGrid');
@@ -3334,13 +3655,17 @@ function switchWorldTab(tab) {
   document.querySelectorAll('#worldTabs .wtab').forEach(b =>
     b.classList.toggle('active', b.dataset.tab === tab));
   document.getElementById('mapPane').classList.toggle('hidden', tab !== 'map');
+  document.getElementById('residentsPane').classList.toggle('hidden', tab !== 'residents');
   document.getElementById('jailPane').classList.toggle('hidden', tab !== 'jail');
   document.getElementById('reportPane').classList.toggle('hidden', tab !== 'report');
+  document.getElementById('galleryPane').classList.toggle('hidden', tab !== 'gallery');
   document.getElementById('sandboxPane').classList.toggle('hidden', tab !== 'sandbox');
-  if (tab === 'map') { renderOffices(); loadTownMap().then(() => { renderMap(); }); renderFeed(); }
+  if (tab === 'map') { loadTownMap().then(() => { renderMap(); }); renderFeed(); }
   else if (mapAnim) { cancelAnimationFrame(mapAnim); mapAnim = null; }
+  if (tab === 'residents') renderOffices();
   if (tab === 'jail') renderJail();
   if (tab === 'report') loadReports();
+  if (tab === 'gallery') loadGallery();
   if (tab === 'sandbox') initSandbox();
 }
 
@@ -3464,6 +3789,14 @@ function toggleSbxMember(id) {
   document.getElementById('sbxRunBtn').disabled = true;
   document.getElementById('sbxEst').textContent = '选择有变,请重新预估。';
 }
+function selectAllSbx(on) {
+  const active = agents.filter(a => a.status !== 'jailed');
+  if (on) active.forEach(a => sbxSelected.add(a.id));
+  else sbxSelected.clear();
+  renderSbxMembers();
+  document.getElementById('sbxRunBtn').disabled = true;
+  document.getElementById('sbxEst').textContent = '选择有变,请重新预估。';
+}
 function renderSbxYears() {
   document.getElementById('sbxYearsChips').innerHTML = SBX_YEARS.map(y =>
     `<button class="chip${sbxYears === y ? ' on' : ''}" onclick="pickSbxYears(${y})">${y} 年</button>`).join('');
@@ -3545,9 +3878,10 @@ async function refreshSandboxRun(id) {
   document.getElementById('sbxRunStatus').textContent = sbxStatusLabel(r.status);
   const rep = document.getElementById('sbxReport');
   if (r.status === 'PENDING' || r.status === 'RUNNING') {
-    rep.innerHTML = `<div class="sbx-running">🌀 正在推演 ${esc(r.years)} 年的小镇变迁,请稍候…</div>`;
+    rep.innerHTML = `<div class="sbx-running">🌀 正在推演 ${esc(r.years)} 年的小镇变迁,事件将实时涌现…</div>`;
+    await loadSbxEvents(id, true);   // 流式:RUNNING 期间实时拉事件、自动跟到最新
     if (sbxPollTimer) clearTimeout(sbxPollTimer);
-    sbxPollTimer = setTimeout(() => refreshSandboxRun(id), 2500);
+    sbxPollTimer = setTimeout(() => refreshSandboxRun(id), 800);
     return;
   }
   if (sbxPollTimer) { clearTimeout(sbxPollTimer); sbxPollTimer = null; }
@@ -3558,17 +3892,28 @@ async function refreshSandboxRun(id) {
   const costLine = (r.actualCostRmb != null)
     ? `<div class="rd-cost">💰 实际花费 ¥${Number(r.actualCostRmb).toFixed(4)} · tokens ${(r.actualInputTokens||0)}/${(r.actualOutputTokens||0)}</div>` : '';
   rep.innerHTML = `<div class="sbx-report-body">${esc(r.report || '（无报告）')}</div>${costLine}`;
-  loadSbxEvents(id);
+  loadSbxEvents(id, false);
 }
-async function loadSbxEvents(id) {
-  try { sbxEvents = await j(`${API}/world/sandbox/${id}/events`); }
-  catch (e) { sbxEvents = []; }
-  if (!sbxEvents.length) { document.getElementById('sbxReplay').classList.add('hidden'); return; }
+async function loadSbxEvents(id, live) {
+  let evs;
+  try { evs = await j(`${API}/world/sandbox/${id}/events`); }
+  catch (e) { return; }
+  if (!evs || !evs.length) { if (!live) document.getElementById('sbxReplay').classList.add('hidden'); return; }
+  const grew = evs.length !== sbxEvents.length;
+  sbxEvents = evs;
   document.getElementById('sbxReplay').classList.remove('hidden');
   const slider = document.getElementById('sbxReplaySlider');
-  slider.max = sbxEvents.length; slider.value = sbxEvents.length;
-  sbxReplayIdx = sbxEvents.length;
-  renderSbxTimeline();
+  slider.max = sbxEvents.length;
+  // 流式期间(live)或有新事件时,自动跟随到最新一条
+  if (live || sbxReplayIdx >= Number(slider.value) || grew) {
+    slider.value = sbxEvents.length;
+    sbxReplayIdx = sbxEvents.length;
+    renderSbxTimeline();
+    if (live) {
+      const box = document.getElementById('sbxTimeline');
+      if (box) box.scrollTop = box.scrollHeight;
+    }
+  }
 }
 function sbxEventIcon(t){return {birth:'👶',death:'🕯',marriage:'💍',dating:'💞',product:'📚',event:'⚡',milestone:'📅'}[t]||'•';}
 function renderSbxTimeline() {
@@ -3611,22 +3956,19 @@ function closeSandboxRun() {
 // 像素小镇:居民按 pos_x/y 世界坐标平滑走向目标,建筑由 /places 单一数据源绘制。
 let mapTargets = {};   // id -> {x,y} 世界坐标目标
 let mapPos = {};       // id -> {x,y} 世界坐标当前插值位置
-// 相机:视口左上角所在世界坐标 (x,y) + 缩放 scale。scale=1 时整个世界铺满画布。
+// 相机固定铺满:整幅世界等比映射到画布,不支持缩放/平移。
 let cam = { x: 0, y: 0, scale: 1 };
-let camReady = false;  // 是否已挂载拖拽/滚轮交互
+let camReady = false;
 let groundCache = null; // 地面层(草地+路网+树)离屏缓存,尺寸变化时重建
 function worldSize() {
-  return { WW: (townMap && townMap.worldW) || 960, WH: (townMap && townMap.worldH) || 760 };
+  return { WW: (townMap && townMap.worldW) || 1360, WH: (townMap && townMap.worldH) || 700 };
 }
-// 按当前 scale 限制相机位移,保证视口不越出世界边界。
+// 锁定相机:scale=铺满视口,cam 原点归零(世界完整可见,无越界)。
 function clampCam() {
   const cv = document.getElementById('worldMap'); if (!cv) return;
   const { WW, WH } = worldSize();
-  const fit = Math.min(cv.width / WW, cv.height / WH); // 铺满视口的最小缩放
-  cam.scale = Math.max(fit, Math.min(4, cam.scale));
-  const viewW = cv.width / cam.scale, viewH = cv.height / cam.scale;
-  cam.x = Math.max(0, Math.min(Math.max(0, WW - viewW), cam.x));
-  cam.y = Math.max(0, Math.min(Math.max(0, WH - viewH), cam.y));
+  cam.scale = Math.min(cv.width / WW, cv.height / WH);
+  cam.x = 0; cam.y = 0;
 }
 // 画布(backing)像素 → 世界坐标
 function screenToWorld(bx, by) {
@@ -3637,39 +3979,11 @@ function evToBacking(ev, cv, rect) {
   return { bx: (ev.clientX - rect.left) / rect.width * cv.width,
            by: (ev.clientY - rect.top) / rect.height * cv.height };
 }
-// 首次挂载相机交互:滚轮缩放(对准光标)+ 拖拽平移。区分点击与拖拽。
+// 相机为固定视角,无需挂载缩放/拖拽交互(仅点击命中小人)。
 function mountCamera() {
   if (camReady) return;
-  const cv = document.getElementById('worldMap'); if (!cv) return;
   camReady = true;
-  let dragging = false, moved = false, lastX = 0, lastY = 0;
-  cv.addEventListener('wheel', (ev) => {
-    ev.preventDefault();
-    const rect = cv.getBoundingClientRect();
-    const { bx, by } = evToBacking(ev, cv, rect);
-    const before = screenToWorld(bx, by);
-    cam.scale *= ev.deltaY < 0 ? 1.15 : 1 / 1.15;
-    clampCam();
-    // 缩放后让光标处世界点保持不动
-    cam.x = before.x - bx / cam.scale;
-    cam.y = before.y - by / cam.scale;
-    clampCam();
-    renderMap();
-  }, { passive: false });
-  cv.addEventListener('mousedown', (ev) => { dragging = true; moved = false; lastX = ev.clientX; lastY = ev.clientY; });
-  window.addEventListener('mousemove', (ev) => {
-    if (!dragging) return;
-    const rect = cv.getBoundingClientRect();
-    const dx = (ev.clientX - lastX) / rect.width * cv.width / cam.scale;
-    const dy = (ev.clientY - lastY) / rect.height * cv.height / cam.scale;
-    if (Math.abs(ev.clientX - lastX) + Math.abs(ev.clientY - lastY) > 3) moved = true;
-    cam.x -= dx; cam.y -= dy;
-    lastX = ev.clientX; lastY = ev.clientY;
-    clampCam(); renderMap();
-  });
-  window.addEventListener('mouseup', () => { dragging = false; });
-  cv.dataset.dragGuard = ''; // 供 mapClick 判断是否刚拖拽过
-  cv.addEventListener('click', (ev) => { if (moved) { moved = false; ev.stopImmediatePropagation(); } }, true);
+  clampCam();
 }
 // 地点主题色(与建筑屋顶/墙体呼应)
 const PLACE_COLORS = {
@@ -3708,20 +4022,24 @@ function animateMap() {
   ctx.fillStyle = '#0d1512'; ctx.fillRect(0, 0, W, H);
   ctx.setTransform(cam.scale, 0, 0, cam.scale, -cam.x * cam.scale, -cam.y * cam.scale);
 
-  // 地面层(草地+路网+树)缓存为离屏 canvas,仅世界尺寸变化时重建
+  // 地面层(草地+山峦+路网+树)缓存为离屏 canvas,仅世界尺寸变化时重建
   if (!groundCache || groundCache.w !== WW || groundCache.h !== WH) {
     const off = document.createElement('canvas');
     off.width = WW; off.height = WH;
     const octx = off.getContext('2d');
     drawGrass(octx, WW, WH);
-    drawRoads(octx, places);
-    [[70,60],[900,70],[60,600],[905,590],[480,430],[300,240],[650,260],[130,720],[780,720]].forEach(([x,y]) => drawTree(octx, x, y));
+    drawNorthRidge(octx, WW);        // 顶部群山 + 药王庙 + 采药人茅草屋
+    drawRoads(octx, places);         // 井字形街道(青石板主街 + 土路)
+    // 街区绿化点缀(避开街道与建筑,落在街区角隅)
+    [[55,262],[1305,262],[55,478],[1305,478],[305,478],[555,262],[805,590],[1055,262]].forEach(([x,y]) => drawTree(octx, x, y));
     groundCache = { canvas: off, w: WW, h: WH };
   }
   ctx.drawImage(groundCache.canvas, 0, 0);
-  // 俯视小镇:park/plaza/cemetery/market 为户外空间,其余为可见家具的房间内景
+  // 俯视小镇:古井广场为核心地标,park/cemetery/market 为户外空间,其余为可见家具的房间内景
   places.forEach(p => {
-    if (p.key === 'park' || p.key === 'plaza' || p.key === 'cemetery' || p.key === 'market') drawOutdoor(ctx, p);
+    if (p.key === 'plaza') drawWellPlaza(ctx, p);
+    else if (p.key === 'clinic') drawCourtyardClinic(ctx, p);
+    else if (p.key === 'park' || p.key === 'cemetery' || p.key === 'market') drawOutdoor(ctx, p);
     else drawRoom(ctx, p);
   });
 
@@ -3745,21 +4063,8 @@ function animateMap() {
     const bob = (moving ? 2.5 : 1) * Math.abs(Math.sin(t + seed));
     const c = w2c(p.x + swayX, p.y + swayY);
     const speaking = speakingId && String(a.id) === String(speakingId);
-    drawActor(ctx, {avatar:a.avatar||'🧑', name:a.name||'', color:a.color||'#2dd4bf'},
-      c.x, c.y - bob, speaking && blink);
-    if (a.mood) {
-      // 头顶思考气泡:emoji + 心情文字 + 两颗上升小圆点
-      ctx.font = '11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      const label = `${a.moodEmoji||'🙂'}${a.mood}`;
-      const mw = ctx.measureText(label).width + 14;
-      const by = c.y - 48 - bob;
-      ctx.fillStyle = 'rgba(0,0,0,.10)';
-      ctx.beginPath(); ctx.arc(c.x - mw/2 + 5, by + 12, 3, 0, Math.PI*2); ctx.arc(c.x - mw/2, by + 20, 2, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,.94)';
-      roundRect(ctx, c.x - mw/2, by, mw, 18, 9); ctx.fill();
-      ctx.beginPath(); ctx.arc(c.x - mw/2 + 6, by + 22, 3.2, 0, Math.PI*2); ctx.arc(c.x - mw/2 + 1, by + 29, 2, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#173a34'; ctx.fillText(label, c.x, by + 9);
-    }
+    drawActor(ctx, {avatar:a.avatar||'🧑', name:a.name||'', color:a.color||'#2dd4bf',
+                    mood:a.mood, moodEmoji:a.moodEmoji}, c.x, c.y - bob, speaking && blink);
   });
   if (!agents.length) {
     ctx.fillStyle = '#3a4a42'; ctx.font = '15px sans-serif'; ctx.textAlign = 'center';
@@ -3769,40 +4074,140 @@ function animateMap() {
   mapAnim = requestAnimationFrame(animateMap);
 }
 
-// 草地:分层绿 + 8px 棋盘微纹 + 点噪
+// 草地:清新治愈色(星露谷质感)——分层绿 + 16px 棋盘微纹 + 稀疏点噪
 function drawGrass(ctx, W, H) {
-  ctx.fillStyle = '#8ec96a'; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = 'rgba(122,183,92,.55)';
+  ctx.fillStyle = '#a7d98a'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(140,196,106,.5)';
   for (let y = 0; y < H; y += 16) for (let x = ((y/16)%2)*16; x < W; x += 32) ctx.fillRect(x, y, 16, 16);
-  ctx.fillStyle = 'rgba(60,110,45,.16)';
-  for (let i = 0; i < 260; i++) {
+  ctx.fillStyle = 'rgba(96,158,74,.14)';
+  for (let i = 0; i < 320; i++) {
     const gx = (i * 149) % W, gy = (i * 271) % H;
     ctx.fillRect(gx, gy, 3, 3);
   }
+  // 星点小花(治愈感)
+  const flowers = ['#f7d354','#f28ab2','#ffffff'];
+  for (let i = 0; i < 60; i++) {
+    const fx = (i * 197 + 30) % W, fy = (i * 313 + 200) % H;
+    if (fy < 175) continue; // 让山峦带干净
+    ctx.fillStyle = flowers[i % 3];
+    ctx.fillRect(fx, fy, 3, 3); ctx.fillRect(fx-3, fy, 3, 3); ctx.fillRect(fx+3, fy, 3, 3);
+    ctx.fillRect(fx, fy-3, 3, 3); ctx.fillRect(fx, fy+3, 3, 3);
+  }
 }
-// 铺装步道:横竖石板路网连接各街区(石灰道)
-function drawRoads(ctx, places) {
-  const tw = 30;
-  // 石板带:底色 + 中缝虚线 + 边缘描线
-  const band = (x, y, w, h) => {
-    ctx.fillStyle = '#cdb88f'; ctx.fillRect(x, y, w, h);
-    ctx.strokeStyle = 'rgba(120,90,40,.28)'; ctx.lineWidth = 1.5;
-    ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
-    // 石板缝
-    ctx.strokeStyle = 'rgba(120,90,40,.16)'; ctx.lineWidth = 1;
-    ctx.beginPath();
-    if (w > h) { for (let gx = x + 26; gx < x + w; gx += 26) { ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); } }
-    else { for (let gy = y + 26; gy < y + h; gy += 26) { ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); } }
-    ctx.stroke();
+
+// 顶部装饰带:远山群峦 + 西侧「药王庙」(红墙青瓦)+ 东侧采药人茅草屋(窄带,不压建筑)
+function drawNorthRidge(ctx, W) {
+  const H = 92;
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#bfe3d0'); g.addColorStop(1, 'rgba(167,217,138,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const ridge = (baseY, amp, step, fill) => {
+    ctx.fillStyle = fill;
+    ctx.beginPath(); ctx.moveTo(0, baseY);
+    for (let x = 0; x <= W; x += step) {
+      const peak = baseY - (amp * (0.5 + 0.5 * Math.sin(x * 0.9)));
+      ctx.lineTo(x, peak); ctx.lineTo(x + step/2, baseY - amp*0.2);
+    }
+    ctx.lineTo(W, baseY); ctx.lineTo(W, 0); ctx.lineTo(0, 0); ctx.closePath(); ctx.fill();
   };
-  // 三横两竖构成街区网格,穿过中心广场;第四横连通底部婚礼堂/墓园/集市/住宅
-  band(40, 150 - tw/2, 880, tw);
-  band(40, 330 - tw/2, 880, tw);
-  band(40, 522 - tw/2, 880, tw);
-  band(40, 660 - tw/2, 880, tw);
-  band(180 - tw/2, 110, tw, 560);
-  band(480 - tw/2, 90, tw, 590);
-  band(810 - tw/2, 130, tw, 550);
+  ridge(58, 46, 150, '#8fb9a6');   // 远
+  ridge(72, 40, 120, '#7bae94');   // 中
+  ridge(86, 32, 96,  '#6aa385');   // 近
+  ctx.fillStyle = 'rgba(255,255,255,.5)';
+  for (let x = 40; x < W; x += 120) { ctx.fillRect(x, 40, 8, 3); ctx.fillRect(x+3, 37, 4, 3); }
+  // 西侧药王庙 / 东侧采药人茅草屋(缩小,贴近上边角)
+  drawShrine(ctx, 70, 48);
+  drawHerbHut(ctx, W - 78, 52);
+}
+
+// 药王庙:红墙 + 青瓦双坡顶 + 匾额
+function drawShrine(ctx, cx, cy) {
+  const w = 58, h = 30;
+  ctx.fillStyle = 'rgba(0,0,0,.12)'; roundRect(ctx, cx - w/2 + 2, cy - h/2 + 4, w, h, 3); ctx.fill();
+  // 红墙身
+  ctx.fillStyle = '#c0392b'; ctx.fillRect(cx - w/2, cy - h/2, w, h);
+  ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.fillRect(cx - w/2, cy + h/2 - 4, w, 4);
+  // 青瓦双坡顶(飞檐)
+  ctx.fillStyle = '#5b7c8d';
+  ctx.beginPath();
+  ctx.moveTo(cx - w/2 - 7, cy - h/2 + 1);
+  ctx.lineTo(cx, cy - h/2 - 15);
+  ctx.lineTo(cx + w/2 + 7, cy - h/2 + 1);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#456575'; ctx.fillRect(cx - w/2 - 7, cy - h/2, w + 14, 4);
+  ctx.fillStyle = '#2f4a57'; ctx.fillRect(cx - 2, cy - h/2 - 15, 4, 6);
+  // 门 + 匾
+  ctx.fillStyle = '#3a2418'; ctx.fillRect(cx - 6, cy - 4, 12, h/2 + 2);
+  ctx.fillStyle = '#e6c86a'; ctx.fillRect(cx - 11, cy - h/2 + 4, 22, 6);
+  nameTag(ctx, cx, cy + h/2 + 4, '🛕 药王庙');
+}
+
+// 采药人茅草屋:黄褐茅草顶 + 木墙
+function drawHerbHut(ctx, cx, cy) {
+  const w = 50, h = 26;
+  ctx.fillStyle = 'rgba(0,0,0,.12)'; roundRect(ctx, cx - w/2 + 2, cy - h/2 + 4, w, h, 3); ctx.fill();
+  ctx.fillStyle = '#b98a52'; ctx.fillRect(cx - w/2, cy - h/2, w, h); // 土墙
+  ctx.strokeStyle = 'rgba(80,50,20,.3)'; ctx.lineWidth = 1;
+  ctx.strokeRect(cx - w/2 + .5, cy - h/2 + .5, w - 1, h - 1);
+  // 茅草顶
+  ctx.fillStyle = '#d9a441';
+  ctx.beginPath();
+  ctx.moveTo(cx - w/2 - 6, cy - h/2 + 1);
+  ctx.lineTo(cx, cy - h/2 - 14);
+  ctx.lineTo(cx + w/2 + 6, cy - h/2 + 1);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#5a3a1e'; ctx.fillRect(cx - 6, cy - 2, 12, h/2 + 2);
+  nameTag(ctx, cx, cy + h/2 + 4, '🌿 采药屋');
+}
+
+// 通用名牌(白底圆角)
+function nameTag(ctx, cx, y, label) {
+  ctx.font = '700 11px sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+  const lw = ctx.measureText(label).width + 14;
+  ctx.fillStyle = 'rgba(255,255,255,.92)';
+  roundRect(ctx, cx - lw/2, y, lw, 17, 8); ctx.fill();
+  ctx.fillStyle = '#173a34'; ctx.fillText(label, cx, y + 9);
+}
+
+// 横向井字街道:纵向四街 x=305/555/805/1055(隔开五列),横向两街 y=262/478(隔开三排)。
+// 环绕中心广场的四条街(x=555/805、y=262/478)铺青石板主街,其余为黄褐土路;路口直角。
+function drawRoads(ctx, places) {
+  const MAIN = 40, SEC = 28;
+  const x0 = 55, x1 = 1305, y0 = 60, y1 = 660;
+  const VX = [305, 555, 805, 1055], HY = [262, 478];
+  VX.forEach((vx) => {
+    const main = (vx === 555 || vx === 805);
+    roadBand(ctx, vx - (main?MAIN:SEC)/2, y0, (main?MAIN:SEC), y1 - y0, main, false);
+  });
+  HY.forEach((hy) => {
+    roadBand(ctx, x0, hy - MAIN/2, x1 - x0, MAIN, true, true);
+  });
+}
+
+// 一条道路带:main=青石板(青灰),否则黄褐土路;horizontal 决定缝纹方向
+function roadBand(ctx, x, y, w, h, main, horizontal) {
+  if (main) {
+    ctx.fillStyle = '#9ec6c2';                 // 青石板底
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = 'rgba(60,100,98,.35)'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+    ctx.strokeStyle = 'rgba(60,100,98,.22)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (horizontal) { for (let gx = x + 28; gx < x + w; gx += 28) { ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); } }
+    else { for (let gy = y + 28; gy < y + h; gy += 28) { ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); } }
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = '#d7b57e';                 // 黄褐土路
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = 'rgba(140,100,50,.28)'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+    // 土路碎石点
+    ctx.fillStyle = 'rgba(150,110,60,.22)';
+    for (let i = 0; i < (w*h)/900; i++) {
+      const rx = x + ((i*53) % (w-4)) + 2, ry = y + ((i*97) % (h-4)) + 2;
+      ctx.fillRect(rx, ry, 2, 2);
+    }
+  }
 }
 function drawTree(ctx, x, y) {
   ctx.fillStyle = '#6b4423'; ctx.fillRect(x - 3, y, 6, 12);
@@ -3833,19 +4238,19 @@ function drawRoom(ctx, p) {
   // 墙(上边与左边稍厚,营造俯视立体感)
   ctx.strokeStyle = wall; ctx.lineWidth = 5;
   roundRect(ctx, x + 2.5, y + 2.5, ROOM_W - 5, ROOM_H - 5, 7); ctx.stroke();
+  // 青瓦屋檐(顶沿一条瓦条,像素屋顶质感)
+  ctx.fillStyle = tint(col, 0.3);
+  roundRect(ctx, x + 2, y - 2, ROOM_W - 4, 12, 5); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 1; ctx.beginPath();
+  for (let gx = x + 12; gx < x + ROOM_W - 6; gx += 12) { ctx.moveTo(gx, y - 1); ctx.lineTo(gx, y + 9); }
+  ctx.stroke();
   // 门口缺口(底边中央,朝向路网)
   ctx.fillStyle = floor;
   ctx.fillRect(c.x - 14, y + ROOM_H - 6, 28, 8);
   // 家具:按地点类型摆设
   drawFurniture(ctx, p.key, x, y, col);
-  // 门牌:emoji + 中文名(房间顶部标题条)
-  ctx.font = '700 12px sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
-  const label = `${p.emoji||'🏠'} ${p.name}`;
-  const lw = ctx.measureText(label).width + 16;
-  ctx.fillStyle = 'rgba(255,255,255,.9)';
-  roundRect(ctx, c.x - lw/2, y - 10, lw, 20, 10); ctx.fill();
-  ctx.strokeStyle = wall; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.fillStyle = '#173a34'; ctx.fillText(label, c.x, y + 1);
+  // 门牌:emoji + 中文名
+  nameTag(ctx, c.x, y - 16, `${p.emoji||'🏠'} ${p.name}`);
 }
 
 // 户外空间(公园 / 中心广场):草坪/水景 + 长椅/喷泉,不封墙
@@ -3885,7 +4290,112 @@ function drawOutdoor(ctx, p) {
   ctx.fillStyle = '#173a34'; ctx.fillText(label, c.x, c.y - R - 9);
 }
 
-// 房间家具:每种地点画几件标志性顶视家具,让房间「一眼能认出用途」
+// 古井广场:八角青石井台 + 千年古樟 + 木质告示板(核心地标,中央十字路口)
+function drawWellPlaza(ctx, p) {
+  const c = w2c(p.x, p.y);
+  const R = 92;
+  // 铺装圆盘(青石)+ 双圈石纹
+  ctx.fillStyle = '#c9d8cf';
+  ctx.beginPath(); ctx.arc(c.x, c.y, R, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = 'rgba(70,110,100,.35)'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = 'rgba(70,110,100,.2)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(c.x, c.y, R*0.72, 0, Math.PI*2); ctx.stroke();
+  // 放射石缝
+  ctx.strokeStyle = 'rgba(70,110,100,.16)';
+  for (let i = 0; i < 8; i++) { const a = i*Math.PI/4;
+    ctx.beginPath(); ctx.moveTo(c.x + Math.cos(a)*R*0.72, c.y + Math.sin(a)*R*0.72);
+    ctx.lineTo(c.x + Math.cos(a)*R, c.y + Math.sin(a)*R); ctx.stroke(); }
+
+  // 八角形青石古井台(正中)
+  const octa = (cx, cy, r, fill, stroke) => {
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) { const a = Math.PI/8 + i*Math.PI/4;
+      const px = cx + Math.cos(a)*r, py = cy + Math.sin(a)*r;
+      i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+    ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 3; ctx.stroke(); }
+  };
+  octa(c.x, c.y, 30, '#8b9aa3', '#5c6a72');   // 井台外圈石栏
+  octa(c.x, c.y, 20, '#3a4a52', '#2a363c');   // 井口
+  // 井水微光
+  ctx.fillStyle = '#4a7a86';
+  ctx.beginPath(); ctx.arc(c.x, c.y, 13, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(180,225,235,.5)';
+  ctx.beginPath(); ctx.arc(c.x - 4, c.y - 4, 4, 0, Math.PI*2); ctx.fill();
+
+  // 千年古樟(冠盖偏北,压在井台后方,俯视大树冠)
+  const tx = c.x, ty = c.y - 44;
+  ctx.fillStyle = 'rgba(0,0,0,.1)'; ctx.beginPath(); ctx.ellipse(tx+4, ty+6, 40, 30, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#4f9440'; ctx.beginPath(); ctx.ellipse(tx, ty, 42, 32, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#3f7d34';
+  [[-18,-6,20],[16,-4,18],[0,10,20],[-14,12,14],[14,12,14]].forEach(([dx,dy,r]) => {
+    ctx.beginPath(); ctx.arc(tx+dx, ty+dy, r, 0, Math.PI*2); ctx.fill(); });
+  ctx.fillStyle = 'rgba(120,200,110,.5)';
+  [[-16,-10,7],[12,-8,6],[2,4,7]].forEach(([dx,dy,r]) => { ctx.beginPath(); ctx.arc(tx+dx, ty+dy, r, 0, Math.PI*2); ctx.fill(); });
+
+  // 木质告示板(树干旁,发布任务用)
+  const bx = c.x + 46, by = c.y - 8;
+  ctx.fillStyle = '#6b4a2a'; ctx.fillRect(bx - 2, by, 4, 26);          // 立柱
+  ctx.fillStyle = '#b5844d'; roundRect(ctx, bx - 20, by - 20, 40, 26, 3); ctx.fill();
+  ctx.strokeStyle = '#7a5326'; ctx.lineWidth = 2; roundRect(ctx, bx - 20, by - 20, 40, 26, 3); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(bx - 15, by - 15, 30, 16);
+  ctx.strokeStyle = 'rgba(90,60,30,.4)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(bx-11, by-10); ctx.lineTo(bx+11, by-10); ctx.moveTo(bx-11, by-6); ctx.lineTo(bx+11, by-6); ctx.moveTo(bx-11, by-2); ctx.lineTo(bx+4, by-2); ctx.stroke();
+
+  // 名牌
+  nameTag(ctx, c.x, c.y - R - 20, `${p.emoji||'⛲'} ${p.name}`);
+}
+
+// 回春医馆:传统三进四合院,青瓦飞檐 + 门口石狮 + 院中青铜捣药钵
+function drawCourtyardClinic(ctx, p) {
+  const c = w2c(p.x, p.y);
+  const W = 172, H = 150;
+  const x = c.x - W/2, y = c.y - H/2;
+  // 投影
+  ctx.fillStyle = 'rgba(0,0,0,.14)'; roundRect(ctx, x + 5, y + 7, W, H, 6); ctx.fill();
+  // 院落地砖(青灰)
+  ctx.fillStyle = '#c4cdc6'; roundRect(ctx, x, y, W, H, 6); ctx.fill();
+  ctx.strokeStyle = 'rgba(90,110,100,.35)'; ctx.lineWidth = 1;
+  for (let gy = y + 18; gy < y + H; gy += 18) { ctx.beginPath(); ctx.moveTo(x+4, gy); ctx.lineTo(x+W-4, gy); ctx.stroke(); }
+
+  const tile = '#5b7c8d', tileDk = '#456575', wall = '#c0392b';
+  // 三进:北正房(最深)+ 东西厢房,围出中央天井
+  const wing = (wx, wy, ww, wh) => {
+    ctx.fillStyle = wall; ctx.fillRect(wx, wy, ww, wh);            // 红墙
+    ctx.fillStyle = tile; ctx.fillRect(wx - 4, wy - 6, ww + 8, 10); // 青瓦飞檐(上沿)
+    ctx.fillStyle = tileDk; ctx.fillRect(wx - 4, wy + 3, ww + 8, 3);
+  };
+  wing(x + 26, y + 10, W - 52, 34);        // 北正房
+  wing(x + 8, y + 44, 30, H - 74);          // 西厢
+  wing(x + W - 38, y + 44, 30, H - 74);     // 东厢
+  // 屋脊高光
+  ctx.fillStyle = 'rgba(255,255,255,.25)';
+  ctx.fillRect(x + 26, y + 5, W - 52, 3);
+
+  // 中央天井(开敞)+ 青铜捣药钵
+  const px = c.x, py = c.y + 14;
+  ctx.fillStyle = '#a98d3f';                                       // 铜色钵身
+  ctx.beginPath(); ctx.ellipse(px, py, 16, 11, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#6f5a22'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#c7a94e'; ctx.beginPath(); ctx.ellipse(px, py - 2, 11, 7, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#5f4d1e'; ctx.beginPath(); ctx.ellipse(px, py - 2, 5, 3.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#8a6f2c'; ctx.fillRect(px - 1.5, py - 20, 3, 14); // 捣杵
+
+  // 门口两侧石狮(南门,底边中央两旁)
+  const lion = (lx) => {
+    ctx.fillStyle = '#8f8f8f'; roundRect(ctx, lx - 5, y + H - 12, 10, 12, 2); ctx.fill();
+    ctx.fillStyle = '#7a7a7a'; ctx.beginPath(); ctx.arc(lx, y + H - 12, 4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#666'; ctx.fillRect(lx - 4, y + H - 4, 8, 4);
+  };
+  lion(px - 22); lion(px + 22);
+  // 门洞
+  ctx.fillStyle = '#3a2418'; ctx.fillRect(px - 12, y + H - 8, 24, 8);
+
+  // 名牌
+  nameTag(ctx, c.x, y - 14, `${p.emoji||'🏥'} ${p.name}`);
+}
+
 function drawFurniture(ctx, key, x, y, col) {
   const dk = tint(col, 0.42);
   const rect = (rx, ry, w, h, fill, r=3) => { ctx.fillStyle = fill; roundRect(ctx, x+rx, y+ry, w, h, r); ctx.fill(); };
@@ -4010,7 +4520,7 @@ function mapClick(ev) {
   let hit = null, best = 26;
   agents.forEach(a => {
     const p = mapPos[a.id]; if (!p) return;
-    const d = Math.hypot(p.x - w.x, p.y - w.y - 12); // -12 对齐头部
+    const d = Math.hypot(p.x - w.x, p.y - w.y - 21); // -21 对齐徽章圆心(浮在落点上方)
     if (d < best) { best = d; hit = a; }
   });
   if (hit) openChat(hit.id);
@@ -4144,54 +4654,54 @@ function loopStage() {
   stage.raf = requestAnimationFrame(loopStage);
 }
 
+// 居民标记:一体化「地图别针」——彩色水滴徽章托住头像 emoji,右上角融入心情小徽标,下方名字胶囊。
 function drawActor(ctx, a, x, y, speaking) {
-  const headR = 11;
   const col = a.color || '#2dd4bf';
-  const dark = shade(col, 0.72), light = shade(col, 1.14);
-  // 影子
-  ctx.fillStyle = 'rgba(0,0,0,.26)';
-  ctx.beginPath(); ctx.ellipse(x, y + 22, 13, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+  const dark = shade(col, 0.7), light = shade(col, 1.18);
+  const R = 15;                 // 徽章半径
+  const cy = y - R - 6;         // 徽章圆心(浮在落点上方)
+  // 落地影子
+  ctx.fillStyle = 'rgba(0,0,0,.22)';
+  ctx.beginPath(); ctx.ellipse(x, y + 2, 10, 3.5, 0, 0, Math.PI*2); ctx.fill();
+
   if (speaking) { ctx.shadowColor = col; ctx.shadowBlur = 16; }
-  // 腿(两条,着地)
-  ctx.fillStyle = dark;
-  roundRect(ctx, x - 6, y + 12, 4.5, 9, 2); ctx.fill();
-  roundRect(ctx, x + 1.5, y + 12, 4.5, 9, 2); ctx.fill();
-  // 躯干(上宽下窄的小马甲,带肩线),不再是方框
-  ctx.fillStyle = col;
+  // 水滴针身(圆 + 底部尖角),描白边像素质感
   ctx.beginPath();
-  ctx.moveTo(x - 9, y - 1);           // 左肩
-  ctx.quadraticCurveTo(x - 11, y + 3, x - 7.5, y + 14);  // 左侧收腰
-  ctx.lineTo(x + 7.5, y + 14);
-  ctx.quadraticCurveTo(x + 11, y + 3, x + 9, y - 1);     // 右侧
-  ctx.quadraticCurveTo(x, y - 5, x - 9, y - 1);          // 圆肩
-  ctx.closePath(); ctx.fill();
-  // 高光(左半身)
-  ctx.fillStyle = light;
-  ctx.beginPath();
-  ctx.moveTo(x - 9, y - 1);
-  ctx.quadraticCurveTo(x - 11, y + 3, x - 7.5, y + 14);
-  ctx.lineTo(x - 2, y + 14);
-  ctx.lineTo(x - 2, y - 3);
-  ctx.quadraticCurveTo(x - 6, y - 4, x - 9, y - 1);
-  ctx.closePath(); ctx.fill();
-  // 手臂(两侧小圆条)
-  ctx.fillStyle = dark;
-  roundRect(ctx, x - 11.5, y + 1, 4, 10, 2); ctx.fill();
-  roundRect(ctx, x + 7.5, y + 1, 4, 10, 2); ctx.fill();
+  ctx.moveTo(x, y + 3);                                   // 底尖
+  ctx.lineTo(x - R * 0.62, cy + R * 0.66);
+  ctx.arc(x, cy, R, Math.PI * 0.78, Math.PI * 0.22, false);
+  ctx.closePath();
+  ctx.fillStyle = col; ctx.fill();
   ctx.shadowBlur = 0;
-  // 脖子
-  ctx.fillStyle = '#e9d9c4'; ctx.fillRect(x - 2.5, y - 6, 5, 4);
-  // 头(圆底 + emoji 脸)
-  ctx.fillStyle = '#f2e6d4';
-  ctx.beginPath(); ctx.arc(x, y - headR - 3, headR, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 1; ctx.stroke();
-  ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(a.avatar, x, y - headR - 2);
-  // 名字牌
-  ctx.font = '700 11px sans-serif';
-  ctx.fillStyle = speaking ? col : '#d7e0da';
-  ctx.textBaseline = 'top';
-  ctx.fillText(a.name, x, y + 24);
+  // 上缘高光
+  ctx.fillStyle = light;
+  ctx.beginPath(); ctx.arc(x, cy, R, Math.PI * 1.05, Math.PI * 1.75, false); ctx.lineWidth = 3; ctx.strokeStyle = light; ctx.stroke();
+  // 白色内圈托住头像
+  ctx.fillStyle = '#fbf7ef';
+  ctx.beginPath(); ctx.arc(x, cy, R - 4, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = dark; ctx.lineWidth = 1.5; ctx.stroke();
+  // 头像 emoji
+  ctx.font = '17px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(a.avatar, x, cy + 1);
+
+  // 心情小徽标:融在徽章右上角的一体小圆(emoji),不再是分离的思考气泡
+  if (a.moodEmoji || a.mood) {
+    const bx = x + R - 3, by = cy - R + 4, br = 8;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.font = '10px sans-serif'; ctx.fillStyle = '#173a34';
+    ctx.fillText(a.moodEmoji || '🙂', bx, by + 1);
+  }
+
+  // 名字胶囊(半透底,与徽章同色描边),一体设计
+  ctx.font = '700 10.5px sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+  const nm = a.name || '';
+  const nw = ctx.measureText(nm).width + 12;
+  const ny = y + 6;
+  ctx.fillStyle = speaking ? col : 'rgba(23,58,52,.82)';
+  roundRect(ctx, x - nw/2, ny, nw, 15, 7.5); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillText(nm, x, ny + 8);
 }
 
 // 颜色明暗:t<1 变暗,t>1 提亮。用于给小人躯干加高光/阴影。
@@ -4257,7 +4767,46 @@ function openAgentFormRaw(id, draft) {
   document.getElementById('agentBirth').value = a ? (a.birthDate || '') : '';
   document.getElementById('agentMood').value = a ? (a.mood || '') : '平静';
   document.getElementById('agentMoodEmoji').value = a ? (a.moodEmoji || '') : '🙂';
+  renderSkillRows(a && a.skillsJson ? a.skillsJson : null);
   document.getElementById('agentModal').classList.remove('hidden');
+}
+
+// 创作技能目录:key → 展示名 + 缺省风格提示词
+const SKILL_CATALOG = [
+  {key:'novel', label:'✍️ 写小说', ph:'风格提示词,如「武侠向 / 温情写实」'},
+  {key:'image', label:'🎨 画图片', ph:'风格提示词,如「清新治愈水彩 / 赛博朋克」'},
+  {key:'video', label:'🎬 拍短片', ph:'风格提示词,如「生活流纪实 / 悬疑短片」'},
+  {key:'music', label:'🎤 写歌词', ph:'风格提示词,如「温暖民谣 / 电子流行」'},
+];
+// 渲染技能勾选行;skillsJson 为已存的 {key:{lv,style}} 字符串(编辑/预填时预勾选并回填风格)。
+function renderSkillRows(skillsJson) {
+  let owned = {};
+  if (skillsJson) { try { owned = JSON.parse(skillsJson) || {}; } catch (e) {} }
+  const box = document.getElementById('skillRows');
+  box.innerHTML = SKILL_CATALOG.map(s => {
+    const has = owned[s.key];
+    const style = has && has.style ? String(has.style) : '';
+    const lv = has && has.lv ? has.lv : '';
+    return `<div class="skill-row">
+      <label class="skill-tick"><input type="checkbox" class="skill-on" data-k="${s.key}" ${has?'checked':''}>${s.label}${lv?` <span class="mut" style="font-size:11px">Lv.${lv}</span>`:''}</label>
+      <input class="skill-style" data-k="${s.key}" placeholder="${s.ph}" value="${esc(style)}">
+    </div>`;
+  }).join('');
+}
+// 从技能行读出 skillsJson;未勾选不写入,勾选保留原等级(编辑时)否则起手 3 级。
+function readSkillsJson(existingJson) {
+  let prev = {};
+  if (existingJson) { try { prev = JSON.parse(existingJson) || {}; } catch (e) {} }
+  const out = {};
+  document.querySelectorAll('#skillRows .skill-on').forEach(cb => {
+    if (!cb.checked) return;
+    const k = cb.dataset.k;
+    const styleEl = document.querySelector(`#skillRows .skill-style[data-k="${k}"]`);
+    const style = styleEl ? styleEl.value.trim() : '';
+    const lv = prev[k] && prev[k].lv ? prev[k].lv : 3;
+    out[k] = {lv, style};
+  });
+  return Object.keys(out).length ? JSON.stringify(out) : null;
 }
 function closeAgentForm() { document.getElementById('agentModal').classList.add('hidden'); }
 
@@ -4320,10 +4869,12 @@ function applyBuilderDraft() {
     color: builderDraft.color || '#2dd4bf',
     mood: builderDraft.mood || '平静',
     moodEmoji: builderDraft.moodEmoji || '🙂',
-    birthDate: builderDraft.birthDate || ''
+    birthDate: builderDraft.birthDate || '',
+    skillsJson: builderDraft.skillsJson || null
   });
 }
 async function saveAgent() {
+  const cur = editingAgentId ? agents.find(x => x.id === editingAgentId) : null;
   const body = {
     name: document.getElementById('agentName').value.trim(),
     avatar: document.getElementById('agentAvatar').value.trim(),
@@ -4332,7 +4883,8 @@ async function saveAgent() {
     color: document.getElementById('agentColor').value,
     birthDate: document.getElementById('agentBirth').value || null,
     mood: document.getElementById('agentMood').value.trim(),
-    moodEmoji: document.getElementById('agentMoodEmoji').value.trim()
+    moodEmoji: document.getElementById('agentMoodEmoji').value.trim(),
+    skillsJson: readSkillsJson(cur ? cur.skillsJson : null)
   };
   if (!body.name) { toast('请填写名字', 'info'); return; }
   const btn = document.getElementById('agentSaveBtn');
@@ -4724,7 +5276,7 @@ function fmtTime(t) {
 // ---- 群聊:创建 / 会话 / 成员增减 ----
 function openGroupChatForm() {
   if (!agents.length) { toast('先新增居民才能发起群聊', 'info'); return; }
-  gMembers = []; gModel = 'glm-4.5-flash';
+  gMembers = []; gModel = 'glm-4.7-flash';
   document.getElementById('groupTitleInput').value = '';
   renderGroupChips();
   renderModelChips('groupModelChips', gModel, 'pickGModel');

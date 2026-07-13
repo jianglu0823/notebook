@@ -53,6 +53,7 @@ public class ZhipuMediaClient {
             ObjectNode body = objectMapper.createObjectNode();
             body.put("model", props.getZhipu().getImageModel());
             body.put("prompt", prompt);
+            body.put("watermark_enabled", false);
             JsonNode resp = postWithRetry("/images/generations", body);
             if (resp == null) return null;
             JsonNode data = resp.path("data");
@@ -76,6 +77,7 @@ public class ZhipuMediaClient {
             ObjectNode body = objectMapper.createObjectNode();
             body.put("model", props.getZhipu().getVideoModel());
             body.put("prompt", prompt);
+            body.put("watermark_enabled", false);
             JsonNode resp = postWithRetry("/videos/generations", body);
             if (resp == null) return null;
             String id = resp.path("id").asText(null);

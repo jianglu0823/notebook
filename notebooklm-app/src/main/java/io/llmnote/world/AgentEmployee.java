@@ -86,6 +86,14 @@ public class AgentEmployee {
     @Column(length = 32)
     private String occupation;
 
+    /**
+     * 创作技能 JSON:{"novel":{"lv":3,"style":"武侠向"},"image":{"lv":1,"style":"水彩治愈"}}。
+     * key 取 novel/image/video/music,lv 为熟练度 1~10,style 为该技能的风格提示词。
+     * 居民每日自学(升级/习得新技能),达一定几率触发对应作品的创作事件。
+     */
+    @Column(name = "skills_json", columnDefinition = "TEXT")
+    private String skillsJson;
+
     /** 作息模板 JSON:{"wake":7,"work":[9,12,14,18],"leisure":[19,22],"sleep":23}。 */
     @Column(name = "schedule_json", columnDefinition = "TEXT")
     private String scheduleJson;

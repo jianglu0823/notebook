@@ -3,7 +3,6 @@ package io.llmnote.world;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.message.TextBlock;
-import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatResponse;
 import io.llmnote.auth.ForbiddenException;
 import io.llmnote.auth.Principal;
@@ -83,6 +82,10 @@ public class AgentEmployeeService {
                     "你走南闯北见多识广,沉稳、有担当,爱用航海和风浪打比方。临危不乱,重视方向,常说「风浪再大也得有人掌舵,先定方向」。"),
             preset("墨白", "✍️", "驻镇作家", "#6366f1", "1987-09-16", "cafe",
                     "你是沉静内秀的作家,以文字为业,擅长观察小镇的人情冷暖并写进连载小说。说话含蓄、爱用比喻,常把日常琐事咀嚼成故事,信奉「每天写一点,故事就活了」。"),
+            preset("阿导", "🎬", "驻镇短片导演", "#0d9488", "1989-04-11", "studio",
+                    "你是热爱镜头语言的短片导演,总在小镇里寻找可以拍成影像的瞬间。说话画面感强,爱用「分镜」「景别」「留白」谈事,信奉「好故事要拍出来才算数」。"),
+            preset("阿谣", "🎤", "驻镇唱作歌手", "#f43f5e", "1994-08-08", "cafe",
+                    "你是浪漫多情的唱作歌手,把小镇的悲欢都写进歌里。说话像哼歌一样有节奏,爱用意象和押韵表达,信奉「情绪憋着不如唱出来」。"),
     };
 
     private final AgentEmployeeRepository repo;
@@ -97,8 +100,27 @@ public class AgentEmployeeService {
         if (existing.isEmpty() && repo.countByOwnerId(WORLD) == 0) {
             seedPresets();
             existing = repo.findByStatusOrderByIdAsc("active");
+        } else {
+            backfillPresets(existing);
         }
-        return existing;
+        return existing.isEmpty() ? repo.findByStatusOrderByIdAsc("active") : existing;
+    }
+
+    /** 世界已播种但缺少后来新增的预设居民(如短片导演/唱作歌手)时,按名字补齐,幂等。 */
+    private void backfillPresets(List<AgentEmployee> existing) {
+        java.util.Set<String> names = new java.util.HashSet<>();
+        for (AgentEmployee e : repo.findAll()) names.add(e.getName());
+        int i = existing.size();
+        boolean added = false;
+        for (Preset p : PRESETS) {
+            if (names.contains(p.name)) continue;
+            seedOne(p, i++);
+            added = true;
+        }
+        if (added) {
+            existing.clear();
+            existing.addAll(repo.findByStatusOrderByIdAsc("active"));
+        }
     }
 
     /** 小黑屋:被软删除的居民。 */
@@ -129,6 +151,8 @@ public class AgentEmployeeService {
         e.setCoins(500L);
         e.setEnergy(100);
         e.setOccupation(body.getOccupation() != null ? body.getOccupation() : occFor(e.getTitle()));
+        e.setSkillsJson(body.getSkillsJson() != null && !body.getSkillsJson().isBlank()
+                ? body.getSkillsJson() : defaultSkillsFor(e.getOccupation()));
         e.setScheduleJson(body.getScheduleJson() != null ? body.getScheduleJson() : DEFAULT_SCHEDULE);
         int count = (int) repo.count();
         e.setOfficeX(count % GRID_COLS);
@@ -153,6 +177,7 @@ public class AgentEmployeeService {
         if (body.getCreator() != null) e.setCreator(body.getCreator());
         if (body.getMood() != null) e.setMood(body.getMood());
         if (body.getMoodEmoji() != null) e.setMoodEmoji(body.getMoodEmoji());
+        if (body.getSkillsJson() != null) e.setSkillsJson(body.getSkillsJson().isBlank() ? null : body.getSkillsJson());
         if (body.getAutonomousActive() != null) e.setAutonomousActive(body.getAutonomousActive());
         AgentEmployee saved = repo.save(e);
         agentFactory.evict(id); // 人设/资料变了,下次重建 agent
@@ -188,11 +213,10 @@ public class AgentEmployeeService {
                     + (mem.length() == 0 ? "他在镇上的记忆已难以考据。" : "他在镇上留下的一些片段:\n" + mem)
                     + "\n请据此写下他的一生回顾。";
 
-            ChatModelBase model = modelFactory.forModel(modelFactory.normalize(modelFactory.defaultTextModel()));
             List<Msg> messages = List.of(
                     Msg.builder().role(MsgRole.SYSTEM).content(TextBlock.builder().text(system).build()).build(),
                     Msg.builder().role(MsgRole.USER).content(TextBlock.builder().text(user).build()).build());
-            List<ChatResponse> responses = modelFactory.streamText(model, messages);
+            List<ChatResponse> responses = modelFactory.streamTextWithFallback(modelFactory.reasoningModel(), messages);
             StringBuilder sb = new StringBuilder();
             if (responses != null) {
                 for (ChatResponse r : responses) {
@@ -202,7 +226,7 @@ public class AgentEmployeeService {
                     });
                 }
             }
-            String out = sb.toString().trim();
+            String out = ChatModelFactory.stripThink(sb.toString().trim());
             return out.isBlank() ? fallbackSummary(e) : out;
         } catch (Exception ex) {
             log.warn("build life summary failed agentId={}", e.getId(), ex);
@@ -297,35 +321,38 @@ public class AgentEmployeeService {
     /** 首次进入时内置小镇居民。按身份分配常驻地点,pos 落在地点门前。 */
     private void seedPresets() {
         int i = 0;
-        for (Preset p : PRESETS) {
-            AgentEmployee e = new AgentEmployee();
-            e.setOwnerId(WORLD);
-            e.setName(p.name);
-            e.setAvatar(p.avatar);
-            e.setTitle(p.title);
-            e.setPersona(p.persona);
-            e.setColor(p.color);
-            e.setBirthDate(p.birthDate);
-            e.setCreator("系统");
-            e.setMood("平静");
-            e.setMoodEmoji("🙂");
-            e.setStatus("active");
-            e.setAutonomousActive(true);
-            e.setCoins(500L);
-            e.setEnergy(100);
-            e.setOccupation(p.occupation);
-            e.setScheduleJson(DEFAULT_SCHEDULE);
-            e.setOfficeX(i % GRID_COLS);
-            e.setOfficeY(i / GRID_COLS);
-            TownMap.Place home = TownMap.byKey(p.home);
-            double[] pos = TownMap.jitter(home);
-            e.setLocation(home.key());
-            e.setHomePlace(home.key());
-            e.setPosX(pos[0]);
-            e.setPosY(pos[1]);
-            repo.save(e);
-            i++;
-        }
+        for (Preset p : PRESETS) seedOne(p, i++);
+    }
+
+    /** 播种单个预设居民(供首次播种与后续补齐复用)。 */
+    private void seedOne(Preset p, int i) {
+        AgentEmployee e = new AgentEmployee();
+        e.setOwnerId(WORLD);
+        e.setName(p.name);
+        e.setAvatar(p.avatar);
+        e.setTitle(p.title);
+        e.setPersona(p.persona);
+        e.setColor(p.color);
+        e.setBirthDate(p.birthDate);
+        e.setCreator("系统");
+        e.setMood("平静");
+        e.setMoodEmoji("🙂");
+        e.setStatus("active");
+        e.setAutonomousActive(true);
+        e.setCoins(500L);
+        e.setEnergy(100);
+        e.setOccupation(p.occupation);
+        e.setSkillsJson(defaultSkillsFor(p.occupation));
+        e.setScheduleJson(DEFAULT_SCHEDULE);
+        e.setOfficeX(i % GRID_COLS);
+        e.setOfficeY(i / GRID_COLS);
+        TownMap.Place home = TownMap.byKey(p.home);
+        double[] pos = TownMap.jitter(home);
+        e.setLocation(home.key());
+        e.setHomePlace(home.key());
+        e.setPosX(pos[0]);
+        e.setPosY(pos[1]);
+        repo.save(e);
     }
 
     private static Preset preset(String name, String avatar, String title, String color,
@@ -341,6 +368,23 @@ public class AgentEmployeeService {
         if (title.contains("画")) return "painter";
         if (title.contains("导演") || title.contains("影像") || title.contains("视频") || title.contains("短片")) return "director";
         return null;
+    }
+
+    /**
+     * 按职业给一门起手创作技能(3 级)+ 缺省风格提示词;无创作职业则返回 null(由结算引擎按 id 兜底分配)。
+     * 技能 key:novel/image/video/music,对应产小说/画作/短片/歌词。
+     */
+    private static String defaultSkillsFor(String occupation) {
+        String skill; String style;
+        if (occupation == null) return null;
+        switch (occupation) {
+            case "writer" -> { skill = "novel"; style = "温情写实的小镇故事"; }
+            case "painter" -> { skill = "image"; style = "清新治愈的水彩风"; }
+            case "director" -> { skill = "video"; style = "生活流纪实短片"; }
+            case "singer" -> { skill = "music"; style = "温暖治愈的民谣"; }
+            default -> { return null; }
+        }
+        return "{\"" + skill + "\":{\"lv\":3,\"style\":\"" + style + "\"}}";
     }
 
     private String safe(String v, String dflt) {

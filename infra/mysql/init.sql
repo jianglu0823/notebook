@@ -191,6 +191,7 @@ CREATE TABLE IF NOT EXISTS agent_employee (
     life_summary   TEXT          NULL COMMENT '进小黑屋(软删除)时生成的第三人称一生回顾',
     coins          BIGINT        NOT NULL DEFAULT 0 COMMENT '货币余额',
     occupation     VARCHAR(32)   NULL COMMENT '职业类型 key(writer/singer/painter...)驱动每日产物',
+    skills_json    TEXT          NULL COMMENT '创作技能 JSON {novel/image/video/music:{lv,style}} 每日自学+触发创作',
     schedule_json  TEXT          NULL COMMENT '作息模板 JSON(起床/工作/休闲/睡觉时段)',
     home_place     VARCHAR(32)   NULL COMMENT '家所在建筑 key',
     home_decor_json TEXT         NULL COMMENT '家园装饰 JSON(已购装饰 id + 等级)',
@@ -411,6 +412,18 @@ CREATE TABLE IF NOT EXISTS sandbox_event (
     meta_json       TEXT          NULL,
     created_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_sbxev_run (run_id, seq)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:自由评价(对作品 product 或居民 agent 的评论)
+CREATE TABLE IF NOT EXISTS agent_comment (
+    id           BIGINT PRIMARY KEY AUTO_INCREMENT,
+    target_type  VARCHAR(16)  NOT NULL COMMENT '评论对象:product/agent',
+    target_id    BIGINT       NOT NULL COMMENT '对象 id',
+    author_id    VARCHAR(64)  NULL COMMENT '发表者 ownerId(u:<id>/g:<uuid>)',
+    author_name  VARCHAR(64)  NULL COMMENT '发表者展示名快照',
+    content      TEXT         NOT NULL COMMENT '评论正文',
+    created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_comment_target (target_type, target_id, id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 访问/操作日志(登录、注册及各类写操作;记录 IP、设备、动作)

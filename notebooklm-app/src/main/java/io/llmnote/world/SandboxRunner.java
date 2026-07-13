@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.message.TextBlock;
-import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.ChatUsage;
 import io.llmnote.llm.ChatModelFactory;
@@ -106,18 +105,20 @@ public class SandboxRunner {
                     event(runId, seq, yDate, "marriage", a.id, b.id,
                             a.name + " 与 " + b.name + " 喜结连理 💍");
                 }
-                // 生子:已婚且育龄,低概率
-                for (SimAgent a : pop) {
+                // 生子:已婚且育龄,低概率(遍历快照,新生儿先收集,循环后再入群,避免并发修改)
+                List<SimAgent> newborns = new ArrayList<>();
+                for (SimAgent a : new ArrayList<>(pop)) {
                     if (!a.alive || a.spouseId == 0 || a.age > 45 || a.age < 20) continue;
                     SimAgent sp = byId(pop, a.spouseId);
                     if (sp == null || !sp.alive || a.id > sp.id) continue; // 每对只由较小 id 触发
                     if (rnd(100) >= 30) continue; // 每对每年 30% 添丁
                     SimAgent child = new SimAgent(nextChildId--, childName(a.name), null, 0, 100, 100);
-                    pop.add(child);
+                    newborns.add(child);
                     totalBirths++;
                     event(runId, seq, yDate, "birth", a.id, sp.id,
                             a.name + " 与 " + sp.name + " 迎来了新生命 " + child.name + " 👶");
                 }
+                pop.addAll(newborns);
                 // 死亡:按年龄 + energy
                 for (SimAgent a : pop) {
                     if (!a.alive) continue;
@@ -145,6 +146,8 @@ public class SandboxRunner {
                         "第 " + y + " 年:在册居民 " + aliveCount + " 人,累计作品 " + totalProducts
                                 + " 件,结婚 " + totalMarriages + " 对,新生 " + totalBirths
                                 + " 人,离世 " + totalDeaths + " 人。");
+                // 节流:每年落库后小憩,让前端能「一年年」流式看到事件涌现(规则计算本身是毫秒级)
+                pace(years);
             }
 
             Map<String, Object> stats = new LinkedHashMap<>();
@@ -200,12 +203,18 @@ public class SandboxRunner {
         String user = "推演时长:" + years + " 年。起始居民:" + seeds + "\n"
                 + "统计:" + stats + "\n"
                 + "健在者:" + (survivors.length() == 0 ? "(无人存活到最后)" : survivors) + "\n请据此写世界报告。";
-        String out = call(system, user, tok);
+        String out = call(modelFactory.reasoningModel(), system, user, tok);
         return out == null || out.isBlank()
                 ? ("历经 " + years + " 年,小镇几经春秋:" + stats + "。") : out.trim();
     }
 
     // ---- 工具 ----
+
+    /** 每年节流:总时长约束在 ~8 秒内,年数越多每年停顿越短,保证流式观感又不至于太久。 */
+    private void pace(int years) {
+        long ms = Math.max(120, Math.min(700, 8000L / Math.max(1, years)));
+        try { Thread.sleep(ms); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+    }
 
     private void event(Long runId, int[] seq, LocalDate date, String type,
                        Long agentId, Long targetId, String content) {
@@ -220,13 +229,12 @@ public class SandboxRunner {
         eventRepo.save(ev);
     }
 
-    private String call(String system, String user, long[] tok) {
+    private String call(String modelName, String system, String user, long[] tok) {
         try {
-            ChatModelBase model = modelFactory.forModel(modelFactory.normalize(modelFactory.defaultTextModel()));
             List<Msg> messages = List.of(
                     Msg.builder().role(MsgRole.SYSTEM).content(TextBlock.builder().text(system).build()).build(),
                     Msg.builder().role(MsgRole.USER).content(TextBlock.builder().text(user).build()).build());
-            List<ChatResponse> responses = modelFactory.streamText(model, messages);
+            List<ChatResponse> responses = modelFactory.streamTextWithFallback(modelName, messages);
             StringBuilder sb = new StringBuilder();
             if (responses != null) {
                 for (ChatResponse r : responses) {
@@ -238,7 +246,7 @@ public class SandboxRunner {
                     });
                 }
             }
-            return sb.toString().trim();
+            return ChatModelFactory.stripThink(sb.toString().trim());
         } catch (Exception ex) {
             log.warn("SandboxRunner LLM call failed", ex);
             return null;

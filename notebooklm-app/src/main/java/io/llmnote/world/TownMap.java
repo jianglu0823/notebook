@@ -12,30 +12,37 @@ import java.util.List;
  */
 public final class TownMap {
 
-    /** 世界坐标系尺寸(前端按容器宽等比缩放到画布)。 */
-    public static final double WORLD_W = 960;
-    public static final double WORLD_H = 760;
+    /** 世界坐标系尺寸(前端按容器宽等比缩放到画布)。横向长方形,与页签同宽。 */
+    public static final double WORLD_W = 1360;
+    public static final double WORLD_H = 700;
 
     /** 一处具名地点:key(存库)+ 中文名 + 门牌 emoji + 世界坐标。 */
     public record Place(String key, String name, String emoji, double x, double y) {}
 
-    /** 手工排布的镇图:四行大致铺开,中心广场居中,四周环绕各类场所 + 婚礼堂/墓园/集市/住宅。 */
+    /**
+     * 横向井字网格镇图:五列(x=180/430/680/930/1180)× 三排(y=155/370/590),
+     * 纵向街 x=305/555/805/1055,横向街 y=262/478,全部横平竖直,中心为「古井广场」。
+     * 顶部窄带(y&lt;80)为群山 / 药王庙 / 采药人茅草屋,前端绘制,不作可交互地点。
+     */
     private static final List<Place> PLACES = List.of(
-            new Place("townhall",   "镇公所",   "🏛", 480, 110),
-            new Place("cafe",       "咖啡馆",   "☕", 180, 150),
-            new Place("school",     "学校",     "🏫", 780, 150),
-            new Place("clinic",     "卫生所",   "🏥", 150, 330),
-            new Place("plaza",      "中心广场", "⛲", 480, 330),
-            new Place("studio",     "画室",     "🎨", 810, 330),
-            new Place("grocery",    "杂货铺",   "🛒", 180, 520),
-            new Place("restaurant", "餐馆",     "🍜", 480, 520),
-            new Place("park",       "公园",     "🌳", 760, 500),
-            new Place("repair",     "修理铺",   "🔧", 810, 545),
-            new Place("chapel",     "婚礼堂",   "💒", 320, 660),
-            new Place("cemetery",   "墓园",     "🪦", 110, 660),
-            new Place("market",     "集市",     "🎪", 560, 660),
-            new Place("home1",      "枫叶小屋", "🏠", 720, 660),
-            new Place("home2",      "溪畔小院", "🏡", 880, 660)
+            // 第一排(北)
+            new Place("cafe",       "咖啡馆",   "☕", 180, 155),
+            new Place("school",     "学堂",     "🏫", 430, 155),
+            new Place("townhall",   "镇公所",   "🏛", 680, 155),
+            new Place("studio",     "画室",     "🎨", 930, 155),
+            new Place("home2",      "溪畔小院", "🏡", 1180, 155),
+            // 第二排(中,含中心广场)
+            new Place("clinic",     "回春医馆", "🏥", 180, 370),
+            new Place("grocery",    "杂货铺",   "🛒", 430, 370),
+            new Place("plaza",      "古井广场", "⛲", 680, 370),
+            new Place("repair",     "匠作坊",   "🔧", 930, 370),
+            new Place("park",       "公园",     "🌳", 1180, 370),
+            // 第三排(南)
+            new Place("cemetery",   "墓园",     "🪦", 180, 590),
+            new Place("chapel",     "婚礼堂",   "💒", 430, 590),
+            new Place("restaurant", "食肆",     "🍜", 680, 590),
+            new Place("market",     "集市",     "🎪", 930, 590),
+            new Place("home1",      "枫叶小屋", "🏠", 1180, 590)
     );
 
     private TownMap() {}

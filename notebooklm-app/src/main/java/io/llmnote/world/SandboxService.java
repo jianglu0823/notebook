@@ -49,17 +49,14 @@ public class SandboxService {
         return new Estimate(y, seeds, llmCalls, tin, tout, cost);
     }
 
-    /** 是否已用过一次(非管理员)。 */
+    /** 沙盒统一用默认免费模型,所有人无限体验,故永不判定「已用过」。 */
     public boolean alreadyUsed(Principal principal) {
-        if (principal == null) return true;
-        if (isAdmin(principal)) return false;
-        return runRepo.countByOwnerId(principal.ownerId()) > 0;
+        return false;
     }
 
-    /** 发起一次沙盒运行:一次性 gate → 落库 → 异步跑。返回创建的 run(PENDING/RUNNING)。 */
+    /** 发起一次沙盒运行:默认免费模型,所有人无限次 → 落库 → 异步跑。返回创建的 run(PENDING/RUNNING)。 */
     public SandboxRun start(Principal principal, String title, int years, List<Long> memberIds) {
         if (principal == null) throw new IllegalArgumentException("未鉴权");
-        if (alreadyUsed(principal)) throw new IllegalArgumentException("每人限体验一次沙盒快进");
         if (memberIds == null || memberIds.isEmpty()) throw new IllegalArgumentException("请至少选择一名居民");
         int y = clampYears(years);
 
@@ -103,5 +100,20 @@ public class SandboxService {
 
     private String toJson(Object o) {
         try { return objectMapper.writeValueAsString(o); } catch (Exception ex) { return "[]"; }
+    }
+
+    /**
+     * 启动时回收孤儿任务:上次进程若在推演途中被重启/崩溃,状态会永远卡在 PENDING/RUNNING
+     * (异步线程随进程消亡,来不及写终态),前端便会无限轮询「推演中…」。此处一次性置为 FAILED。
+     */
+    @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    public void reconcileStaleRuns() {
+        List<SandboxRun> stale = runRepo.findByStatusIn(List.of("PENDING", "RUNNING"));
+        for (SandboxRun r : stale) {
+            r.setStatus("FAILED");
+            r.setErrorMsg("服务重启中断,推演已终止,请重新发起");
+            runRepo.save(r);
+        }
+        if (!stale.isEmpty()) log.info("启动回收沙盒孤儿任务 {} 个 → FAILED", stale.size());
     }
 }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.message.TextBlock;
-import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatResponse;
 import io.llmnote.llm.ChatModelFactory;
 import lombok.Data;
@@ -37,7 +36,8 @@ public class AgentBuilderController {
     private static final String SYSTEM = """
             你是「鹿匠小镇」的居民设计助手,帮用户用聊天的方式捏出一位新居民(智能体)。
             通过自然、简短的对话引导用户,逐步问清这些要素:名字、身份/职业、性格人设(最重要)、
-            可选的头像 emoji、主题色、口头禅/心情。一次只问 1~2 个还缺的点,像朋友聊天,别一次抛一堆问题。
+            可选的头像 emoji、主题色、口头禅/心情,以及这位居民擅长的创作技能(可选)。
+            一次只问 1~2 个还缺的点,像朋友聊天,别一次抛一堆问题。
             当关键信息(至少 名字 + 身份 + 性格)已具备时,把 ready 置为 true 并给出 draft 草案。
             无论是否 ready,都必须只输出一个 JSON 对象(不要 markdown 围栏、不要多余文字),格式:
             {
@@ -51,10 +51,17 @@ public class AgentBuilderController {
                 "color": "#十六进制主题色",
                 "mood": "2~4字心情",
                 "moodEmoji": "一个 emoji",
-                "birthDate": "YYYY-MM-DD 或 null"
+                "birthDate": "YYYY-MM-DD 或 null",
+                "skills": {
+                  "novel": { "style": "写小说的风格提示词,如「武侠向」" },
+                  "image": { "style": "画图片的风格提示词,如「清新治愈水彩」" },
+                  "video": { "style": "拍短片的风格提示词,如「生活流纪实」" },
+                  "music": { "style": "写歌词的风格提示词,如「温暖民谣」" }
+                }
               }
             }
-            ready=false 时 draft 可给已知的部分字段(未知留空字符串或省略)。语言:简体中文。
+            skills 只写这位居民真正擅长/用户想要的技能(key 取 novel/image/video/music,可 0~4 项),
+            不擅长的技能不要写进去;每项给一句贴合人设的风格提示词。ready=false 时 draft 可给已知的部分字段(未知留空字符串或省略)。语言:简体中文。
             """;
 
     @PostMapping("/chat")
@@ -82,8 +89,7 @@ public class AgentBuilderController {
 
         String raw;
         try {
-            ChatModelBase model = modelFactory.forModel(modelFactory.normalize(modelFactory.defaultTextModel()));
-            List<ChatResponse> responses = modelFactory.streamText(model, messages);
+            List<ChatResponse> responses = modelFactory.streamTextWithFallback(modelFactory.builderModel(), messages);
             StringBuilder sb = new StringBuilder();
             if (responses != null) {
                 for (ChatResponse r : responses) {
@@ -122,6 +128,7 @@ public class AgentBuilderController {
             draft.setMoodEmoji(text(d, "moodEmoji", null));
             String birth = text(d, "birthDate", null);
             draft.setBirthDate(birth == null || "null".equalsIgnoreCase(birth) ? null : birth);
+            draft.setSkillsJson(toSkillsJson(d.path("skills")));
             resp.setDraft(draft);
         }
         return resp;
@@ -141,6 +148,22 @@ public class AgentBuilderController {
     private String text(JsonNode j, String field, String dflt) {
         JsonNode n = j.path(field);
         return n.isMissingNode() || n.isNull() || n.asText().isBlank() ? dflt : n.asText().trim();
+    }
+
+    /** 把模型给的 skills 对象规整为 {key:{lv:3,style}} 的 JSON 字符串;无有效技能返回 null。 */
+    private String toSkillsJson(JsonNode skills) {
+        if (skills == null || !skills.isObject()) return null;
+        var out = objectMapper.createObjectNode();
+        for (String k : new String[]{"novel", "image", "video", "music"}) {
+            JsonNode s = skills.path(k);
+            if (s.isMissingNode() || s.isNull()) continue;
+            String style = s.isObject() ? text(s, "style", "") : s.asText("").trim();
+            var node = objectMapper.createObjectNode();
+            node.put("lv", 3);
+            node.put("style", style == null ? "" : style);
+            out.set(k, node);
+        }
+        return out.size() == 0 ? null : out.toString();
     }
 
     @Data
@@ -172,5 +195,6 @@ public class AgentBuilderController {
         private String mood;
         private String moodEmoji;
         private String birthDate;
+        private String skillsJson;
     }
 }

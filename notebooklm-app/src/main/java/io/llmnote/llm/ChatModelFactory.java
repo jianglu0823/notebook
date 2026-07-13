@@ -49,6 +49,18 @@ public class ChatModelFactory {
         return props.getWorld().getTextModel();
     }
 
+    /** 推理模型(用于一生回顾悼词、沙盒世界报告等需要归纳/反思的生成)。 */
+    public String reasoningModel() {
+        String m = props.getZhipu().getReasoningModel();
+        return (m == null || m.isBlank()) ? defaultTextModel() : m;
+    }
+
+    /** 对话捏人模型(千问 flash,便宜快)。 */
+    public String builderModel() {
+        String m = props.getWorld().getBuilderModel();
+        return (m == null || m.isBlank()) ? defaultTextModel() : m;
+    }
+
     /** 校验并规范化模型名:不在允许列表则回退默认(GLM Flash)。 */
     public String normalize(String name) {
         if (name == null || name.isBlank()) return defaultTextModel();
@@ -109,6 +121,41 @@ public class ChatModelFactory {
             }
         }
         throw last; // 理论上不可达
+    }
+
+    /**
+     * 带模型降级的文本补全:先用 primary,若整套重试仍失败,按配置的 fallbackModels 依次换免费模型再试。
+     * 全部候选都失败才抛最后一个异常。返回 ChatResponse 列表(与 streamText 一致)。
+     */
+    public List<ChatResponse> streamTextWithFallback(String primaryModel, List<Msg> messages) {
+        List<String> chain = new ArrayList<>();
+        String primary = normalize(primaryModel);
+        chain.add(primary);
+        for (String fb : props.getZhipu().getFallbackModels()) {
+            String n = normalize(fb);
+            if (!chain.contains(n)) chain.add(n);
+        }
+        RuntimeException last = null;
+        for (int i = 0; i < chain.size(); i++) {
+            String m = chain.get(i);
+            try {
+                return streamText(forModel(m), messages);
+            } catch (RuntimeException ex) {
+                last = ex;
+                if (i + 1 < chain.size()) {
+                    log.warn("模型 {} 调用失败,降级到 {}: {}", m, chain.get(i + 1), ex.getMessage());
+                } else {
+                    log.error("模型降级链全部失败({}): {}", chain, ex.getMessage());
+                }
+            }
+        }
+        throw last;
+    }
+
+    /** 去掉推理模型输出里的 <think>...</think> 思考块,只留最终答案。 */
+    public static String stripThink(String text) {
+        if (text == null || text.isEmpty()) return text;
+        return text.replaceAll("(?is)<think>.*?</think>", "").trim();
     }
 
     /** 识别可重试错误:限流(429)、超时、连接瞬断等。 */

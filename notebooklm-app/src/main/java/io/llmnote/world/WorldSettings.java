@@ -22,7 +22,7 @@ public class WorldSettings {
     private Integer intervalSeconds = 600;
 
     @Column(nullable = false, length = 32)
-    private String model = "glm-4.5-flash";
+    private String model = "glm-4.7-flash";
 
     /** 小镇内在日期。 */
     @Column(name = "sim_date")

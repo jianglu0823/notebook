@@ -61,6 +61,7 @@ notebooklm:
     tts-voice-b: longcheng   # 主持人 B 音色
     # 可选文本模型及商用单价(元 / 1000 token),供会议/写作选用与 token→元 换算;以百炼控制台实际为准
     pricing:
+      - { name: qwen-flash, label: "Qwen Flash · 极速便宜", input-per1k: 0.00015, output-per1k: 0.0006 }
       - { name: qwen-turbo, label: "Qwen Turbo · 便宜快", input-per1k: 0.0003, output-per1k: 0.0006 }
       - { name: qwen-plus,  label: "Qwen Plus · 均衡",   input-per1k: 0.0008, output-per1k: 0.002 }
       - { name: qwen-max,   label: "Qwen Max · 最强",    input-per1k: 0.0024, output-per1k: 0.0096 }
@@ -68,14 +69,21 @@ notebooklm:
   zhipu:
     api-key: ${ZHIPU_API_KEY:}
     base-url: ${ZHIPU_BASE_URL:https://open.bigmodel.cn/api/paas/v4}
-    text-model: glm-4.5-flash
+    text-model: glm-4.7-flash
     vl-model: glm-4.6v-flash
     image-model: cogview-3-flash
     video-model: cogvideox-flash
+    reasoning-model: glm-z1-flash    # 推理模型:一生回顾悼词 / 沙盒世界报告
+    # 主模型(glm-4.7-flash)调用失败时按序降级的备用免费模型
+    fallback-models:
+      - glm-4-flash-250414
+      - glm-4.5-flash
     # 智谱免费模型,单价 0;仅用于前端可选项展示与 normalize 放行
     pricing:
-      - { name: glm-4.5-flash,           label: "GLM-4.5 Flash · 免费",    input-per1k: 0, output-per1k: 0 }
-      - { name: glm-4.7-flash,           label: "GLM-4.7 Flash · 免费",    input-per1k: 0, output-per1k: 0 }
+      - { name: glm-4.7-flash,           label: "智谱免费模型 · GLM-4.7 Flash", input-per1k: 0, output-per1k: 0 }
+      - { name: glm-4.5-flash,           label: "GLM-4.5 Flash · 免费备用",   input-per1k: 0, output-per1k: 0 }
+      - { name: glm-4-flash-250414,      label: "GLM-4 Flash · 免费备用",     input-per1k: 0, output-per1k: 0 }
+      - { name: glm-z1-flash,            label: "GLM-Z1 Flash · 推理免费",    input-per1k: 0, output-per1k: 0 }
       - { name: glm-4.6v-flash,          label: "GLM-4.6V · 多模态免费",   input-per1k: 0, output-per1k: 0 }
       - { name: glm-4.1v-thinking-flash, label: "GLM-4.1V Thinking · 免费", input-per1k: 0, output-per1k: 0 }
   milvus:
@@ -89,7 +97,8 @@ notebooklm:
     image-dir: ${IMAGE_DIR:./images}
   world:
     workspace-root: ${WORLD_WORKSPACE_ROOT:./data/agents}   # HarnessAgent 每位居民的独立工作区(长期记忆落盘)
-    autonomous-model: ${WORLD_AUTONOMOUS_MODEL:qwen-turbo}   # 自主行动/1:1对话默认最便宜模型
+    text-model: ${WORLD_TEXT_MODEL:glm-4.7-flash}           # 小镇统一默认文本模型(智谱免费)
+    autonomous-model: ${WORLD_AUTONOMOUS_MODEL:glm-4.7-flash}   # 自主行动/1:1对话默认模型(智谱免费)
   auth:
     jwt-secret: ${JWT_SECRET:change-me-in-prod-at-least-32-bytes-long-secret}
     jwt-expiry-seconds: ${JWT_EXPIRY_SECONDS:604800}   # 7 天

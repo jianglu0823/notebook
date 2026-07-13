@@ -21,7 +21,7 @@ public class WorldSettingsService {
     public WorldSettings update(Boolean autonomousEnabled, Integer intervalSeconds, String model, boolean isAdmin) {
         WorldSettings s = get();
         if (autonomousEnabled != null) s.setAutonomousEnabled(autonomousEnabled);
-        if (intervalSeconds != null) s.setIntervalSeconds(Math.max(30, Math.min(3600, intervalSeconds)));
+        if (intervalSeconds != null) s.setIntervalSeconds(Math.max(1, Math.min(3600, intervalSeconds)));
         if (model != null && !model.isBlank()) {
             if (!isAdmin) throw new IllegalArgumentException("仅管理员可切换模型");
             s.setModel(model.trim());
