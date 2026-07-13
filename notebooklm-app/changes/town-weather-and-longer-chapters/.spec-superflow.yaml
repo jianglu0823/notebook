@@ -14,7 +14,7 @@ contract_hash: sha256:74d055828c5e0d52651958d7e62e122e4cfc08784db50ac105c76b5381
 execution_mode: inline
 execution_plan_hash: sha256:76cb7852bfad75cf26da97b55507ecac01e17559e1f4553c4b01926794aff393
 execution_plan_revision: 1
-batches_completed: 0
+batches_completed: 5
 test_result: null
 spec_merged: false
 
