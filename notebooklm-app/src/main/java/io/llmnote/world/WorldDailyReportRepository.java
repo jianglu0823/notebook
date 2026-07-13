@@ -10,6 +10,9 @@ public interface WorldDailyReportRepository extends JpaRepository<WorldDailyRepo
 
     Optional<WorldDailyReport> findBySimDate(LocalDate simDate);
 
+    /** 取给定日期之前最近的一条日报(用于天气逐日演变的上一日状态)。 */
+    Optional<WorldDailyReport> findFirstBySimDateLessThanOrderBySimDateDesc(LocalDate simDate);
+
     List<WorldDailyReport> findTop30ByOrderBySimDateDesc();
 
     boolean existsBySimDate(LocalDate simDate);

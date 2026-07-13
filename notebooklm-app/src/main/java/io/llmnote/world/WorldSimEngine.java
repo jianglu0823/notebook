@@ -6,6 +6,7 @@ import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.message.TextBlock;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.ChatUsage;
+import io.agentscope.core.model.GenerateOptions;
 
 import io.llmnote.llm.ChatModelFactory;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -40,6 +42,33 @@ public class WorldSimEngine {
             "秋", new String[]{"晴", "秋高气爽", "阴", "小雨", "落叶"},
             "冬", new String[]{"晴", "小雪", "寒风", "阴", "大雪"});
 
+    /** 季节温度基准(℃):随机游走向其回归。 */
+    private static final Map<String, Integer> SEASON_TEMP_BASE = Map.of("冬", 0, "春", 15, "夏", 30, "秋", 17);
+    /** 季节温度区间下限(℃)。 */
+    private static final Map<String, Integer> SEASON_TEMP_MIN = Map.of("冬", -10, "春", 5, "夏", 22, "秋", 8);
+    /** 季节温度区间上限(℃)。 */
+    private static final Map<String, Integer> SEASON_TEMP_MAX = Map.of("冬", 10, "春", 25, "夏", 38, "秋", 26);
+
+    /** 天气档位:好=晴朗宜人,极端=灾害性;其余按 BAD/中处理。用于马尔可夫式状况选取与天气效应。 */
+    private static final Set<String> WEATHER_GOOD = Set.of("晴", "秋高气爽", "微风");
+    private static final Set<String> WEATHER_EXTREME = Set.of("台风", "大雪", "雷阵雨");
+    private static final Set<String> WEATHER_BAD = Set.of("小雨", "寒风", "花粉飞舞", "烈日", "闷热");
+
+    /** 轻量天气状态值对象:状况 + 温度(℃)。 */
+    record WeatherState(String condition, int temp) {}
+
+    /** 天气对当日结算的效应(加性概率增量,正=更易触发;extreme=灾害天气)。 */
+    record WeatherEffect(int outdoorDelta, int indoorDelta, int weddingDelta, boolean extreme) {}
+
+    /** 天气档位分类:0=好 1=中 2=差 3=极端。 */
+    private static int weatherTier(String condition) {
+        if (condition == null) return 1;
+        if (WEATHER_EXTREME.contains(condition)) return 3;
+        if (WEATHER_GOOD.contains(condition)) return 0;
+        if (WEATHER_BAD.contains(condition)) return 2;
+        return 1;
+    }
+
     private final AgentEmployeeRepository employeeRepo;
     private final AgentProductRepository productRepo;
     private final AgentTransactionRepository txRepo;
@@ -59,6 +88,65 @@ public class WorldSimEngine {
     }
 
     /**
+     * 逐日演变天气:温度在昨日基础上小幅漂移(≤±5)并向季节基准回归,钳制到季节区间;
+     * 状况按昨日档位做马尔可夫式加权抽取。prev==null 为冷启动(温度=季节基准,状况随机)。
+     */
+    WeatherState nextWeather(String season, WeatherState prev) {
+        int base = SEASON_TEMP_BASE.getOrDefault(season, 15);
+        int min = SEASON_TEMP_MIN.getOrDefault(season, -20);
+        int max = SEASON_TEMP_MAX.getOrDefault(season, 45);
+        String[] pool = SEASON_WEATHER.getOrDefault(season, new String[]{"晴"});
+
+        int temp;
+        String condition;
+        if (prev == null) {
+            temp = base;
+            condition = pool[rnd(pool.length)];
+        } else {
+            int drift = rnd(11) - 5;                 // [-5,5]
+            int regression = (base - prev.temp()) / 4; // 向季节基准回归
+            temp = clamp(prev.temp() + drift + regression, min, max);
+            condition = pickCondition(pool, weatherTier(prev.condition()));
+        }
+        return new WeatherState(condition, temp);
+    }
+
+    /**
+     * 按昨日档位对季节状况集合加权抽取:倾向停留在相近档位(晴后倾向晴/多云,雨后倾向阴/雨)。
+     * 权重 = 与昨日档位距离越近越高。
+     */
+    private String pickCondition(String[] pool, int prevTier) {
+        List<String> weighted = new ArrayList<>();
+        for (String c : pool) {
+            int dist = Math.abs(weatherTier(c) - prevTier);
+            int w = switch (dist) { case 0 -> 4; case 1 -> 2; default -> 1; };
+            for (int i = 0; i < w; i++) weighted.add(c);
+        }
+        return weighted.isEmpty() ? pool[0] : weighted.get(rnd(weighted.size()));
+    }
+
+    /** 天气效应:极端压户外/升室内/降婚礼;好升户外;差略压户外升室内;中性为 0。delta 有界。 */
+    WeatherEffect weatherEffect(WeatherState w) {
+        int tier = w == null ? 1 : weatherTier(w.condition());
+        return switch (tier) {
+            case 3 -> new WeatherEffect(-15, 8, 20, true);   // 极端:婚礼阈值 +20(成婚率降)
+            case 0 -> new WeatherEffect(8, 0, 0, false);     // 好
+            case 2 -> new WeatherEffect(-8, 4, 0, false);    // 差
+            default -> new WeatherEffect(0, 0, 0, false);    // 中
+        };
+    }
+
+    /** 取给定日期的上一日天气状态(状况+温度),供逐日演变;无历史或旧数据无温度则返回 null。 */
+    private WeatherState loadPrevWeather(LocalDate date) {
+        WorldDailyReport prev = reportRepo.findFirstBySimDateLessThanOrderBySimDateDesc(date).orElse(null);
+        if (prev == null || prev.getWeather() == null || prev.getTemperature() == null) return null;
+        return new WeatherState(prev.getWeather(), prev.getTemperature());
+    }
+
+    /** 概率钳制到 [lo,hi]。 */
+    private static int clampProb(int v, int lo, int hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    /**
      * 结算某个内在日期。已有当日日报则跳过(幂等)。返回生成的日报(或 null)。
      */
     public WorldDailyReport dailySettlement(LocalDate date) {
@@ -66,8 +154,10 @@ public class WorldSimEngine {
 
         long[] tok = {0L, 0L};
         String season = seasonOf(date);
-        String[] pool = SEASON_WEATHER.getOrDefault(season, new String[]{"晴"});
-        String weather = pool[ThreadLocalRandom.current().nextInt(pool.length)];
+        WeatherState ws = nextWeather(season, loadPrevWeather(date));
+        String weather = ws.condition();
+        Integer temperature = ws.temp();
+        WeatherEffect eff = weatherEffect(ws);
 
         List<AgentEmployee> active = employeeRepo.findByStatusOrderByIdAsc("active");
 
@@ -83,7 +173,7 @@ public class WorldSimEngine {
             learns += learnDaily(e, skills);
 
             // 技能驱动的创作事件:当日至多产出一件作品(按技能等级加权抽取)
-            AgentProduct p = maybeCreate(e, date, skills, tok);
+            AgentProduct p = maybeCreate(e, date, skills, tok, eff);
             if (p != null) {
                 switch (p.getKind()) {
                     case "chapter" -> { chapters++; addHighlight(highlights, e, "连载小说", p.getTitle()); }
@@ -105,10 +195,10 @@ public class WorldSimEngine {
 
         // ---- Phase C:关系推进(婚礼)/ 生子 / 死亡 / 随机突发事件 ----
         List<Map<String, Object>> news = new ArrayList<>();
-        int marriages = weddings(active, date, news, highlights);
+        int marriages = weddings(active, date, news, highlights, eff);
         int births = childbirths(active, date, news, highlights);
         int deaths = deaths(active, date, news, highlights);
-        randomEvents(active, date, news);
+        randomEvents(active, date, news, ws, eff);
         stats.put("marriages", marriages);
         stats.put("births", births);
         stats.put("deaths", deaths);
@@ -117,12 +207,13 @@ public class WorldSimEngine {
         int comments = villagerComments(active, date, tok);
         stats.put("comments", comments);
 
-        String narrative = writeNarrative(date, season, weather, highlights, stats, news, tok);
+        String narrative = writeNarrative(date, season, weather, temperature, highlights, stats, news, tok);
 
         WorldDailyReport r = new WorldDailyReport();
         r.setSimDate(date);
         r.setSeason(season);
         r.setWeather(weather);
+        r.setTemperature(temperature);
         r.setHighlightsJson(toJson(highlights));
         r.setStatsJson(toJson(stats));
         r.setNewsJson(toJson(news));
@@ -131,8 +222,8 @@ public class WorldSimEngine {
         r.setTotalOutputTokens(tok[1]);
         r.setTotalCostRmb(BigDecimal.valueOf(modelFactory.costRmb(modelFactory.defaultTextModel(), tok[0], tok[1])));
         WorldDailyReport saved = reportRepo.save(r);
-        log.info("dailySettlement date={} season={} weather={} chapters={} songs={} artworks={} films={} learns={} marriages={} births={} deaths={} tokens={}/{}",
-                date, season, weather, chapters, songs, artworks, films, learns, marriages, births, deaths, tok[0], tok[1]);
+        log.info("dailySettlement date={} season={} weather={} temp={} chapters={} songs={} artworks={} films={} learns={} marriages={} births={} deaths={} tokens={}/{}",
+                date, season, weather, temperature, chapters, songs, artworks, films, learns, marriages, births, deaths, tok[0], tok[1]);
         return saved;
     }
 
@@ -257,7 +348,8 @@ public class WorldSimEngine {
      * 用该技能的风格提示词生成对应作品。当日至多一件。无作品返回 null。
      */
     private AgentProduct maybeCreate(AgentEmployee e, LocalDate date,
-                                     com.fasterxml.jackson.databind.node.ObjectNode skills, long[] tok) {
+                                     com.fasterxml.jackson.databind.node.ObjectNode skills, long[] tok,
+                                     WeatherEffect eff) {
         List<String> pool = new ArrayList<>();
         skills.fieldNames().forEachRemaining(k -> {
             if (isCreativeSkill(k)) {
@@ -268,7 +360,10 @@ public class WorldSimEngine {
         if (pool.isEmpty()) return null;
         String skill = pool.get(rnd(pool.size()));
         int lv = skills.get(skill).path("lv").asInt(1);
-        if (rnd(100) >= 20 + lv * 5) return null;
+        // 天气效应:室内型(novel/music)用 indoorDelta,户外型(image/video)用 outdoorDelta;delta 正=更易触发
+        int delta = ("novel".equals(skill) || "music".equals(skill)) ? eff.indoorDelta() : eff.outdoorDelta();
+        int thr = clampProb(20 + lv * 5 + delta, 0, 100);
+        if (rnd(100) >= thr) return null;
         String style = skills.get(skill).path("style").asText("");
         return switch (skill) {
             case "novel" -> produce(e, date, "chapter", "novel", style, tok);
@@ -371,7 +466,7 @@ public class WorldSimEngine {
 
     /** dating 关系达到高亲密度(≥130)且双方仍单身 → 结婚。返回今日结婚对数。 */
     private int weddings(List<AgentEmployee> active, LocalDate date,
-                         List<Map<String, Object>> news, List<Map<String, Object>> highlights) {
+                         List<Map<String, Object>> news, List<Map<String, Object>> highlights, WeatherEffect eff) {
         int count = 0;
         java.util.Set<Long> alive = new java.util.HashSet<>();
         Map<Long, AgentEmployee> byId = new LinkedHashMap<>();
@@ -382,7 +477,7 @@ public class WorldSimEngine {
             if (a == null || b == null) continue;
             if (a.getSpouseId() != null || b.getSpouseId() != null) continue;
             if (rel.getIntimacy() < 130) continue;
-            if (rnd(100) >= 35) continue; // 35% 概率今日成婚
+            if (rnd(100) >= clampProb(35 + eff.weddingDelta(), 0, 100)) continue; // 极端天气 weddingDelta 升阈值→成婚率降
             a.setSpouseId(b.getId()); a.setPartnerId(null);
             b.setSpouseId(a.getId()); b.setPartnerId(null);
             employeeRepo.save(a); employeeRepo.save(b);
@@ -451,7 +546,18 @@ public class WorldSimEngine {
     }
 
     /** 随机突发事件:影响 energy/coins/心情,写进 news 与个人记忆。 */
-    private void randomEvents(List<AgentEmployee> active, LocalDate date, List<Map<String, Object>> news) {
+    private void randomEvents(List<AgentEmployee> active, LocalDate date, List<Map<String, Object>> news,
+                              WeatherState ws, WeatherEffect eff) {
+        // 极端天气:有一定概率生成一条天气型突发新闻(与常规突发独立)
+        if (eff.extreme() && rnd(100) < 50) {
+            String desc = switch (ws.condition()) {
+                case "台风" -> "台风过境,集市摊棚受损,居民纷纷加固门窗。";
+                case "大雪" -> "大雪封路,小镇银装素裹,居民闭门围炉取暖。";
+                case "雷阵雨" -> "雷阵雨突至,街巷积水,出行的居民匆忙避雨。";
+                default -> "极端天气来袭,小镇今日格外冷清。";
+            };
+            addNews(news, "weather", desc);
+        }
         if (active.isEmpty() || rnd(100) >= 60) return; // 60% 概率当天有一件突发事
         AgentEmployee e = active.get(rnd(active.size()));
         int roll = rnd(100);
@@ -516,13 +622,15 @@ public class WorldSimEngine {
         long seq = nextSeq(e.getId(), kind);
         String styleHint = (style == null || style.isBlank()) ? "" : "风格倾向:" + style.trim() + "。";
         String system = switch (theme) {
-            case "novel" -> "你是小说家的创作助手。请为一部连载小说写「第 " + seq + " 章」的章节标题与一段 80~140 字的精彩梗概。";
+            case "novel" -> "你是小说家的创作助手。请为一部连载小说写「第 " + seq + " 章」:先给一个章节标题,再写一段 800~1500 字的完整章节正文(要有情节推进、场景描写、人物对白与心理活动),而不是梗概或提纲。";
             case "song" -> "你是作词人。请为一首新歌写歌名与一段 60~100 字的歌词片段(有画面感)。";
             default -> "你是艺术评论助手。请为一幅新画作起标题并写一段 60~100 字的画面描述。";
         } + styleHint + "只输出 JSON:{\"title\":\"标题\",\"content\":\"正文\",\"quality\":1到10的整数}。简体中文,不要 markdown 围栏。";
         String user = "创作者「" + safe(e.getName()) + "」,身份「" + safe(e.getTitle()) + "」,人设:" + safe(e.getPersona())
                 + "。今天是" + date + "(" + seasonOf(date) + "季)。请创作。";
-        String raw = call(system, user, tok);
+        // 仅小说章节需 800~1500 字完整正文,给显式 max_tokens 上限防截断;其余产物不受影响。
+        GenerateOptions options = "novel".equals(theme) ? GenerateOptions.builder().maxTokens(3000).build() : null;
+        String raw = call(system, user, tok, options);
         if (raw == null || raw.isBlank()) return null;
         com.fasterxml.jackson.databind.JsonNode j = parse(raw);
         AgentProduct p = new AgentProduct();
@@ -622,7 +730,7 @@ public class WorldSimEngine {
     }
 
     /** 用 qwen-turbo 写当日小镇日报叙事。 */
-    private String writeNarrative(LocalDate date, String season, String weather,
+    private String writeNarrative(LocalDate date, String season, String weather, Integer temperature,
                                   List<Map<String, Object>> highlights, Map<String, Object> stats,
                                   List<Map<String, Object>> news, long[] tok) {
         StringBuilder hb = new StringBuilder();
@@ -636,13 +744,14 @@ public class WorldSimEngine {
         }
         String system = "你是智能体小镇的《小镇日报》主笔。请用温暖、生动、略带文学性的笔触,"
                 + "写一段 3~5 句的当日小镇速写。简体中文,不要分点、不要标题、不要 markdown。";
-        String user = "日期:" + date + ",季节:" + season + ",天气:" + weather + "。\n"
+        String tempText = temperature == null ? "" : "," + temperature + "℃";
+        String user = "日期:" + date + ",季节:" + season + ",天气:" + weather + tempText + "。\n"
                 + "今日成就:\n" + (hb.length() == 0 ? "(今天小镇很平静,没有新作品)\n" : hb)
                 + "今日大事:\n" + (nb.length() == 0 ? "(无突发事件)\n" : nb)
                 + "统计:" + stats + "\n请据此写今日速写。";
         String out = call(system, user, tok);
         return out == null || out.isBlank()
-                ? (season + "日" + weather + ",小镇如常。居民们各忙各的,又是平凡的一天。") : out.trim();
+                ? (season + "日" + weather + tempText + ",小镇如常。居民们各忙各的,又是平凡的一天。") : out.trim();
     }
 
     // ---- 经济 ----
@@ -667,11 +776,15 @@ public class WorldSimEngine {
     // ---- LLM 直调(复用 AgentBuilderController 模式) ----
 
     private String call(String system, String user, long[] tok) {
+        return call(system, user, tok, null);
+    }
+
+    private String call(String system, String user, long[] tok, GenerateOptions options) {
         try {
             List<Msg> messages = List.of(
                     Msg.builder().role(MsgRole.SYSTEM).content(TextBlock.builder().text(system).build()).build(),
                     Msg.builder().role(MsgRole.USER).content(TextBlock.builder().text(user).build()).build());
-            List<ChatResponse> responses = modelFactory.streamTextWithFallback(modelFactory.defaultTextModel(), messages);
+            List<ChatResponse> responses = modelFactory.streamTextWithFallback(modelFactory.defaultTextModel(), messages, options);
             StringBuilder sb = new StringBuilder();
             if (responses != null) {
                 for (ChatResponse r : responses) {
