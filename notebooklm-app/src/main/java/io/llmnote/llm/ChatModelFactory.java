@@ -5,6 +5,7 @@ import io.agentscope.core.message.Msg;
 import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.DashScopeChatModel;
+import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.OpenAIChatModel;
 import io.llmnote.config.NotebookLmProperties;
 import io.llmnote.config.NotebookLmProperties.ModelPricing;
@@ -105,10 +106,18 @@ public class ChatModelFactory {
      * 全部重试耗尽仍失败则抛出原异常,由调用方降级处理。
      */
     public List<ChatResponse> streamText(ChatModelBase model, List<Msg> messages) {
+        return streamText(model, messages, null);
+    }
+
+    /**
+     * 同 {@link #streamText(ChatModelBase, List)},但透传 GenerateOptions(如 max_tokens)。
+     * options=null 时行为与无参重载完全一致。
+     */
+    public List<ChatResponse> streamText(ChatModelBase model, List<Msg> messages, GenerateOptions options) {
         RuntimeException last = null;
         for (int attempt = 0; attempt <= MAX_RETRIES; attempt++) {
             try {
-                return model.stream(messages, List.of(), null).collectList().block();
+                return model.stream(messages, List.of(), options).collectList().block();
             } catch (RuntimeException ex) {
                 last = ex;
                 if (attempt >= MAX_RETRIES || !isTransient(ex)) throw ex;
@@ -128,6 +137,14 @@ public class ChatModelFactory {
      * 全部候选都失败才抛最后一个异常。返回 ChatResponse 列表(与 streamText 一致)。
      */
     public List<ChatResponse> streamTextWithFallback(String primaryModel, List<Msg> messages) {
+        return streamTextWithFallback(primaryModel, messages, null);
+    }
+
+    /**
+     * 同 {@link #streamTextWithFallback(String, List)},但把 GenerateOptions 透传给降级链上每个候选模型。
+     * options=null 时行为与无参重载完全一致。
+     */
+    public List<ChatResponse> streamTextWithFallback(String primaryModel, List<Msg> messages, GenerateOptions options) {
         List<String> chain = new ArrayList<>();
         String primary = normalize(primaryModel);
         chain.add(primary);
@@ -139,7 +156,7 @@ public class ChatModelFactory {
         for (int i = 0; i < chain.size(); i++) {
             String m = chain.get(i);
             try {
-                return streamText(forModel(m), messages);
+                return streamText(forModel(m), messages, options);
             } catch (RuntimeException ex) {
                 last = ex;
                 if (i + 1 < chain.size()) {
