@@ -477,7 +477,7 @@ public class WorldSimEngine {
             if (a == null || b == null) continue;
             if (a.getSpouseId() != null || b.getSpouseId() != null) continue;
             if (rel.getIntimacy() < 130) continue;
-            if (rnd(100) >= clampProb(35 + eff.weddingDelta(), 0, 100)) continue; // 极端天气 weddingDelta 升阈值→成婚率降
+            if (rnd(100) >= clampProb(35 - eff.weddingDelta(), 0, 100)) continue; // 极端天气 weddingDelta>0 → 成婚率降
             a.setSpouseId(b.getId()); a.setPartnerId(null);
             b.setSpouseId(a.getId()); b.setPartnerId(null);
             employeeRepo.save(a); employeeRepo.save(b);
