@@ -65,6 +65,19 @@ notebooklm:
       - { name: qwen-plus,  label: "Qwen Plus · 均衡",   input-per1k: 0.0008, output-per1k: 0.002 }
       - { name: qwen-max,   label: "Qwen Max · 最强",    input-per1k: 0.0024, output-per1k: 0.0096 }
       - { name: qwen-long,  label: "Qwen Long · 长文本", input-per1k: 0.0005, output-per1k: 0.002 }
+  zhipu:
+    api-key: ${ZHIPU_API_KEY:}
+    base-url: ${ZHIPU_BASE_URL:https://open.bigmodel.cn/api/paas/v4}
+    text-model: glm-4.5-flash
+    vl-model: glm-4.6v-flash
+    image-model: cogview-3-flash
+    video-model: cogvideox-flash
+    # 智谱免费模型,单价 0;仅用于前端可选项展示与 normalize 放行
+    pricing:
+      - { name: glm-4.5-flash,           label: "GLM-4.5 Flash · 免费",    input-per1k: 0, output-per1k: 0 }
+      - { name: glm-4.7-flash,           label: "GLM-4.7 Flash · 免费",    input-per1k: 0, output-per1k: 0 }
+      - { name: glm-4.6v-flash,          label: "GLM-4.6V · 多模态免费",   input-per1k: 0, output-per1k: 0 }
+      - { name: glm-4.1v-thinking-flash, label: "GLM-4.1V Thinking · 免费", input-per1k: 0, output-per1k: 0 }
   milvus:
     host: ${MILVUS_HOST:127.0.0.1}
     port: ${MILVUS_PORT:19530}

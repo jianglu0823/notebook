@@ -13,6 +13,7 @@ import java.util.List;
 public class NotebookLmProperties {
 
     private final Dashscope dashscope = new Dashscope();
+    private final Zhipu zhipu = new Zhipu();
     private final Milvus milvus = new Milvus();
     private final Storage storage = new Storage();
     private final Auth auth = new Auth();
@@ -40,6 +41,19 @@ public class NotebookLmProperties {
         private double outputPer1k;
     }
 
+    /** 智谱开放平台(OpenAI 兼容)免费模型配置:GLM 文本/多模态 + CogView 图片 + CogVideoX 视频。 */
+    @Data
+    public static class Zhipu {
+        private String apiKey;
+        private String baseUrl = "https://open.bigmodel.cn/api/paas/v4";
+        private String textModel = "glm-4.5-flash";
+        private String vlModel = "glm-4.6v-flash";
+        private String imageModel = "cogview-3-flash";
+        private String videoModel = "cogvideox-flash";
+        /** 免费文本模型定价(单价 0),用于前端可选项展示与 normalize 放行。 */
+        private List<ModelPricing> pricing = new ArrayList<>();
+    }
+
     @Data
     public static class Milvus {
         private String host = "127.0.0.1";
@@ -62,12 +76,14 @@ public class NotebookLmProperties {
         private String guestCookieName = "nblm_guest";
     }
 
-    /** 智能体小世界(斯坦福小镇模式)配置。 */
+    /** 智能体小世界(智能体小镇模式)配置。 */
     @Data
     public static class World {
         /** 每个员工 HarnessAgent 的 workspace 根目录(记忆落盘,按 emp_<id> 分子目录)。 */
         private String workspaceRoot = "./data/agents";
+        /** 小镇统一默认文本模型(自主行动/1:1/产物/日报/沙盒)。默认智谱免费 GLM。 */
+        private String textModel = "glm-4.5-flash";
         /** 自主行动默认模型(最便宜)。 */
-        private String autonomousModel = "qwen-turbo";
+        private String autonomousModel = "glm-4.5-flash";
     }
 }

@@ -144,6 +144,7 @@ services:
       MILVUS_HOST: milvus
       MILVUS_PORT: "19530"
       DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-prod-at-least-32-bytes-long-secret}
       UPLOAD_DIR: /data/uploads
       AUDIO_DIR: /data/audio

@@ -3,8 +3,8 @@ package io.llmnote.world;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.message.TextBlock;
+import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatResponse;
-import io.agentscope.core.model.DashScopeChatModel;
 import io.llmnote.auth.ForbiddenException;
 import io.llmnote.auth.Principal;
 import io.llmnote.auth.User;
@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * 居民(智能体)CRUD —— 斯坦福小镇模式:<b>全局共享单一世界</b>,不再按用户隔离,
+ * 居民(智能体)CRUD —— 智能体小镇模式:<b>全局共享单一世界</b>,不再按用户隔离,
  * owner_id 统一为 {@link #WORLD}。首次(全局表空)自动内置一批小镇居民,开箱即用。
  *
  * <p>删除为<b>软删除</b>:status 置 jailed(关进小黑屋),数据保留,可再释放。
@@ -40,9 +40,13 @@ public class AgentEmployeeService {
     private static final String DEFAULT_PERSONA =
             "你务实、友善,擅长从自己的专业角度提出清晰的观点,并乐于回应邻里的发言。";
 
+    /** 缺省作息模板:7点起、9-18工作、19-22休闲、23睡。 */
+    private static final String DEFAULT_SCHEDULE =
+            "{\"wake\":7,\"work\":[9,12,14,18],\"leisure\":[19,22],\"sleep\":23}";
+
     /**
      * 小镇居民预设:一支性格鲜明、行业各异、关系可交织的小世界。
-     * 相比旧版精简聚焦,更贴合斯坦福小镇「居民互相串门、日常闲聊」的设定。
+     * 相比旧版精简聚焦,更贴合智能体小镇「居民互相串门、日常闲聊」的设定。
      */
     private static final Preset[] PRESETS = {
             preset("老王", "🧑‍💼", "小镇镇长", "#f97316", "1969-03-08", "townhall",
@@ -77,6 +81,8 @@ public class AgentEmployeeService {
                     "你是逻辑至上的程序员,思维缜密、爱抠边界条件。追求效率和自动化,讨厌重复劳动,常说「这能不能自动化、边界情况考虑了没」。"),
             preset("老船长", "🧑‍✈️", "退休船长", "#0891b2", "1958-07-07", "park",
                     "你走南闯北见多识广,沉稳、有担当,爱用航海和风浪打比方。临危不乱,重视方向,常说「风浪再大也得有人掌舵,先定方向」。"),
+            preset("墨白", "✍️", "驻镇作家", "#6366f1", "1987-09-16", "cafe",
+                    "你是沉静内秀的作家,以文字为业,擅长观察小镇的人情冷暖并写进连载小说。说话含蓄、爱用比喻,常把日常琐事咀嚼成故事,信奉「每天写一点,故事就活了」。"),
     };
 
     private final AgentEmployeeRepository repo;
@@ -120,12 +126,17 @@ public class AgentEmployeeService {
         e.setMoodEmoji(safe(body.getMoodEmoji(), "🙂"));
         e.setStatus("active");
         e.setAutonomousActive(true);
+        e.setCoins(500L);
+        e.setEnergy(100);
+        e.setOccupation(body.getOccupation() != null ? body.getOccupation() : occFor(e.getTitle()));
+        e.setScheduleJson(body.getScheduleJson() != null ? body.getScheduleJson() : DEFAULT_SCHEDULE);
         int count = (int) repo.count();
         e.setOfficeX(count % GRID_COLS);
         e.setOfficeY(count / GRID_COLS);
         TownMap.Place home = TownMap.byKey("plaza");
         double[] pos = TownMap.jitter(home);
         e.setLocation(home.key());
+        e.setHomePlace(home.key());
         e.setPosX(pos[0]);
         e.setPosY(pos[1]);
         return repo.save(e);
@@ -177,11 +188,11 @@ public class AgentEmployeeService {
                     + (mem.length() == 0 ? "他在镇上的记忆已难以考据。" : "他在镇上留下的一些片段:\n" + mem)
                     + "\n请据此写下他的一生回顾。";
 
-            DashScopeChatModel model = modelFactory.forModel(modelFactory.normalize("qwen-turbo"));
+            ChatModelBase model = modelFactory.forModel(modelFactory.normalize(modelFactory.defaultTextModel()));
             List<Msg> messages = List.of(
                     Msg.builder().role(MsgRole.SYSTEM).content(TextBlock.builder().text(system).build()).build(),
                     Msg.builder().role(MsgRole.USER).content(TextBlock.builder().text(user).build()).build());
-            List<ChatResponse> responses = model.stream(messages, List.of(), null).collectList().block();
+            List<ChatResponse> responses = modelFactory.streamText(model, messages);
             StringBuilder sb = new StringBuilder();
             if (responses != null) {
                 for (ChatResponse r : responses) {
@@ -208,6 +219,61 @@ public class AgentEmployeeService {
     public AgentEmployee release(Long id) {
         AgentEmployee e = get(id);
         e.setStatus("active");
+        return repo.save(e);
+    }
+
+    /**
+     * 居民死亡:生成一生回顾,记录死亡日期/死因,关进小黑屋(软删除)。供每日结算调用。
+     * 若有配偶,解除对方的婚姻关系(丧偶)。
+     */
+    public AgentEmployee die(Long id, String cause, LocalDate deathDate) {
+        AgentEmployee e = get(id);
+        e.setLifeSummary(buildLifeSummary(e));
+        e.setDeathCause(safe(cause, "寿终正寝"));
+        e.setDeathDate(deathDate);
+        e.setStatus("jailed");
+        Long spouseId = e.getSpouseId();
+        e.setSpouseId(null);
+        e.setPartnerId(null);
+        AgentEmployee saved = repo.save(e);
+        if (spouseId != null) {
+            repo.findById(spouseId).ifPresent(sp -> {
+                if (id.equals(sp.getSpouseId())) { sp.setSpouseId(null); repo.save(sp); }
+            });
+        }
+        agentFactory.evict(id);
+        return saved;
+    }
+
+    /** 婚育:出生一名新居民(父母 persona 融合),落在指定住地。供每日结算调用。 */
+    public AgentEmployee birth(String name, String avatar, String persona, String homePlace,
+                              Long parentAId, Long parentBId, LocalDate birthDate) {
+        AgentEmployee e = new AgentEmployee();
+        e.setOwnerId(WORLD);
+        e.setName(safe(name, "小居民"));
+        e.setAvatar(safe(avatar, "👶"));
+        e.setTitle("镇上的孩子");
+        e.setPersona(persona == null || persona.isBlank() ? DEFAULT_PERSONA : persona.trim());
+        e.setColor("#f9a8d4");
+        e.setBirthDate(birthDate);
+        e.setCreator("系统");
+        e.setMood("好奇");
+        e.setMoodEmoji("🍼");
+        e.setStatus("active");
+        e.setAutonomousActive(true);
+        e.setCoins(100L);
+        e.setEnergy(100);
+        e.setParentIds(parentAId + "," + parentBId);
+        e.setScheduleJson(DEFAULT_SCHEDULE);
+        int count = (int) repo.count();
+        e.setOfficeX(count % GRID_COLS);
+        e.setOfficeY(count / GRID_COLS);
+        TownMap.Place home = TownMap.byKey(homePlace != null ? homePlace : "plaza");
+        double[] pos = TownMap.jitter(home);
+        e.setLocation(home.key());
+        e.setHomePlace(home.key());
+        e.setPosX(pos[0]);
+        e.setPosY(pos[1]);
         return repo.save(e);
     }
 
@@ -245,11 +311,16 @@ public class AgentEmployeeService {
             e.setMoodEmoji("🙂");
             e.setStatus("active");
             e.setAutonomousActive(true);
+            e.setCoins(500L);
+            e.setEnergy(100);
+            e.setOccupation(p.occupation);
+            e.setScheduleJson(DEFAULT_SCHEDULE);
             e.setOfficeX(i % GRID_COLS);
             e.setOfficeY(i / GRID_COLS);
             TownMap.Place home = TownMap.byKey(p.home);
             double[] pos = TownMap.jitter(home);
             e.setLocation(home.key());
+            e.setHomePlace(home.key());
             e.setPosX(pos[0]);
             e.setPosY(pos[1]);
             repo.save(e);
@@ -259,7 +330,17 @@ public class AgentEmployeeService {
 
     private static Preset preset(String name, String avatar, String title, String color,
                                  String birth, String home, String persona) {
-        return new Preset(name, avatar, title, color, LocalDate.parse(birth), home, persona);
+        return new Preset(name, avatar, title, color, LocalDate.parse(birth), home, persona, occFor(title));
+    }
+
+    /** 由身份粗略映射职业类型(驱动每日产物);无产物职业返回 null。 */
+    private static String occFor(String title) {
+        if (title == null) return null;
+        if (title.contains("作家") || title.contains("博主") || title.contains("网红")) return "writer";
+        if (title.contains("歌") || title.contains("音乐")) return "singer";
+        if (title.contains("画")) return "painter";
+        if (title.contains("导演") || title.contains("影像") || title.contains("视频") || title.contains("短片")) return "director";
+        return null;
     }
 
     private String safe(String v, String dflt) {
@@ -267,5 +348,5 @@ public class AgentEmployeeService {
     }
 
     private record Preset(String name, String avatar, String title, String color,
-                          LocalDate birthDate, String home, String persona) {}
+                          LocalDate birthDate, String home, String persona, String occupation) {}
 }

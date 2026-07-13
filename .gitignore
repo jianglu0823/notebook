@@ -10,4 +10,8 @@ dist/
 /audio/
 /images/
 /data/
+notebooklm-app/uploads/
+notebooklm-app/audio/
+notebooklm-app/images/
+notebooklm-app/data/
 *.log

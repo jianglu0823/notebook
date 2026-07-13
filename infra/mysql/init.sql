@@ -189,6 +189,17 @@ CREATE TABLE IF NOT EXISTS agent_employee (
     pos_y          DOUBLE        NULL COMMENT '地图漫游当前 y',
     location       VARCHAR(32)   NULL COMMENT '当前所在具名地点 key(见 TownMap)',
     life_summary   TEXT          NULL COMMENT '进小黑屋(软删除)时生成的第三人称一生回顾',
+    coins          BIGINT        NOT NULL DEFAULT 0 COMMENT '货币余额',
+    occupation     VARCHAR(32)   NULL COMMENT '职业类型 key(writer/singer/painter...)驱动每日产物',
+    schedule_json  TEXT          NULL COMMENT '作息模板 JSON(起床/工作/休闲/睡觉时段)',
+    home_place     VARCHAR(32)   NULL COMMENT '家所在建筑 key',
+    home_decor_json TEXT         NULL COMMENT '家园装饰 JSON(已购装饰 id + 等级)',
+    spouse_id      BIGINT        NULL COMMENT '配偶居民 id',
+    partner_id     BIGINT        NULL COMMENT '恋爱对象 id(未婚)',
+    parent_ids     VARCHAR(64)   NULL COMMENT '父母 id 逗号分隔(出生的孩子有值)',
+    death_date     DATE          NULL COMMENT '死亡日期',
+    death_cause    VARCHAR(64)   NULL COMMENT '死因',
+    energy         INT           NOT NULL DEFAULT 100 COMMENT '精力/健康,影响死亡概率与作息',
     created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_agent_owner (owner_id),
@@ -295,10 +306,112 @@ CREATE TABLE IF NOT EXISTS agent_world_settings (
     autonomous_enabled TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '自主行动总开关(默认关)',
     interval_seconds   INT         NOT NULL DEFAULT 600 COMMENT '自主行动间隔秒(默认 10 分钟)',
     model              VARCHAR(32)  NOT NULL DEFAULT 'qwen-turbo' COMMENT '自主行动使用模型',
+    sim_date           DATE        NULL COMMENT '小镇内在日期',
+    sim_minute         INT         NOT NULL DEFAULT 480 COMMENT '当日分钟数 0-1439(默认 08:00)',
+    minutes_per_tick   INT         NOT NULL DEFAULT 120 COMMENT '每个 tick 推进的内在分钟',
+    season             VARCHAR(8)  NULL COMMENT '当前季节(春/夏/秋/冬)',
+    weather            VARCHAR(16) NULL COMMENT '当前天气',
     updated_at         DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 INSERT IGNORE INTO agent_world_settings (id, autonomous_enabled, interval_seconds, model)
 VALUES (1, 0, 600, 'qwen-turbo');
+
+-- 智能体小世界:职业产物(作家连载章节/歌手新歌/画师画作等)
+CREATE TABLE IF NOT EXISTS agent_product (
+    id             BIGINT PRIMARY KEY AUTO_INCREMENT,
+    agent_id       BIGINT        NOT NULL COMMENT '产出居民 id',
+    sim_date       DATE          NULL COMMENT '产出的小镇日期',
+    occupation     VARCHAR(32)   NULL COMMENT '职业类型 key',
+    kind           VARCHAR(32)   NULL COMMENT '产物类型(chapter/song/artwork...)',
+    seq            INT           NULL COMMENT '第几章/第几首',
+    title          VARCHAR(255)  NULL COMMENT '标题',
+    content        TEXT          NULL COMMENT '内容/片段',
+    quality        INT           NOT NULL DEFAULT 5 COMMENT '质量 1~10',
+    input_tokens   BIGINT        NOT NULL DEFAULT 0,
+    output_tokens  BIGINT        NOT NULL DEFAULT 0,
+    cost_rmb       DECIMAL(12,6) NOT NULL DEFAULT 0,
+    created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_product_agent (agent_id),
+    INDEX idx_product_date (sim_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:世界日报(一天一行,含当日全世界 token/花费,仅管理者可见)
+CREATE TABLE IF NOT EXISTS world_daily_report (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    sim_date            DATE          NOT NULL UNIQUE COMMENT '小镇日期',
+    season              VARCHAR(8)    NULL COMMENT '季节',
+    weather             VARCHAR(16)   NULL COMMENT '天气',
+    highlights_json     TEXT          NULL COMMENT '杰出成就 JSON',
+    stats_json          TEXT          NULL COMMENT '统计 JSON(新章/新歌/出生/死亡/结婚数)',
+    news_json           TEXT          NULL COMMENT '突发新闻 JSON',
+    narrative           TEXT          NULL COMMENT 'LLM 写的当日叙事',
+    total_input_tokens  BIGINT        NULL COMMENT '当日全世界输入 token',
+    total_output_tokens BIGINT        NULL COMMENT '当日全世界输出 token',
+    total_cost_rmb      DECIMAL(12,6) NULL COMMENT '当日全世界花费(元)',
+    created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_report_date (sim_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:货币流水(仅记大额)
+CREATE TABLE IF NOT EXISTS agent_transaction (
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+    agent_id    BIGINT        NOT NULL COMMENT '居民 id',
+    sim_date    DATE          NULL COMMENT '小镇日期',
+    delta       BIGINT        NOT NULL DEFAULT 0 COMMENT '变动额(正=收入/负=支出)',
+    balance     BIGINT        NOT NULL DEFAULT 0 COMMENT '变动后余额',
+    reason      VARCHAR(64)   NULL COMMENT '事由',
+    created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_txn_agent (agent_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小世界:居民两两关系(亲密度,归一化 a_id<b_id)
+CREATE TABLE IF NOT EXISTS agent_relationship (
+    id           BIGINT PRIMARY KEY AUTO_INCREMENT,
+    a_id         BIGINT        NOT NULL COMMENT '较小的居民 id',
+    b_id         BIGINT        NOT NULL COMMENT '较大的居民 id',
+    intimacy     INT           NOT NULL DEFAULT 0 COMMENT '亲密度',
+    status       VARCHAR(16)   NOT NULL DEFAULT 'stranger' COMMENT 'stranger/friend/close/dating/married',
+    interactions INT           NOT NULL DEFAULT 0 COMMENT '累计互动次数',
+    updated_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_rel_pair (a_id, b_id),
+    INDEX idx_rel_a (a_id),
+    INDEX idx_rel_b (b_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 沙盒快进任务(隔离模拟,不影响真实世界;每人限一次,管理员不限)
+CREATE TABLE IF NOT EXISTS sandbox_run (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    owner_id            VARCHAR(64)   NOT NULL COMMENT '发起人:u:<id> / g:<uuid>',
+    title               VARCHAR(255)  NULL COMMENT '任务标题',
+    years               INT           NOT NULL COMMENT '快进年数',
+    member_ids          TEXT          NULL COMMENT '参与居民 id 列表(JSON)',
+    status              VARCHAR(16)   NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/RUNNING/DONE/FAILED',
+    est_cost_rmb        DECIMAL(12,6) NULL COMMENT '预估花费',
+    actual_input_tokens  BIGINT       NULL,
+    actual_output_tokens BIGINT       NULL,
+    actual_cost_rmb      DECIMAL(12,6) NULL,
+    report              MEDIUMTEXT    NULL COMMENT '世界报告(LLM 叙事)',
+    error_msg           VARCHAR(512)  NULL,
+    created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_sbx_owner (owner_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 沙盒事件时间线(供回放:出生/死亡/结婚/恋爱/产物/事件/里程碑)
+CREATE TABLE IF NOT EXISTS sandbox_event (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+    run_id          BIGINT        NOT NULL,
+    sim_date        DATE          NULL COMMENT '事件内在日期',
+    seq             INT           NOT NULL COMMENT '回放步序',
+    type            VARCHAR(24)   NOT NULL COMMENT 'birth/death/marriage/dating/product/event/milestone',
+    agent_id        BIGINT        NULL,
+    target_agent_id BIGINT        NULL,
+    content         TEXT          NULL,
+    meta_json       TEXT          NULL,
+    created_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_sbxev_run (run_id, seq)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 访问/操作日志(登录、注册及各类写操作;记录 IP、设备、动作)
 CREATE TABLE IF NOT EXISTS access_log (

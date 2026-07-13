@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.Msg;
+import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatUsage;
-import io.agentscope.core.model.DashScopeChatModel;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.llmnote.llm.ChatCompletion;
 import io.llmnote.llm.ChatModelFactory;
@@ -51,7 +51,7 @@ public class MeetingRunner {
             repo.save(m);
 
             String modelName = modelFactory.normalize(m.getModel());
-            DashScopeChatModel model = modelFactory.forModel(modelName);
+            ChatModelBase model = modelFactory.forModel(modelName);
 
             List<Long> ids = objectMapper.readValue(m.getParticipantIds(),
                     objectMapper.getTypeFactory().constructCollectionType(List.class, Long.class));

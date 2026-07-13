@@ -3,8 +3,8 @@ package io.llmnote.studio;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.message.TextBlock;
+import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatResponse;
-import io.agentscope.core.model.DashScopeChatModel;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.tool.Tool;
 import io.agentscope.core.tool.ToolParam;
@@ -25,10 +25,10 @@ import java.util.function.BiConsumer;
 @Slf4j
 public class WebSearchTool {
 
-    private final DashScopeChatModel chatModel;
+    private final ChatModelBase chatModel;
     private final BiConsumer<String, String> listener;
 
-    public WebSearchTool(DashScopeChatModel chatModel, BiConsumer<String, String> listener) {
+    public WebSearchTool(ChatModelBase chatModel, BiConsumer<String, String> listener) {
         this.chatModel = chatModel;
         this.listener = listener;
     }

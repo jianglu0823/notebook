@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.message.TextBlock;
+import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatResponse;
-import io.agentscope.core.model.DashScopeChatModel;
 import io.llmnote.llm.ChatModelFactory;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -82,8 +82,8 @@ public class AgentBuilderController {
 
         String raw;
         try {
-            DashScopeChatModel model = modelFactory.forModel(modelFactory.normalize("qwen-turbo"));
-            List<ChatResponse> responses = model.stream(messages, List.of(), null).collectList().block();
+            ChatModelBase model = modelFactory.forModel(modelFactory.normalize(modelFactory.defaultTextModel()));
+            List<ChatResponse> responses = modelFactory.streamText(model, messages);
             StringBuilder sb = new StringBuilder();
             if (responses != null) {
                 for (ChatResponse r : responses) {

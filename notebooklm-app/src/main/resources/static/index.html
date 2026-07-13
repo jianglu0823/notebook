@@ -185,6 +185,11 @@
   .chip { padding:7px 15px; border-radius:22px; border:1px solid var(--line); background:var(--panel2); color:var(--fg); font-size:13px; cursor:pointer; font-weight:500; transition:all .15s ease; }
   .chip:hover { border-color:var(--line-strong); }
   .chip.on { background:var(--accent-weak); border-color:color-mix(in srgb,var(--accent) 55%,transparent); color:var(--accent); font-weight:700; }
+  .chip.disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+  .chip-custom { display:inline-flex; align-items:center; gap:6px; }
+  .chip-custom input { width:88px; padding:6px 10px; border-radius:16px; border:1px solid var(--line); background:var(--panel2); color:var(--fg); font-size:13px; }
+  .chip-custom button { padding:6px 12px; border-radius:16px; border:1px solid var(--line); background:var(--panel2); color:var(--fg); font-size:13px; cursor:pointer; transition:all .15s ease; }
+  .chip-custom button:hover { border-color:var(--line-strong); }
   .news-run { display:flex; gap:10px; align-items:stretch; flex-wrap:wrap; }
   .news-run input { flex:1; min-width:200px; }
   #newsJobs { display:flex; flex-direction:column; gap:10px; margin-top:18px; }
@@ -236,7 +241,7 @@
   .price-tbl th { color:var(--mut); font-weight:650; }
   .price-tbl td.mut { color:var(--mut); }
   .office-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-top:6px; }
-  .office-room { position:relative; border:1px solid var(--line); border-top:3px solid var(--rc,#2dd4bf); border-radius:var(--radius); background:var(--panel2); padding:16px 14px 14px; transition:all .2s ease-in-out; overflow:visible; }
+  .office-room { position:relative; border:1px solid var(--line); border-top:3px solid var(--rc,#2dd4bf); border-radius:var(--radius); background:var(--panel2); padding:16px 14px 14px; transition:all .2s ease-in-out; overflow:visible; cursor:pointer; }
   .office-room:hover { border-color:var(--line-strong); transform:translateY(-2px); }
   .office-room.speaking { box-shadow:0 0 0 2px var(--rc,#2dd4bf), 0 6px 22px color-mix(in srgb,var(--rc,#2dd4bf) 35%,transparent); }
   .office-room .oavatar { font-size:34px; line-height:1; margin-bottom:8px; }
@@ -261,6 +266,85 @@
   .jail-card .jc-eulogy.mut { color:var(--mut); font-style:normal; }
   .jail-card .oacts { display:flex; }
   .jail-card .oacts button { padding:4px 12px; font-size:11px; }
+  /* 居民详情页 */
+  .detail-head { display:flex; align-items:center; gap:14px; padding-bottom:14px; border-bottom:1px solid var(--line); }
+  .detail-avatar { font-size:44px; line-height:1; flex:0 0 auto; width:64px; height:64px; display:flex; align-items:center; justify-content:center;
+    border-radius:14px; background:color-mix(in srgb,var(--rc,#2dd4bf) 16%,var(--panel2)); border:1px solid color-mix(in srgb,var(--rc,#2dd4bf) 40%,transparent); }
+  .detail-hd-txt { flex:1; min-width:0; }
+  .detail-name { font-weight:800; font-size:19px; color:var(--fg); display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .detail-mood { font-size:12px; font-weight:600; color:var(--mut); background:var(--panel2); border:1px solid var(--line); border-radius:20px; padding:2px 10px; }
+  .detail-meta { margin-top:6px; font-size:12.5px; color:var(--mut); line-height:1.7; }
+  .detail-hd-acts { display:flex; gap:8px; flex:0 0 auto; }
+  .detail-hd-acts button { padding:6px 14px; font-size:12.5px; }
+  .detail-persona { margin:14px 0; font-size:13.5px; line-height:1.8; color:var(--fg); background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px; }
+  .detail-cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .detail-col-t { font-weight:750; font-size:13px; color:var(--fg); margin-bottom:10px; }
+  .detail-item { display:flex; gap:8px; align-items:flex-start; padding:7px 0; border-bottom:1px dashed var(--line); font-size:12.5px; line-height:1.6; }
+  .detail-item:last-child { border-bottom:none; }
+  .detail-item-txt { color:var(--fg); flex:1; min-width:0; }
+  .detail-col-full { grid-column:1 / -1; }
+  .detail-prod { cursor:pointer; }
+  .detail-prod .prod-body { display:none; margin-top:6px; font-size:12px; line-height:1.7; white-space:pre-wrap; }
+  .detail-prod.open .prod-body { display:block; }
+  @media (max-width:640px){ .detail-cols { grid-template-columns:1fr; } }
+  /* 世界日报 */
+  .report-layout { display:grid; grid-template-columns:200px 1fr; gap:14px; margin-top:6px; }
+  .report-list { display:flex; flex-direction:column; gap:6px; max-height:560px; overflow-y:auto; }
+  .report-item { border:1px solid var(--line); border-radius:var(--radius); background:var(--panel2); padding:9px 11px; cursor:pointer; transition:all .15s ease-in-out; }
+  .report-item:hover { border-color:var(--line-strong); }
+  .report-item.active { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .report-item .ri-date { font-weight:700; font-size:13px; color:var(--fg); }
+  .report-item .ri-wx { font-size:11.5px; color:var(--mut); margin-top:3px; }
+  .report-detail { border:1px solid var(--line); border-radius:var(--radius); background:var(--panel2); padding:16px; min-height:200px; }
+  .rd-title { font-weight:800; font-size:17px; color:var(--fg); }
+  .rd-narrative { margin:12px 0; font-size:14px; line-height:1.9; color:var(--fg); }
+  .rd-stats { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+  .stat-chip { font-size:12px; padding:4px 11px; border-radius:20px; background:var(--panel); border:1px solid var(--line); color:var(--fg); }
+  .rd-sec-t { font-weight:750; font-size:13px; color:var(--fg); margin:14px 0 8px; }
+  .rd-hl { font-size:12.5px; line-height:1.8; color:var(--fg); }
+  .rd-prod { border:1px solid var(--line); border-radius:var(--radius); padding:10px 12px; margin-bottom:8px; background:var(--panel); }
+  .rd-prod-h { font-size:13px; color:var(--fg); display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+  .rd-prod-c { font-size:12.5px; line-height:1.75; color:var(--mut); }
+  .rd-prod-media { margin-top:4px; }
+  .rd-prod-media img, .rd-prod-media video { width:100%; max-width:360px; border-radius:var(--radius); border:1px solid var(--line); display:block; background:var(--panel2); }
+  .rd-cost { margin-top:14px; padding-top:10px; border-top:1px dashed var(--line); font-size:12px; color:var(--mut); }
+  @media (max-width:640px){ .report-layout { grid-template-columns:1fr; } }
+  /* 沙盒快进 */
+  .sbx-layout { display:grid; grid-template-columns:1fr 240px; gap:16px; margin-top:8px; }
+  .sbx-block { margin-bottom:16px; }
+  .sbx-label { font-weight:750; font-size:13px; color:var(--fg); margin-bottom:8px; }
+  .sbx-members { display:flex; flex-wrap:wrap; gap:8px; }
+  .sbx-chip { font-size:12.5px; padding:6px 12px; border-radius:20px; border:1px solid var(--line); background:var(--panel2); color:var(--fg); cursor:pointer; transition:all .15s ease-in-out; }
+  .sbx-chip:hover { border-color:var(--line-strong); }
+  .sbx-chip.on { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 18%,var(--panel2)); box-shadow:0 0 0 1px var(--accent); }
+  #sbxYearsCustom { margin-top:8px; width:180px; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--panel2); color:var(--fg); font-size:12.5px; }
+  .sbx-actions { display:flex; gap:10px; margin:10px 0; }
+  .sbx-est { font-size:12.5px; line-height:1.7; margin-top:6px; }
+  .sbx-warn { color:#f59e0b; font-weight:600; }
+  .sbx-side { border-left:1px solid var(--line); padding-left:16px; }
+  .sbx-history { display:flex; flex-direction:column; gap:6px; max-height:420px; overflow-y:auto; }
+  .sbx-hi { border:1px solid var(--line); border-radius:var(--radius); background:var(--panel2); padding:9px 11px; cursor:pointer; transition:all .15s ease-in-out; }
+  .sbx-hi:hover { border-color:var(--accent); }
+  .sbx-hi-t { font-weight:700; font-size:12.5px; color:var(--fg); }
+  .sbx-hi-m { font-size:11px; margin-top:3px; }
+  .sbx-run-head { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .sbx-run-title { font-weight:800; font-size:16px; color:var(--fg); }
+  .sbx-run-status { font-size:12px; padding:3px 10px; border-radius:14px; background:var(--panel2); border:1px solid var(--line); color:var(--mut); }
+  .sbx-report-body { font-size:14px; line-height:2; color:var(--fg); white-space:pre-wrap; }
+  .sbx-running { font-size:14px; color:var(--mut); padding:24px 0; text-align:center; }
+  .sbx-replay { margin-top:16px; border-top:1px dashed var(--line); padding-top:12px; }
+  .sbx-replay-bar { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .sbx-replay-bar input[type=range] { flex:1; }
+  .sbx-timeline { max-height:340px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; }
+  .sbx-ev { display:flex; align-items:baseline; gap:8px; font-size:12.5px; line-height:1.6; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:var(--panel2); }
+  .sbx-ev-i { font-size:14px; flex:none; }
+  .sbx-ev-d { flex:none; font-size:11px; }
+  .sbx-ev-marriage { border-left:3px solid #f472b6; }
+  .sbx-ev-birth { border-left:3px solid #84cc16; }
+  .sbx-ev-death { border-left:3px solid #94a3b8; }
+  .sbx-ev-event { border-left:3px solid #fbbf24; }
+  .sbx-ev-milestone { border-left:3px solid var(--accent); background:color-mix(in srgb,var(--accent) 8%,var(--panel2)); }
+  @media (max-width:720px){ .sbx-layout { grid-template-columns:1fr; } .sbx-side { border-left:none; padding-left:0; border-top:1px solid var(--line); padding-top:12px; } }
   .map-wrap { margin-top:6px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:#0d1512; }
   #worldMap { display:block; width:100%; height:auto; image-rendering:pixelated; cursor:pointer; }
   /* 像素小镇容器 + 浮动场景卡覆盖层 */
@@ -315,7 +399,6 @@
   .act-row .ar-tgt { color:var(--mut); }
   /* 居民卡上的心情/生日 */
   .office-room .omood { font-size:11.5px; color:var(--mut); margin-top:4px; }
-  .office-room .obirth { position:absolute; top:12px; left:12px; font-size:10.5px; color:var(--mut); }
   /* 1:1 对话 */
   .chat-log { max-height:48vh; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:4px 2px; margin-bottom:12px; }
   .chat-msg { max-width:78%; padding:9px 13px; border-radius:12px; font-size:13.5px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
@@ -853,6 +936,8 @@
           <button class="sec" onclick="toggleActivity()" id="activityToggle">📊 村民动态</button>
           <div class="world-tabs" id="worldTabs">
             <button class="wtab active" data-tab="map" onclick="switchWorldTab('map')">🗺 小镇</button>
+            <button class="wtab" data-tab="report" onclick="switchWorldTab('report')">📰 日报</button>
+            <button class="wtab" data-tab="sandbox" onclick="switchWorldTab('sandbox')">🚀 沙盒快进</button>
             <button class="wtab" data-tab="jail" onclick="switchWorldTab('jail')">🚫 小黑屋</button>
           </div>
         </div>
@@ -909,9 +994,10 @@
         <div class="widget" id="mapPane">
           <div class="wt" style="display:flex;align-items:center;gap:8px">🗺 鹿匠小镇
             <button class="rules-logo" onclick="openRules()" title="世界规则">📜</button>
+            <span class="town-clock mut" id="townClock"></span>
           </div>
           <div class="wd">居民按坐标在镇上走动,头顶显示心情。开启「自主行动」后他们会自己思考、漫步、串门聊天;下方是实时动态。</div>
-          <div class="map-wrap"><div class="town-wrap"><canvas id="worldMap" width="960" height="640" onclick="mapClick(event)"></canvas><div class="scene-layer" id="sceneLayer"></div></div></div>
+          <div class="map-wrap"><div class="town-wrap"><canvas id="worldMap" width="960" height="760" onclick="mapClick(event)"></canvas><div class="scene-layer" id="sceneLayer"></div></div></div>
           <div class="feed-box" id="worldFeed"></div>
           <div class="wt" style="margin-top:var(--sp-4)">🏢 小镇居民</div>
           <div class="wd">每位居民是一个带长期记忆、性格与心情的智能体。点「对话」和他单独聊,或发起会议围观群聊。会议进行中,发言者会高亮冒泡。</div>
@@ -923,6 +1009,61 @@
           <div class="wt">🚫 小黑屋</div>
           <div class="wd">被「删除」的居民会被关进这里,数据保留。可随时释放,恢复在册。</div>
           <div class="office-grid" id="jailGrid"><div class="mut">加载中…</div></div>
+        </div>
+
+        <!-- 世界日报视图 -->
+        <div class="widget hidden" id="reportPane">
+          <div class="wt">📰 小镇日报</div>
+          <div class="wd">开启「自主行动」后,小镇内在时钟会流动;每跨过一天,小镇会结算当日的天气、职业产物(小说新章/新歌/画作/短片)与花费,并生成一份日报。</div>
+          <div class="report-layout">
+            <div class="report-list" id="reportList"><div class="mut">加载中…</div></div>
+            <div class="report-detail" id="reportDetail"><div class="mut">选择左侧某一天查看日报。</div></div>
+          </div>
+        </div>
+
+        <!-- 沙盒快进视图:选居民 + 选年限 → 预估 → 确认开始 → 世界报告 + 回放 -->
+        <div class="widget hidden" id="sandboxPane">
+          <div class="wt">🚀 沙盒快进</div>
+          <div class="wd">选定几位居民,在<b>隔离沙盒</b>里快进若干年:关系、姻缘、新生、逝去、作品全由规则引擎推演,<b>完全不影响真实世界</b>。开始前预估花费,确认后异步运行,结束出一份世界报告并支持回放。每人限体验一次,管理员不限。</div>
+          <div class="sbx-layout">
+            <div class="sbx-form" id="sbxForm">
+              <div class="sbx-block">
+                <div class="sbx-label">选择参与居民</div>
+                <div class="sbx-members" id="sbxMembers"><div class="mut">加载中…</div></div>
+              </div>
+              <div class="sbx-block">
+                <div class="sbx-label">快进时长</div>
+                <div class="chips" id="sbxYearsChips"></div>
+                <input type="number" id="sbxYearsCustom" min="1" max="50" placeholder="自定义年数 1-50" oninput="pickSbxYears(null)">
+              </div>
+              <div class="sbx-actions">
+                <button class="sec" id="sbxEstBtn" onclick="estimateSandbox()">🧮 预估花费</button>
+                <button class="primary" id="sbxRunBtn" onclick="runSandbox()" disabled>🚀 开始快进</button>
+              </div>
+              <div class="sbx-est mut" id="sbxEst"></div>
+            </div>
+            <div class="sbx-side">
+              <div class="sbx-label">历史沙盒</div>
+              <div class="sbx-history" id="sbxHistory"><div class="mut">加载中…</div></div>
+            </div>
+          </div>
+          <!-- 沙盒运行/报告/回放 -->
+          <div class="sbx-run hidden" id="sbxRunPane">
+            <div class="sbx-run-head">
+              <span class="sbx-run-title" id="sbxRunTitle"></span>
+              <span class="sbx-run-status" id="sbxRunStatus"></span>
+              <button class="sec" onclick="closeSandboxRun()" style="margin-left:auto">← 返回</button>
+            </div>
+            <div class="sbx-report" id="sbxReport"></div>
+            <div class="sbx-replay hidden" id="sbxReplay">
+              <div class="sbx-replay-bar">
+                <button class="sec" id="sbxReplayBtn" onclick="toggleSbxReplay()">▶ 回放</button>
+                <input type="range" id="sbxReplaySlider" min="0" max="0" value="0" step="1" oninput="seekSbxReplay(this.value)">
+                <span class="mut" id="sbxReplayCounter">0 / 0</span>
+              </div>
+              <div class="sbx-timeline" id="sbxTimeline"></div>
+            </div>
+          </div>
         </div>
 
         <!-- 会议日志(共享) -->
@@ -1213,6 +1354,16 @@
   </div>
 </div>
 
+<!-- 居民详情 -->
+<div id="agentDetailModal" class="modal hidden">
+  <div class="box box-wide">
+    <div id="agentDetailBody"><div class="mut">加载中…</div></div>
+    <div class="row" style="gap:8px;margin-top:10px">
+      <button class="sec" onclick="closeAgentDetail()" style="flex:1">关闭</button>
+    </div>
+  </div>
+</div>
+
 <!-- 对话捏人:和助手聊天,逐步定人设,ready 后预填上面的表单确认落库 -->
 <div id="builderModal" class="modal hidden">
   <div class="box box-wide">
@@ -1373,7 +1524,7 @@ let mapAnim = null;            // 地图漫游 rAF 句柄
 let townMap = null;            // GET /world/places 缓存:{worldW,worldH,places}
 let sceneCards = [];           // 地图上浮动场景卡 {id,el,x,y,timer}
 let chatAgentId = null;        // 当前对话的居民 id
-const AUTO_INTERVALS = [{s:60,label:'1 分钟'},{s:300,label:'5 分钟'},{s:600,label:'10 分钟'}];
+const AUTO_INTERVALS = [{s:30,label:'30 秒'},{s:60,label:'1 分钟'},{s:300,label:'5 分钟'},{s:600,label:'10 分钟'},{s:3600,label:'1 小时'}];
 const M_STATUS = {PENDING:'排队中', RUNNING:'进行中', DONE:'已结束', FAILED:'失败'};
 // ---- 会议像素舞台 / 回放 ----
 let stage = null;              // 舞台引擎实例 { actors, raf, ... }
@@ -1381,23 +1532,31 @@ let replay = {                // 回放状态
   playing:false, idx:-1, speaks:[], timer:null, speed:1, live:true
 };
 // ---- 模型选择 / 计费 ----
-let wModel = 'qwen-plus';       // 协作写作选中的模型
-let mModel = 'qwen-plus';       // 会议选中的模型
+let wModel = 'glm-4.5-flash';   // 协作写作选中的模型
+let mModel = 'glm-4.5-flash';   // 会议选中的模型
 // 群聊状态
 let gMembers = [];              // 创建群聊表单选中的居民 id
-let gModel = 'qwen-turbo';      // 群聊模型(默认最便宜)
+let gModel = 'glm-4.5-flash';   // 群聊模型(默认智谱免费)
 let groupChat = null;           // 当前打开的群聊
 // 模型档位(name→展示),价位徽标按输入单价粗分四档
 const MODEL_TIERS = [
+  {name:'glm-4.5-flash', label:'GLM Flash', tier:'🆓',      hint:'智谱免费(默认)'},
+  {name:'glm-4.7-flash', label:'GLM 4.7',   tier:'🆓',      hint:'智谱免费·更强'},
   {name:'qwen-turbo', label:'Turbo', tier:'💰',      hint:'便宜快'},
-  {name:'qwen-plus',  label:'Plus',  tier:'💰💰',    hint:'均衡(默认)'},
+  {name:'qwen-plus',  label:'Plus',  tier:'💰💰',    hint:'均衡'},
   {name:'qwen-max',   label:'Max',   tier:'💰💰💰',  hint:'最强'},
   {name:'qwen-long',  label:'Long',  tier:'💰',      hint:'长文本'}];
 function renderModelChips(elId, selected, onpick) {
   const el = document.getElementById(elId);
   if (!el) return;
-  el.innerHTML = MODEL_TIERS.map(m =>
-    `<span class="chip ${selected===m.name?'on':''}" title="${m.hint}" onclick="${onpick}('${m.name}')">${m.label} ${m.tier}</span>`).join('');
+  const locked = !isAdmin;
+  el.innerHTML = MODEL_TIERS.map(m => {
+    const on = selected===m.name ? 'on' : '';
+    if (locked) {
+      return `<span class="chip ${on} disabled" title="仅管理员可切换模型">${m.label} ${m.tier}</span>`;
+    }
+    return `<span class="chip ${on}" title="${m.hint}" onclick="${onpick}('${m.name}')">${m.label} ${m.tier}</span>`;
+  }).join('');
 }
 // 会议/写作结束后的 token·费用 一行
 function costLine(o) {
@@ -2840,7 +2999,7 @@ function selectWorld() {
   document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
   document.getElementById('meetingsPanel').classList.add('hidden');
   renderAutoIntervalChips();
-  renderModelChips('autoModelChips', (worldSettings && worldSettings.model) || 'qwen-turbo', 'pickAutoModel');
+  renderModelChips('autoModelChips', (worldSettings && worldSettings.model) || 'glm-4.5-flash', 'pickAutoModel');
   switchWorldTab(worldTab);
   loadTownMap();
   loadAgents();
@@ -2862,23 +3021,56 @@ async function loadWorldSettings() {
     const t = document.getElementById('autoToggle');
     if (t) t.checked = !!worldSettings.autonomousEnabled;
     renderAutoIntervalChips();
-    renderModelChips('autoModelChips', worldSettings.model || 'qwen-turbo', 'pickAutoModel');
+    renderModelChips('autoModelChips', worldSettings.model || 'glm-4.5-flash', 'pickAutoModel');
     updateAutoState();
+    updateTownClock();
   } catch (e) { /* 忽略 */ }
+}
+// 小镇内在时钟:D月/时刻 · 季节·天气,渲染到地图标题旁
+function updateTownClock() {
+  const el = document.getElementById('townClock');
+  if (!el || !worldSettings) return;
+  const min = worldSettings.simMinute == null ? 480 : worldSettings.simMinute;
+  const hh = String(Math.floor(min / 60)).padStart(2, '0');
+  const mm = String(min % 60).padStart(2, '0');
+  const season = worldSettings.season ? `${seasonEmoji(worldSettings.season)}${worldSettings.season}季` : '';
+  const weather = worldSettings.weather ? `${weatherEmoji(worldSettings.weather)}${worldSettings.weather}` : '';
+  const date = worldSettings.simDate || '';
+  el.textContent = `⏰ ${date} ${hh}:${mm}${season ? ' · ' + season : ''}${weather ? ' ' + weather : ''}`;
 }
 function updateAutoState() {
   const el = document.getElementById('autoState');
   if (!el || !worldSettings) return;
+  const s = worldSettings.intervalSeconds || 600;
+  const every = s < 60 ? `${s} 秒`
+    : (s % 3600 === 0 ? `${s/3600} 小时`
+      : (s % 60 === 0 ? `${s/60} 分钟` : `${s} 秒`));
   el.textContent = worldSettings.autonomousEnabled
-    ? `运行中 · 每 ${Math.round((worldSettings.intervalSeconds||600)/60)} 分钟一位居民行动`
+    ? `运行中 · 每 ${every}一位居民行动`
     : '已暂停';
 }
 function renderAutoIntervalChips() {
   const el = document.getElementById('autoIntervalChips');
   if (!el) return;
   const cur = worldSettings ? worldSettings.intervalSeconds : 600;
-  el.innerHTML = AUTO_INTERVALS.map(x =>
-    `<span class="chip ${cur===x.s?'on':''}" onclick="pickAutoInterval(${x.s})">${x.label}</span>`).join('');
+  const locked = !isAdmin;
+  const chips = AUTO_INTERVALS.map(x => {
+    const on = cur===x.s ? 'on' : '';
+    return locked
+      ? `<span class="chip ${on} disabled" title="仅管理员可调整频率">${x.label}</span>`
+      : `<span class="chip ${on}" onclick="pickAutoInterval(${x.s})">${x.label}</span>`;
+  }).join('');
+  const custom = locked ? '' :
+    `<span class="chip-custom"><input id="autoIntervalInput" type="number" min="30" max="3600" step="1" placeholder="自定义秒" value="${cur}"><button onclick="applyCustomInterval()">确定</button></span>`;
+  el.innerHTML = chips + custom;
+}
+function applyCustomInterval() {
+  const inp = document.getElementById('autoIntervalInput');
+  if (!inp) return;
+  let v = Number(inp.value);
+  if (!Number.isFinite(v)) { toast('请输入有效秒数', 'err'); return; }
+  v = Math.max(30, Math.min(3600, Math.round(v)));
+  pickAutoInterval(v);
 }
 function pickAutoModel(m) { saveWorldSettings({model:m}); }
 function pickAutoInterval(s) { saveWorldSettings({intervalSeconds:s}); }
@@ -2894,7 +3086,7 @@ async function saveWorldSettings(patch) {
       headers:{'Content-Type':'application/json'}, body:JSON.stringify(patch)});
     const t = document.getElementById('autoToggle'); if (t) t.checked = !!worldSettings.autonomousEnabled;
     renderAutoIntervalChips();
-    renderModelChips('autoModelChips', worldSettings.model || 'qwen-turbo', 'pickAutoModel');
+    renderModelChips('autoModelChips', worldSettings.model || 'glm-4.5-flash', 'pickAutoModel');
     updateAutoState();
   } catch (e) { toast('设置失败:' + errText(e), 'err'); }
 }
@@ -2972,15 +3164,14 @@ function renderOffices() {
     const speaking = speakingId && String(a.id) === String(speakingId);
     const rc = a.color || '#2dd4bf';
     const mood = a.mood ? `${a.moodEmoji||'🙂'} ${esc(a.mood)}` : '';
-    return `<div class="office-room ${speaking?'speaking':''}" style="--rc:${esc(rc)}">
+    return `<div class="office-room ${speaking?'speaking':''}" style="--rc:${esc(rc)}" onclick="openAgentDetail(${a.id})" title="查看详情">
       ${speaking && lastText ? `<div class="speech-bubble">${esc(lastText.slice(0,80))}${lastText.length>80?'…':''}</div>` : ''}
       <div class="ostatus"></div>
-      ${a.birthDate ? `<div class="obirth">🎂 ${esc(a.birthDate)}</div>` : ''}
       <div class="oavatar">${esc(a.avatar||'🧑‍💼')}</div>
       <div class="oname">${esc(a.name)}</div>
       <div class="otitle">${esc(a.title||'居民')}</div>
       ${mood ? `<div class="omood">${mood}</div>` : ''}
-      <div class="oacts">
+      <div class="oacts" onclick="event.stopPropagation()">
         <button onclick="openChat(${a.id})">对话</button>
         ${canManageAgent(a) ? `<button class="sec" onclick="openAgentForm(${a.id})">编辑</button>
         <button class="sec" onclick="deleteAgent(${a.id})">删除</button>` : ''}
@@ -2996,6 +3187,113 @@ function renderOffices() {
 function canManageAgent(a) {
   if (isAdmin) return true;
   return myOwnerId && a && a.creator && a.creator === myOwnerId;
+}
+
+/** 由 YYYY-MM-DD 求星座。 */
+function zodiacOf(birth) {
+  if (!birth) return '';
+  const d = new Date(birth); if (isNaN(d)) return '';
+  const m = d.getMonth() + 1, day = d.getDate();
+  const arr = [['摩羯',1,19],['水瓶',2,18],['双鱼',3,20],['白羊',4,19],['金牛',5,20],['双子',6,21],
+    ['巨蟹',7,22],['狮子',8,22],['处女',9,22],['天秤',10,23],['天蝎',11,22],['射手',12,21],['摩羯',12,31]];
+  for (const [name, mm, dd] of arr) { if (m === mm && day <= dd) return name + '座'; }
+  return '';
+}
+/** 由 YYYY-MM-DD 求周岁。 */
+function ageOf(birth) {
+  if (!birth) return null;
+  const d = new Date(birth); if (isNaN(d)) return null;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age >= 0 && age < 200 ? age : null;
+}
+const MEM_KIND = {observation:'观察',dialogue:'对话',meeting:'会议',reflection:'反思',action:'行动'};
+const ACT_TYPE = {move:'移动',goto:'前往',think:'思考',talk:'交谈',reflect:'反思'};
+const REL_STATUS = {stranger:'陌生',friend:'朋友',close:'挚友',dating:'恋爱中',married:'已婚'};
+
+/** 打开居民详情页:拉 /detail 聚合数据渲染。 */
+async function openAgentDetail(id) {
+  const modal = document.getElementById('agentDetailModal');
+  const body = document.getElementById('agentDetailBody');
+  body.innerHTML = `<div class="mut">加载中…</div>`;
+  modal.classList.remove('hidden');
+  let d;
+  try { d = await j(`${API}/world/agents/${id}/detail`); }
+  catch (e) { body.innerHTML = `<div class="mut">加载失败。</div>`; return; }
+  const a = d.agent || {};
+  const rc = a.color || '#2dd4bf';
+  const age = ageOf(a.birthDate), zod = zodiacOf(a.birthDate);
+  const metaBits = [];
+  if (a.title) metaBits.push(esc(a.title));
+  if (a.birthDate) metaBits.push('🎂 ' + esc(a.birthDate) + (age != null ? `（${age}岁）` : ''));
+  if (zod) metaBits.push(zod);
+  if (a.location) metaBits.push('📍 ' + esc(placeName(a.location)));
+  metaBits.push('创造人:' + esc(d.creatorName || '系统'));
+  if (a.coins != null) metaBits.push('💰 ' + a.coins);
+  if (a.energy != null) metaBits.push('⚡ ' + a.energy);
+  if (a.homePlace) metaBits.push('🏠 ' + esc(placeName(a.homePlace)));
+  if (d.spouseName) metaBits.push('💍 ' + esc(d.spouseName));
+  const highlights = (d.highlights || []).filter(m => m.content);
+  const acts = (d.recentActions || []).filter(x => x.content);
+  const rels = (d.relations || []).filter(r => (r.intimacy || 0) > 0);
+  const prods = d.products || [];
+  const relBlock = rels.length ? `
+    <div class="detail-col">
+      <div class="detail-col-t">💞 亲密关系</div>
+      ${rels.map(r => `
+        <div class="detail-item">
+          <span class="badge">${REL_STATUS[r.status]||r.status}</span>
+          <span class="detail-item-txt">${esc(r.name)} <span class="mut">亲密度 ${r.intimacy}</span></span>
+        </div>`).join('')}
+    </div>` : '';
+  const prodBlock = prods.length ? `
+    <div class="detail-col detail-col-full">
+      <div class="detail-col-t">📚 作品产物（${prods.length}）</div>
+      ${prods.map(p => `
+        <div class="detail-item detail-prod" onclick="this.classList.toggle('open')">
+          <span class="badge">${prodKind(p.kind)}${p.seq?' #'+p.seq:''}</span>
+          <span class="detail-item-txt"><b>${esc(p.title||'无题')}</b>${p.quality?` <span class="mut">质量 ${p.quality}</span>`:''}
+            <div class="prod-body">${prodMedia(p)}</div></span>
+        </div>`).join('')}
+    </div>` : '';
+  body.innerHTML = `
+    <div class="detail-head" style="--rc:${esc(rc)}">
+      <div class="detail-avatar">${esc(a.avatar||'🧑‍💼')}</div>
+      <div class="detail-hd-txt">
+        <div class="detail-name">${esc(a.name||'')} ${a.moodEmoji?`<span class="detail-mood">${esc(a.moodEmoji)} ${esc(a.mood||'')}</span>`:''}</div>
+        <div class="detail-meta">${metaBits.join(' · ')}</div>
+      </div>
+      <div class="detail-hd-acts">
+        <button onclick="openChat(${a.id});closeAgentDetail()">对话</button>
+        ${canManageAgent(a) ? `<button class="sec" onclick="openAgentForm(${a.id});closeAgentDetail()">编辑</button>` : ''}
+      </div>
+    </div>
+    <div class="detail-persona">${esc(a.persona||'（暂无人设）')}</div>
+    <div class="detail-cols">
+      <div class="detail-col">
+        <div class="detail-col-t">✨ 杰出动态</div>
+        ${highlights.length ? highlights.map(m => `
+          <div class="detail-item">
+            <span class="badge">${MEM_KIND[m.kind]||m.kind}</span>
+            <span class="detail-item-txt">${esc(m.content)}</span>
+          </div>`).join('') : `<div class="mut">暂无记录。</div>`}
+      </div>
+      <div class="detail-col">
+        <div class="detail-col-t">🕒 近期行动</div>
+        ${acts.length ? acts.map(x => `
+          <div class="detail-item">
+            <span class="badge">${ACT_TYPE[x.type]||x.type}</span>
+            <span class="detail-item-txt">${esc(x.content)}${x.place?` <span class="mut">@${esc(placeName(x.place))}</span>`:''}</span>
+          </div>`).join('') : `<div class="mut">暂无记录。</div>`}
+      </div>
+      ${relBlock}
+      ${prodBlock}
+    </div>`;
+}
+function closeAgentDetail() {
+  document.getElementById('agentDetailModal').classList.add('hidden');
 }
 
 async function renderJail() {
@@ -3037,32 +3335,363 @@ function switchWorldTab(tab) {
     b.classList.toggle('active', b.dataset.tab === tab));
   document.getElementById('mapPane').classList.toggle('hidden', tab !== 'map');
   document.getElementById('jailPane').classList.toggle('hidden', tab !== 'jail');
+  document.getElementById('reportPane').classList.toggle('hidden', tab !== 'report');
+  document.getElementById('sandboxPane').classList.toggle('hidden', tab !== 'sandbox');
   if (tab === 'map') { renderOffices(); loadTownMap().then(() => { renderMap(); }); renderFeed(); }
   else if (mapAnim) { cancelAnimationFrame(mapAnim); mapAnim = null; }
   if (tab === 'jail') renderJail();
+  if (tab === 'report') loadReports();
+  if (tab === 'sandbox') initSandbox();
+}
+
+// 世界日报:列出最近 30 天,点开看某日详情(季节/天气/叙事/成就/产物/花费)
+let reportsCache = [];
+async function loadReports() {
+  const listEl = document.getElementById('reportList');
+  listEl.innerHTML = `<div class="mut">加载中…</div>`;
+  try { reportsCache = await j(`${API}/world/reports`); }
+  catch (e) { listEl.innerHTML = `<div class="mut">加载失败。</div>`; return; }
+  if (!reportsCache.length) {
+    listEl.innerHTML = `<div class="mut">还没有日报。开启「自主行动」让小镇时间流动起来,跨过一天就会生成第一份日报。</div>`;
+    document.getElementById('reportDetail').innerHTML = `<div class="mut">暂无日报。</div>`;
+    return;
+  }
+  listEl.innerHTML = reportsCache.map(r => `
+    <div class="report-item" onclick="openReport('${r.simDate}',this)">
+      <div class="ri-date">${esc(r.simDate)}</div>
+      <div class="ri-wx">${seasonEmoji(r.season)} ${esc(r.season||'')}·${weatherEmoji(r.weather)} ${esc(r.weather||'')}</div>
+    </div>`).join('');
+  openReport(reportsCache[0].simDate, listEl.querySelector('.report-item'));
+}
+function seasonEmoji(s){return {春:'🌱',夏:'☀️',秋:'🍂',冬:'❄️'}[s]||'📅';}
+function weatherEmoji(w){
+  if(!w) return '🌤';
+  if(w.includes('雪')) return '🌨'; if(w.includes('雨')) return '🌧';
+  if(w.includes('雷')) return '⛈'; if(w.includes('风')||w.includes('台风')) return '💨';
+  if(w.includes('云')||w.includes('阴')) return '☁️'; if(w.includes('烈日')||w.includes('晴')) return '☀️';
+  return '🌤';
+}
+async function openReport(date, el) {
+  document.querySelectorAll('#reportList .report-item').forEach(x => x.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const box = document.getElementById('reportDetail');
+  box.innerHTML = `<div class="mut">加载中…</div>`;
+  let d;
+  try { d = await j(`${API}/world/reports/${date}`); }
+  catch (e) { box.innerHTML = `<div class="mut">加载失败。</div>`; return; }
+  const r = d.report || {};
+  const stats = parseJson(r.statsJson) || {};
+  const highlights = parseJson(r.highlightsJson) || [];
+  const news = parseJson(r.newsJson) || [];
+  const products = d.products || [];
+  const costLine = (r.totalCostRmb != null)
+    ? `<div class="rd-cost">💰 当日花费 ¥${Number(r.totalCostRmb).toFixed(4)} · tokens ${(r.totalInputTokens||0)}/${(r.totalOutputTokens||0)}</div>`
+    : '';
+  box.innerHTML = `
+    <div class="rd-head">
+      <div class="rd-title">${seasonEmoji(r.season)} ${esc(r.simDate)} <span class="mut">${esc(r.season||'')}季 · ${esc(r.weather||'')}</span></div>
+    </div>
+    <div class="rd-narrative">${esc(r.narrative||'（今日无叙事）')}</div>
+    <div class="rd-stats">
+      <span class="stat-chip">📖 新章 ${stats.chapters||0}</span>
+      <span class="stat-chip">🎵 新歌 ${stats.songs||0}</span>
+      <span class="stat-chip">🎨 画作 ${stats.artworks||0}</span>
+      <span class="stat-chip">💍 结婚 ${stats.marriages||0}</span>
+      <span class="stat-chip">👶 出生 ${stats.births||0}</span>
+      <span class="stat-chip">🕯 离世 ${stats.deaths||0}</span>
+      <span class="stat-chip">🧑‍🤝‍🧑 居民 ${stats.residents||0}</span>
+    </div>
+    ${news.length ? `<div class="rd-sec-t">📰 今日大事</div>
+      <div class="rd-news">${news.map(n=>`<div class="rd-hl"><span class="badge">${newsKind(n.type)}</span> ${esc(n.content)}</div>`).join('')}</div>` : ''}
+    ${highlights.length ? `<div class="rd-sec-t">✨ 今日成就</div>
+      <div class="rd-highlights">${highlights.map(h=>`<div class="rd-hl"><b>${esc(h.agent)}</b> ${esc(h.what)}《${esc(h.title)}》</div>`).join('')}</div>` : ''}
+    ${products.length ? `<div class="rd-sec-t">📚 今日产物</div>
+      <div class="rd-products">${products.map(p=>`
+        <div class="rd-prod">
+          <div class="rd-prod-h"><b>《${esc(p.title)}》</b> <span class="badge">${prodKind(p.kind)}·质${p.quality||'-'}</span></div>
+          ${prodMedia(p)}
+        </div>`).join('')}</div>` : ''}
+    ${costLine}`;
+}
+function newsKind(t){return {marriage:'喜事',birth:'新生',death:'离世',event:'突发'}[t]||t;}
+function prodKind(k){return {chapter:'小说',song:'歌曲',artwork:'画作',image:'画作',video:'短片'}[k]||k;}
+/** 产物内容渲染:图片→img、视频→video、其余→文字。图片/视频走 /products/{id}/media。 */
+function prodMedia(p){
+  if (p.kind === 'image') {
+    return `<div class="rd-prod-media"><img src="${API}/world/products/${p.id}/media" alt="${esc(p.title)}" loading="lazy" onerror="this.closest('.rd-prod-media').innerHTML='<div class=&quot;rd-prod-c mut&quot;>🖼️ 图片加载失败</div>'"></div>`;
+  }
+  if (p.kind === 'video') {
+    if (!p.content || p.content.indexOf('/') < 0) {
+      return `<div class="rd-prod-c mut">🎬 短片生成中…</div>`;
+    }
+    return `<div class="rd-prod-media"><video controls preload="metadata" src="${API}/world/products/${p.id}/media"></video></div>`;
+  }
+  return `<div class="rd-prod-c">${esc(p.content||'')}</div>`;
+}
+function parseJson(s){ try { return s ? JSON.parse(s) : null; } catch(e){ return null; } }
+
+// ==== 沙盒快进 ====
+const SBX_YEARS = [1, 5, 10, 20, 30];
+let sbxSelected = new Set();   // 选中的居民 id
+let sbxYears = 10;             // 当前选定年数
+let sbxUsed = false;           // 本人是否已用过一次(非管理员)
+let sbxPollTimer = null;       // 运行状态轮询
+let sbxEvents = [];            // 当前回放事件
+let sbxReplayTimer = null, sbxReplayIdx = 0;
+
+function initSandbox() {
+  sbxSelected = new Set();
+  document.getElementById('sbxRunPane').classList.add('hidden');
+  document.getElementById('sbxForm').parentElement.classList.remove('hidden');
+  renderSbxMembers();
+  renderSbxYears();
+  document.getElementById('sbxEst').textContent = '';
+  document.getElementById('sbxRunBtn').disabled = true;
+  loadSbxHistory();
+}
+function renderSbxMembers() {
+  const box = document.getElementById('sbxMembers');
+  const active = agents.filter(a => a.status !== 'jailed');
+  if (!active.length) { box.innerHTML = `<div class="mut">暂无在册居民。</div>`; return; }
+  box.innerHTML = active.map(a => `
+    <button class="sbx-chip${sbxSelected.has(a.id) ? ' on' : ''}" onclick="toggleSbxMember(${a.id})">
+      ${esc(a.avatar || '🙂')} ${esc(a.name)}
+    </button>`).join('');
+}
+function toggleSbxMember(id) {
+  if (sbxSelected.has(id)) sbxSelected.delete(id); else sbxSelected.add(id);
+  renderSbxMembers();
+  document.getElementById('sbxRunBtn').disabled = true;
+  document.getElementById('sbxEst').textContent = '选择有变,请重新预估。';
+}
+function renderSbxYears() {
+  document.getElementById('sbxYearsChips').innerHTML = SBX_YEARS.map(y =>
+    `<button class="chip${sbxYears === y ? ' on' : ''}" onclick="pickSbxYears(${y})">${y} 年</button>`).join('');
+}
+function pickSbxYears(y) {
+  if (y == null) {
+    const v = parseInt(document.getElementById('sbxYearsCustom').value, 10);
+    if (!isNaN(v)) sbxYears = Math.max(1, Math.min(50, v));
+  } else {
+    sbxYears = y;
+    document.getElementById('sbxYearsCustom').value = '';
+  }
+  renderSbxYears();
+  document.getElementById('sbxRunBtn').disabled = true;
+}
+async function estimateSandbox() {
+  if (!sbxSelected.size) { document.getElementById('sbxEst').textContent = '请至少选择一名居民。'; return; }
+  const est = document.getElementById('sbxEst');
+  est.textContent = '预估中…';
+  try {
+    const resp = await j(`${API}/world/sandbox/estimate`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ years: sbxYears, memberIds: [...sbxSelected] })
+    });
+    sbxUsed = resp.alreadyUsed;
+    const e = resp.estimate;
+    const costTxt = (e.estCostRmb != null)
+      ? `约 <b>¥${Number(e.estCostRmb).toFixed(4)}</b> · tokens ${e.estInputTokens}/${e.estOutputTokens} · LLM ${e.estLlmCalls} 次`
+      : '（花费仅管理者可见）';
+    est.innerHTML = `预估:${e.years} 年 / ${e.seeds} 位居民,${costTxt}。`
+      + (sbxUsed ? ` <span class="sbx-warn">你已体验过一次沙盒,无法再次发起。</span>` : '');
+    document.getElementById('sbxRunBtn').disabled = sbxUsed;
+  } catch (err) { est.textContent = '预估失败:' + (err.message || err); }
+}
+async function runSandbox() {
+  if (!sbxSelected.size) return;
+  const btn = document.getElementById('sbxRunBtn');
+  btn.disabled = true; btn.textContent = '发起中…';
+  try {
+    const run = await j(`${API}/world/sandbox/run`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ years: sbxYears, memberIds: [...sbxSelected] })
+    });
+    openSandboxRun(run.id);
+    loadSbxHistory();
+  } catch (err) {
+    alert('发起失败:' + (err.message || err));
+    document.getElementById('sbxEst').textContent = err.message || String(err);
+  } finally { btn.textContent = '🚀 开始快进'; }
+}
+async function loadSbxHistory() {
+  const box = document.getElementById('sbxHistory');
+  try {
+    const list = await j(`${API}/world/sandbox`);
+    if (!list.length) { box.innerHTML = `<div class="mut">还没有沙盒任务。</div>`; return; }
+    box.innerHTML = list.map(r => `
+      <div class="sbx-hi" onclick="openSandboxRun(${r.id})">
+        <div class="sbx-hi-t">${esc(r.title || (r.years + ' 年推演'))}</div>
+        <div class="sbx-hi-m mut">${esc(r.years)} 年 · ${sbxStatusLabel(r.status)}</div>
+      </div>`).join('');
+  } catch (e) { box.innerHTML = `<div class="mut">加载失败。</div>`; }
+}
+function sbxStatusLabel(s){return {PENDING:'排队中',RUNNING:'推演中…',DONE:'已完成',FAILED:'失败'}[s]||s;}
+
+async function openSandboxRun(id) {
+  document.getElementById('sbxForm').parentElement.classList.add('hidden');
+  const pane = document.getElementById('sbxRunPane');
+  pane.classList.remove('hidden');
+  document.getElementById('sbxReport').innerHTML = `<div class="mut">加载中…</div>`;
+  document.getElementById('sbxReplay').classList.add('hidden');
+  stopSbxReplay();
+  await refreshSandboxRun(id);
+}
+async function refreshSandboxRun(id) {
+  let r;
+  try { r = await j(`${API}/world/sandbox/${id}`); }
+  catch (e) { document.getElementById('sbxReport').innerHTML = `<div class="mut">加载失败。</div>`; return; }
+  document.getElementById('sbxRunTitle').textContent = r.title || (r.years + ' 年推演');
+  document.getElementById('sbxRunStatus').textContent = sbxStatusLabel(r.status);
+  const rep = document.getElementById('sbxReport');
+  if (r.status === 'PENDING' || r.status === 'RUNNING') {
+    rep.innerHTML = `<div class="sbx-running">🌀 正在推演 ${esc(r.years)} 年的小镇变迁,请稍候…</div>`;
+    if (sbxPollTimer) clearTimeout(sbxPollTimer);
+    sbxPollTimer = setTimeout(() => refreshSandboxRun(id), 2500);
+    return;
+  }
+  if (sbxPollTimer) { clearTimeout(sbxPollTimer); sbxPollTimer = null; }
+  if (r.status === 'FAILED') {
+    rep.innerHTML = `<div class="sbx-warn">推演失败:${esc(r.errorMsg || '未知错误')}</div>`;
+    return;
+  }
+  const costLine = (r.actualCostRmb != null)
+    ? `<div class="rd-cost">💰 实际花费 ¥${Number(r.actualCostRmb).toFixed(4)} · tokens ${(r.actualInputTokens||0)}/${(r.actualOutputTokens||0)}</div>` : '';
+  rep.innerHTML = `<div class="sbx-report-body">${esc(r.report || '（无报告）')}</div>${costLine}`;
+  loadSbxEvents(id);
+}
+async function loadSbxEvents(id) {
+  try { sbxEvents = await j(`${API}/world/sandbox/${id}/events`); }
+  catch (e) { sbxEvents = []; }
+  if (!sbxEvents.length) { document.getElementById('sbxReplay').classList.add('hidden'); return; }
+  document.getElementById('sbxReplay').classList.remove('hidden');
+  const slider = document.getElementById('sbxReplaySlider');
+  slider.max = sbxEvents.length; slider.value = sbxEvents.length;
+  sbxReplayIdx = sbxEvents.length;
+  renderSbxTimeline();
+}
+function sbxEventIcon(t){return {birth:'👶',death:'🕯',marriage:'💍',dating:'💞',product:'📚',event:'⚡',milestone:'📅'}[t]||'•';}
+function renderSbxTimeline() {
+  const box = document.getElementById('sbxTimeline');
+  const shown = sbxEvents.slice(0, sbxReplayIdx);
+  box.innerHTML = shown.map(e => `
+    <div class="sbx-ev sbx-ev-${esc(e.type)}">
+      <span class="sbx-ev-i">${sbxEventIcon(e.type)}</span>
+      <span class="sbx-ev-d mut">${esc(e.simDate || '')}</span>
+      <span class="sbx-ev-c">${esc(e.content || '')}</span>
+    </div>`).join('');
+  document.getElementById('sbxReplayCounter').textContent = `${sbxReplayIdx} / ${sbxEvents.length}`;
+  document.getElementById('sbxReplaySlider').value = sbxReplayIdx;
+  box.scrollTop = box.scrollHeight;
+}
+function seekSbxReplay(v) { sbxReplayIdx = parseInt(v, 10) || 0; renderSbxTimeline(); }
+function toggleSbxReplay() {
+  const btn = document.getElementById('sbxReplayBtn');
+  if (sbxReplayTimer) { stopSbxReplay(); return; }
+  if (sbxReplayIdx >= sbxEvents.length) sbxReplayIdx = 0;
+  btn.textContent = '⏸ 暂停';
+  sbxReplayTimer = setInterval(() => {
+    if (sbxReplayIdx >= sbxEvents.length) { stopSbxReplay(); return; }
+    sbxReplayIdx++; renderSbxTimeline();
+  }, 500);
+}
+function stopSbxReplay() {
+  if (sbxReplayTimer) { clearInterval(sbxReplayTimer); sbxReplayTimer = null; }
+  const btn = document.getElementById('sbxReplayBtn');
+  if (btn) btn.textContent = '▶ 回放';
+}
+function closeSandboxRun() {
+  if (sbxPollTimer) { clearTimeout(sbxPollTimer); sbxPollTimer = null; }
+  stopSbxReplay();
+  document.getElementById('sbxRunPane').classList.add('hidden');
+  document.getElementById('sbxForm').parentElement.classList.remove('hidden');
+  initSandbox();
 }
 
 // 像素小镇:居民按 pos_x/y 世界坐标平滑走向目标,建筑由 /places 单一数据源绘制。
 let mapTargets = {};   // id -> {x,y} 世界坐标目标
 let mapPos = {};       // id -> {x,y} 世界坐标当前插值位置
+// 相机:视口左上角所在世界坐标 (x,y) + 缩放 scale。scale=1 时整个世界铺满画布。
+let cam = { x: 0, y: 0, scale: 1 };
+let camReady = false;  // 是否已挂载拖拽/滚轮交互
+let groundCache = null; // 地面层(草地+路网+树)离屏缓存,尺寸变化时重建
+function worldSize() {
+  return { WW: (townMap && townMap.worldW) || 960, WH: (townMap && townMap.worldH) || 760 };
+}
+// 按当前 scale 限制相机位移,保证视口不越出世界边界。
+function clampCam() {
+  const cv = document.getElementById('worldMap'); if (!cv) return;
+  const { WW, WH } = worldSize();
+  const fit = Math.min(cv.width / WW, cv.height / WH); // 铺满视口的最小缩放
+  cam.scale = Math.max(fit, Math.min(4, cam.scale));
+  const viewW = cv.width / cam.scale, viewH = cv.height / cam.scale;
+  cam.x = Math.max(0, Math.min(Math.max(0, WW - viewW), cam.x));
+  cam.y = Math.max(0, Math.min(Math.max(0, WH - viewH), cam.y));
+}
+// 画布(backing)像素 → 世界坐标
+function screenToWorld(bx, by) {
+  return { x: cam.x + bx / cam.scale, y: cam.y + by / cam.scale };
+}
+// 客户端事件坐标 → 画布 backing 像素
+function evToBacking(ev, cv, rect) {
+  return { bx: (ev.clientX - rect.left) / rect.width * cv.width,
+           by: (ev.clientY - rect.top) / rect.height * cv.height };
+}
+// 首次挂载相机交互:滚轮缩放(对准光标)+ 拖拽平移。区分点击与拖拽。
+function mountCamera() {
+  if (camReady) return;
+  const cv = document.getElementById('worldMap'); if (!cv) return;
+  camReady = true;
+  let dragging = false, moved = false, lastX = 0, lastY = 0;
+  cv.addEventListener('wheel', (ev) => {
+    ev.preventDefault();
+    const rect = cv.getBoundingClientRect();
+    const { bx, by } = evToBacking(ev, cv, rect);
+    const before = screenToWorld(bx, by);
+    cam.scale *= ev.deltaY < 0 ? 1.15 : 1 / 1.15;
+    clampCam();
+    // 缩放后让光标处世界点保持不动
+    cam.x = before.x - bx / cam.scale;
+    cam.y = before.y - by / cam.scale;
+    clampCam();
+    renderMap();
+  }, { passive: false });
+  cv.addEventListener('mousedown', (ev) => { dragging = true; moved = false; lastX = ev.clientX; lastY = ev.clientY; });
+  window.addEventListener('mousemove', (ev) => {
+    if (!dragging) return;
+    const rect = cv.getBoundingClientRect();
+    const dx = (ev.clientX - lastX) / rect.width * cv.width / cam.scale;
+    const dy = (ev.clientY - lastY) / rect.height * cv.height / cam.scale;
+    if (Math.abs(ev.clientX - lastX) + Math.abs(ev.clientY - lastY) > 3) moved = true;
+    cam.x -= dx; cam.y -= dy;
+    lastX = ev.clientX; lastY = ev.clientY;
+    clampCam(); renderMap();
+  });
+  window.addEventListener('mouseup', () => { dragging = false; });
+  cv.dataset.dragGuard = ''; // 供 mapClick 判断是否刚拖拽过
+  cv.addEventListener('click', (ev) => { if (moved) { moved = false; ev.stopImmediatePropagation(); } }, true);
+}
 // 地点主题色(与建筑屋顶/墙体呼应)
 const PLACE_COLORS = {
   townhall:'#f59e0b', cafe:'#c084fc', school:'#38bdf8', clinic:'#f87171', plaza:'#5eead4',
-  studio:'#f472b6', grocery:'#34d399', restaurant:'#fb7185', park:'#84cc16', repair:'#fbbf24'
+  studio:'#f472b6', grocery:'#34d399', restaurant:'#fb7185', park:'#84cc16', repair:'#fbbf24',
+  chapel:'#f9a8d4', cemetery:'#94a3b8', market:'#fb923c', home1:'#a3e635', home2:'#67e8f9'
 };
 function renderMap() {
   const cv = document.getElementById('worldMap');
   if (!cv) return;
-  const WW = (townMap && townMap.worldW) || 960, WH = (townMap && townMap.worldH) || 640;
+  mountCamera();
+  const { WW, WH } = worldSize();
   agents.forEach(a => {
     const tx = a.posX != null ? a.posX : WW/2;
     const ty = a.posY != null ? a.posY : WH/2;
     mapTargets[a.id] = {x:tx, y:ty};
     if (!mapPos[a.id]) mapPos[a.id] = {x:tx, y:ty};
   });
+  clampCam();
   if (!mapAnim) animateMap();
 }
-// 世界坐标 → 画布坐标(画布按 world 尺寸等比 devicePixel 缩放,这里直接 1:1)
+// 世界坐标 → 画布坐标(相机变换已由 ctx.setTransform 应用,这里恒等)
 function w2c(x, y) { return {x, y}; }
 
 function animateMap() {
@@ -3070,15 +3699,29 @@ function animateMap() {
   if (!cv || worldTab !== 'map') { mapAnim = null; return; }
   const ctx = cv.getContext('2d');
   const W = cv.width, H = cv.height;
+  const { WW, WH } = worldSize();
   const places = (townMap && townMap.places) || [];
 
-  drawGrass(ctx, W, H);
-  drawRoads(ctx, places);
-  // 装饰树:几处固定点缀
-  [[70,60],[900,70],[60,600],[905,590],[480,430],[300,240],[650,260]].forEach(([x,y]) => drawTree(ctx, x, y));
-  // 俯视小镇:park/plaza 为户外空间,其余为可见家具的房间内景
+  // 应用相机:清屏 → 平移/缩放到世界坐标系
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0d1512'; ctx.fillRect(0, 0, W, H);
+  ctx.setTransform(cam.scale, 0, 0, cam.scale, -cam.x * cam.scale, -cam.y * cam.scale);
+
+  // 地面层(草地+路网+树)缓存为离屏 canvas,仅世界尺寸变化时重建
+  if (!groundCache || groundCache.w !== WW || groundCache.h !== WH) {
+    const off = document.createElement('canvas');
+    off.width = WW; off.height = WH;
+    const octx = off.getContext('2d');
+    drawGrass(octx, WW, WH);
+    drawRoads(octx, places);
+    [[70,60],[900,70],[60,600],[905,590],[480,430],[300,240],[650,260],[130,720],[780,720]].forEach(([x,y]) => drawTree(octx, x, y));
+    groundCache = { canvas: off, w: WW, h: WH };
+  }
+  ctx.drawImage(groundCache.canvas, 0, 0);
+  // 俯视小镇:park/plaza/cemetery/market 为户外空间,其余为可见家具的房间内景
   places.forEach(p => {
-    if (p.key === 'park' || p.key === 'plaza') drawOutdoor(ctx, p);
+    if (p.key === 'park' || p.key === 'plaza' || p.key === 'cemetery' || p.key === 'market') drawOutdoor(ctx, p);
     else drawRoom(ctx, p);
   });
 
@@ -3105,7 +3748,7 @@ function animateMap() {
     drawActor(ctx, {avatar:a.avatar||'🧑', name:a.name||'', color:a.color||'#2dd4bf'},
       c.x, c.y - bob, speaking && blink);
     if (a.mood) {
-      // 头顶思考气泡:emoji + 心情文字 + 两颗上升小圆点(Smallville thought bubble)
+      // 头顶思考气泡:emoji + 心情文字 + 两颗上升小圆点
       ctx.font = '11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       const label = `${a.moodEmoji||'🙂'}${a.mood}`;
       const mw = ctx.measureText(label).width + 14;
@@ -3137,7 +3780,7 @@ function drawGrass(ctx, W, H) {
     ctx.fillRect(gx, gy, 3, 3);
   }
 }
-// 铺装步道:横竖石板路网连接各街区(Smallville 风格的石灰道)
+// 铺装步道:横竖石板路网连接各街区(石灰道)
 function drawRoads(ctx, places) {
   const tw = 30;
   // 石板带:底色 + 中缝虚线 + 边缘描线
@@ -3152,13 +3795,14 @@ function drawRoads(ctx, places) {
     else { for (let gy = y + 26; gy < y + h; gy += 26) { ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); } }
     ctx.stroke();
   };
-  // 三横两竖构成街区网格,穿过中心广场
+  // 三横两竖构成街区网格,穿过中心广场;第四横连通底部婚礼堂/墓园/集市/住宅
   band(40, 150 - tw/2, 880, tw);
   band(40, 330 - tw/2, 880, tw);
   band(40, 522 - tw/2, 880, tw);
-  band(180 - tw/2, 110, tw, 440);
-  band(480 - tw/2, 90, tw, 470);
-  band(810 - tw/2, 130, tw, 430);
+  band(40, 660 - tw/2, 880, tw);
+  band(180 - tw/2, 110, tw, 560);
+  band(480 - tw/2, 90, tw, 590);
+  band(810 - tw/2, 130, tw, 550);
 }
 function drawTree(ctx, x, y) {
   ctx.fillStyle = '#6b4423'; ctx.fillRect(x - 3, y, 6, 12);
@@ -3167,7 +3811,7 @@ function drawTree(ctx, x, y) {
   ctx.fillStyle = '#4f9440';
   ctx.beginPath(); ctx.moveTo(x, y - 12); ctx.lineTo(x - 11, y + 4); ctx.lineTo(x + 11, y + 4); ctx.closePath(); ctx.fill();
 }
-// 俯视房间内景(Smallville 招牌视角):地板 + 墙 + 家具 + 门牌
+// 俯视房间内景(招牌视角):地板 + 墙 + 家具 + 门牌
 // 每个地点是一间「顶视图房间」——能看到里面的桌椅家具,居民就站在房间里。
 const ROOM_W = 150, ROOM_H = 110;
 function drawRoom(ctx, p) {
@@ -3349,23 +3993,24 @@ function positionSceneCards() {
   if (!cv || !sceneCards.length) return;
   const rect = cv.getBoundingClientRect();
   const sx = rect.width / cv.width, sy = rect.height / cv.height;
+  // 世界坐标 → 相机 backing 像素 → CSS 像素
   sceneCards.forEach(e => {
     if (!e.el) return;
-    e.el.style.left = (e.x * sx) + 'px';
-    e.el.style.top = (e.y * sy) + 'px';
+    e.el.style.left = ((e.x - cam.x) * cam.scale * sx) + 'px';
+    e.el.style.top = ((e.y - cam.y) * cam.scale * sy) + 'px';
   });
 }
-// 点击画布小人 → 命中最近的居民(24px 内)→ 打开 1:1 对话
+// 点击画布小人 → 命中最近的居民(经相机反投影后 26px 世界距离内)→ 打开 1:1 对话
 function mapClick(ev) {
   const cv = document.getElementById('worldMap');
   if (!cv) return;
   const rect = cv.getBoundingClientRect();
-  const wx = (ev.clientX - rect.left) / rect.width * cv.width;
-  const wy = (ev.clientY - rect.top) / rect.height * cv.height;
+  const { bx, by } = evToBacking(ev, cv, rect);
+  const w = screenToWorld(bx, by);
   let hit = null, best = 26;
   agents.forEach(a => {
     const p = mapPos[a.id]; if (!p) return;
-    const d = Math.hypot(p.x - wx, p.y - wy - 12); // -12 对齐头部
+    const d = Math.hypot(p.x - w.x, p.y - w.y - 12); // -12 对齐头部
     if (d < best) { best = d; hit = a; }
   });
   if (hit) openChat(hit.id);
@@ -4079,7 +4724,7 @@ function fmtTime(t) {
 // ---- 群聊:创建 / 会话 / 成员增减 ----
 function openGroupChatForm() {
   if (!agents.length) { toast('先新增居民才能发起群聊', 'info'); return; }
-  gMembers = []; gModel = 'qwen-turbo';
+  gMembers = []; gModel = 'glm-4.5-flash';
   document.getElementById('groupTitleInput').value = '';
   renderGroupChips();
   renderModelChips('groupModelChips', gModel, 'pickGModel');

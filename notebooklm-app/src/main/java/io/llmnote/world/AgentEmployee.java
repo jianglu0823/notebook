@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * 智能体小世界里的一名「居民」:一个可配置人设、带长期记忆的 HarnessAgent。
  * 人设(persona)是该员工的 system prompt 基底;office_x/y 是家/基点,pos_x/y 是漫游当前坐标。
- * 斯坦福小镇模式下全局共享:owner_id 统一为 "world"。删除改为软删除(status=jailed 关小黑屋)。
+ * 智能体小镇模式下全局共享:owner_id 统一为 "world"。删除改为软删除(status=jailed 关小黑屋)。
  */
 @Data
 @Entity
@@ -75,6 +75,52 @@ public class AgentEmployee {
     /** 进小黑屋(软删除)时生成的第三人称「一生回顾」。 */
     @Column(name = "life_summary", columnDefinition = "TEXT")
     private String lifeSummary;
+
+    // ---- 活世界:经济 / 职业 / 作息 / 家园 / 关系 / 生命 ----
+
+    /** 货币余额。 */
+    @Column(nullable = false)
+    private Long coins = 0L;
+
+    /** 职业类型 key(writer/singer/... 驱动产物);title 仍为展示名。 */
+    @Column(length = 32)
+    private String occupation;
+
+    /** 作息模板 JSON:{"wake":7,"work":[9,12,14,18],"leisure":[19,22],"sleep":23}。 */
+    @Column(name = "schedule_json", columnDefinition = "TEXT")
+    private String scheduleJson;
+
+    /** 家所在建筑 key。 */
+    @Column(name = "home_place", length = 32)
+    private String homePlace;
+
+    /** 家园装饰 JSON:已购装饰 id 列表 + 等级。 */
+    @Column(name = "home_decor_json", columnDefinition = "TEXT")
+    private String homeDecorJson;
+
+    /** 配偶居民 id。 */
+    @Column(name = "spouse_id")
+    private Long spouseId;
+
+    /** 恋爱对象 id(未婚时)。 */
+    @Column(name = "partner_id")
+    private Long partnerId;
+
+    /** 父母 id,逗号分隔(出生的孩子有值)。 */
+    @Column(name = "parent_ids", length = 64)
+    private String parentIds;
+
+    /** 死亡日期(死亡即 jailed + lifeSummary)。 */
+    @Column(name = "death_date")
+    private LocalDate deathDate;
+
+    /** 死因。 */
+    @Column(name = "death_cause", length = 64)
+    private String deathCause;
+
+    /** 精力/健康,影响死亡概率与作息。 */
+    @Column(nullable = false)
+    private Integer energy = 100;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;

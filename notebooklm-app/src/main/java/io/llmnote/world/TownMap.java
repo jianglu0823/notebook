@@ -3,7 +3,7 @@ package io.llmnote.world;
 import java.util.List;
 
 /**
- * 斯坦福小镇(Smallville)风格的<b>具名地点地图</b>——纯常量,不建表。
+ * 智能体小镇风格的<b>具名地点地图</b>——纯常量,不建表。
  * 世界坐标系 {@link #WORLD_W}×{@link #WORLD_H}(与前端画布等比映射),
  * 一组固定 {@link Place} 手工排布成不重叠的镇图,是前后端画建筑/落位的<b>单一数据源</b>。
  *
@@ -14,12 +14,12 @@ public final class TownMap {
 
     /** 世界坐标系尺寸(前端按容器宽等比缩放到画布)。 */
     public static final double WORLD_W = 960;
-    public static final double WORLD_H = 640;
+    public static final double WORLD_H = 760;
 
     /** 一处具名地点:key(存库)+ 中文名 + 门牌 emoji + 世界坐标。 */
     public record Place(String key, String name, String emoji, double x, double y) {}
 
-    /** 手工排布的镇图:三行大致铺开,中心广场居中,四周环绕各类场所。 */
+    /** 手工排布的镇图:四行大致铺开,中心广场居中,四周环绕各类场所 + 婚礼堂/墓园/集市/住宅。 */
     private static final List<Place> PLACES = List.of(
             new Place("townhall",   "镇公所",   "🏛", 480, 110),
             new Place("cafe",       "咖啡馆",   "☕", 180, 150),
@@ -28,9 +28,14 @@ public final class TownMap {
             new Place("plaza",      "中心广场", "⛲", 480, 330),
             new Place("studio",     "画室",     "🎨", 810, 330),
             new Place("grocery",    "杂货铺",   "🛒", 180, 520),
-            new Place("restaurant", "餐馆",     "🍜", 480, 545),
+            new Place("restaurant", "餐馆",     "🍜", 480, 520),
             new Place("park",       "公园",     "🌳", 760, 500),
-            new Place("repair",     "修理铺",   "🔧", 810, 545)
+            new Place("repair",     "修理铺",   "🔧", 810, 545),
+            new Place("chapel",     "婚礼堂",   "💒", 320, 660),
+            new Place("cemetery",   "墓园",     "🪦", 110, 660),
+            new Place("market",     "集市",     "🎪", 560, 660),
+            new Place("home1",      "枫叶小屋", "🏠", 720, 660),
+            new Place("home2",      "溪畔小院", "🏡", 880, 660)
     );
 
     private TownMap() {}

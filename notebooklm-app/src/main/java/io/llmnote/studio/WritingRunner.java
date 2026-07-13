@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.Msg;
+import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatUsage;
-import io.agentscope.core.model.DashScopeChatModel;
 import io.agentscope.core.tool.Toolkit;
 import io.llmnote.llm.ChatModelFactory;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +46,7 @@ public class WritingRunner {
             repo.save(p);
 
             String modelName = modelFactory.normalize(p.getModel());
-            DashScopeChatModel model = modelFactory.forModel(modelName);
+            ChatModelBase model = modelFactory.forModel(modelName);
 
             ArrayNode eventsArr = objectMapper.createArrayNode();
             emit(p, eventsArr, "start", "system", "多智能体协作启动:作者写稿 → 核查员联网核实 → 主编裁决,最多 "
@@ -158,7 +158,7 @@ public class WritingRunner {
 
     // ---- Agent 构建 ----
 
-    private ReActAgent buildAuthor(String genre, DashScopeChatModel model) {
+    private ReActAgent buildAuthor(String genre, ChatModelBase model) {
         return ReActAgent.builder()
                 .name("author")
                 .sysPrompt("你是一位资深" + genreLabel(genre) + "作者,文笔出色、结构清晰。"
@@ -168,7 +168,7 @@ public class WritingRunner {
                 .build();
     }
 
-    private ReActAgent buildEditor(String genre, DashScopeChatModel model) {
+    private ReActAgent buildEditor(String genre, ChatModelBase model) {
         return ReActAgent.builder()
                 .name("editor")
                 .sysPrompt("你是一位严格的资深主编,负责把控" + genreLabel(genre) + "的质量。"
@@ -180,7 +180,7 @@ public class WritingRunner {
                 .build();
     }
 
-    private ReActAgent buildFactChecker(DashScopeChatModel model, java.util.function.BiConsumer<String, String> searchListener) {
+    private ReActAgent buildFactChecker(ChatModelBase model, java.util.function.BiConsumer<String, String> searchListener) {
         Toolkit toolkit = new Toolkit();
         toolkit.registerTool(new WebSearchTool(model, searchListener));
         return ReActAgent.builder()

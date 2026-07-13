@@ -1,6 +1,6 @@
 package io.llmnote.world;
 
-import io.agentscope.core.model.DashScopeChatModel;
+import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.memory.MemoryConfig;
 import io.llmnote.config.NotebookLmProperties;
@@ -66,7 +66,7 @@ public class EmployeeAgentFactory implements AutoCloseable {
     }
 
     private HarnessAgent build(AgentEmployee e, String model) {
-        DashScopeChatModel chatModel = modelFactory.forModel(model);
+        ChatModelBase chatModel = modelFactory.forModel(model);
         String sys = buildSysPrompt(e);
         Path workspace = workspaceOf(e.getId());
 

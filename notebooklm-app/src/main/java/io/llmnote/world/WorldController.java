@@ -1,10 +1,13 @@
 package io.llmnote.world;
 
 import io.llmnote.auth.Principal;
+import io.llmnote.auth.User;
+import io.llmnote.auth.UserRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -12,7 +15,7 @@ import java.util.List;
 
 /**
  * 智能体小世界入口。居民(智能体)CRUD + 1:1 对话 + 话题会议 + 自主行动世界设置 + 实时事件流。
- * 居民与记忆<b>全局共享</b>(斯坦福小镇模式),会议/对话按发起人 ownerId 归档。
+ * 居民与记忆<b>全局共享</b>(智能体小镇模式),会议/对话按发起人 ownerId 归档。
  */
 @RestController
 @RequestMapping("/api/world")
@@ -26,6 +29,12 @@ public class WorldController {
     private final WorldSettingsService settingsService;
     private final AgentActionRepository actionRepo;
     private final AgentMemoryRepository memoryRepo;
+    private final UserRepository userRepo;
+    private final WorldDailyReportRepository reportRepo;
+    private final AgentProductRepository productRepo;
+    private final RelationshipService relationshipService;
+    private final SandboxService sandboxService;
+    private final io.llmnote.llm.ZhipuMediaClient mediaClient;
 
     // ---- 居民(全局共享) ----
 
@@ -70,6 +79,48 @@ public class WorldController {
         return employeeService.release(id);
     }
 
+    /** 居民详情:基本信息 + 创造人展示名 + 杰出动态(高光记忆)+ 近期行动 + 配偶/亲密好友 + 产物。 */
+    @GetMapping("/agents/{id}/detail")
+    public AgentDetail agentDetail(@PathVariable Long id) {
+        AgentEmployee e = employeeService.get(id);
+        AgentDetail d = new AgentDetail();
+        d.setAgent(e);
+        d.setCreatorName(resolveOwnerName(e.getCreator()));
+        d.setHighlights(memoryRepo.findTop12ByAgentIdOrderByImportanceDescIdDesc(id));
+        d.setRecentActions(actionRepo.findTop15ByAgentIdOrderByIdDesc(id));
+        d.setProducts(productRepo.findByAgentIdOrderByIdDesc(id));
+        if (e.getSpouseId() != null) {
+            d.setSpouseName(employeeService.get(e.getSpouseId()).getName());
+        }
+        // 亲密好友:按亲密度取前若干,附对方名字与关系状态
+        List<RelationView> rels = new ArrayList<>();
+        for (AgentRelationship r : relationshipService.forAgent(id)) {
+            Long otherId = r.getAId().equals(id) ? r.getBId() : r.getAId();
+            String name;
+            try { name = employeeService.get(otherId).getName(); }
+            catch (Exception ignore) { continue; }
+            rels.add(new RelationView(otherId, name, r.getIntimacy(), r.getStatus()));
+            if (rels.size() >= 8) break;
+        }
+        d.setRelations(rels);
+        return d;
+    }
+
+    /** 把 ownerId(u:&lt;id&gt; / g:&lt;uuid&gt; / 系统)解析成人类可读的展示名。 */
+    private String resolveOwnerName(String creator) {
+        if (creator == null || creator.isBlank()) return "系统";
+        if (creator.startsWith("u:")) {
+            try {
+                Long uid = Long.parseLong(creator.substring(2));
+                return userRepo.findById(uid).map(User::getUsername).orElse("用户#" + uid);
+            } catch (NumberFormatException ignore) {
+                return creator;
+            }
+        }
+        if (creator.startsWith("g:")) return "游客";
+        return creator;
+    }
+
     // ---- 1:1 对话 ----
 
     @GetMapping("/agents/{id}/chat")
@@ -82,6 +133,72 @@ public class WorldController {
         return chatService.chat(id, principal.ownerId(), req == null ? null : req.getMessage());
     }
 
+    // ---- 世界日报(每日结算产物) ----
+
+    /** 最近日报列表(至多 30 天,倒序)。游客不返回 token/花费。 */
+    @GetMapping("/reports")
+    public List<WorldDailyReport> reports(Principal principal) {
+        List<WorldDailyReport> list = reportRepo.findTop30ByOrderBySimDateDesc();
+        boolean showCost = principal != null && !principal.guest();
+        if (!showCost) list.forEach(WorldController::stripCost);
+        return list;
+    }
+
+    /** 某日日报详情 + 当日产物列表。游客不返回 token/花费。 */
+    @GetMapping("/reports/{date}")
+    public ReportDetail report(@PathVariable String date, Principal principal) {
+        LocalDate d = LocalDate.parse(date);
+        WorldDailyReport r = reportRepo.findBySimDate(d).orElse(null);
+        boolean showCost = principal != null && !principal.guest();
+        if (r != null && !showCost) stripCost(r);
+        ReportDetail out = new ReportDetail();
+        out.setReport(r);
+        out.setProducts(productRepo.findBySimDateOrderByIdAsc(d));
+        return out;
+    }
+
+    /** 抹掉日报里的 token/花费字段(游客不可见)。 */
+    private static void stripCost(WorldDailyReport r) {
+        r.setTotalInputTokens(null);
+        r.setTotalOutputTokens(null);
+        r.setTotalCostRmb(null);
+    }
+
+    /** 抹掉沙盒任务里的 token/花费字段(游客不可见)。 */
+    private static void stripSandboxCost(SandboxRun r) {
+        if (r == null) return;
+        r.setActualInputTokens(null);
+        r.setActualOutputTokens(null);
+        r.setActualCostRmb(null);
+        r.setEstCostRmb(null);
+    }
+
+    // ---- 产物媒体(画作图片 / 短片视频) ----
+
+    /** 服务某个产物的媒体文件(image→png / video→mp4)。按 content 里存的相对路径取文件。 */
+    @GetMapping("/products/{id}/media")
+    public org.springframework.http.ResponseEntity<org.springframework.core.io.Resource> productMedia(@PathVariable Long id) {
+        AgentProduct p = productRepo.findById(id).orElse(null);
+        if (p == null || p.getContent() == null || p.getContent().isBlank()) {
+            return org.springframework.http.ResponseEntity.notFound().build();
+        }
+        String kind = p.getKind() == null ? "" : p.getKind();
+        boolean isVideo = "video".equals(kind);
+        boolean isImage = "image".equals(kind);
+        if (!isVideo && !isImage) return org.springframework.http.ResponseEntity.notFound().build();
+        java.nio.file.Path path = mediaClient.resolveMedia(p.getContent());
+        org.springframework.core.io.Resource res = new org.springframework.core.io.FileSystemResource(path);
+        if (!res.exists()) return org.springframework.http.ResponseEntity.notFound().build();
+        org.springframework.http.MediaType type = isVideo
+                ? org.springframework.http.MediaType.parseMediaType("video/mp4")
+                : org.springframework.http.MediaType.IMAGE_PNG;
+        return org.springframework.http.ResponseEntity.ok()
+                .contentType(type)
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"product_" + id + (isVideo ? ".mp4" : ".png") + "\"")
+                .body(res);
+    }
+
     // ---- 世界设置(自主行动总开关/间隔/模型) ----
 
     @GetMapping("/settings")
@@ -90,11 +207,12 @@ public class WorldController {
     }
 
     @PutMapping("/settings")
-    public WorldSettings updateSettings(@RequestBody SettingsReq req) {
+    public WorldSettings updateSettings(@RequestBody SettingsReq req, Principal principal) {
         return settingsService.update(
                 req == null ? null : req.getAutonomousEnabled(),
                 req == null ? null : req.getIntervalSeconds(),
-                req == null ? null : req.getModel());
+                req == null ? null : req.getModel(),
+                employeeService.isAdmin(principal));
     }
 
     // ---- 实时事件流(自主行动 + 记忆,供地图 feed) ----
@@ -134,6 +252,48 @@ public class WorldController {
         out.sort(Comparator.comparing(FeedItem::getCreatedAt,
                 Comparator.nullsLast(Comparator.reverseOrder())));
         return out;
+    }
+
+    // ---- 沙盒快进(隔离模拟,不影响真实世界;每人限一次,管理员不限) ----
+
+    /** 预估某次快进的 LLM 调用/token/花费,并附「本人是否已用过一次」。 */
+    @PostMapping("/sandbox/estimate")
+    public SandboxEstimateResp sandboxEstimate(@RequestBody SandboxReq req, Principal principal) {
+        SandboxService.Estimate est = sandboxService.estimate(
+                req == null || req.getYears() == null ? 1 : req.getYears(),
+                req == null ? null : req.getMemberIds());
+        return new SandboxEstimateResp(est, sandboxService.alreadyUsed(principal));
+    }
+
+    /** 发起一次沙盒运行(一次性 gate)。返回创建的任务(异步跑)。 */
+    @PostMapping("/sandbox/run")
+    public SandboxRun sandboxRun(@RequestBody SandboxReq req, Principal principal) {
+        return sandboxService.start(principal,
+                req == null ? null : req.getTitle(),
+                req == null || req.getYears() == null ? 1 : req.getYears(),
+                req == null ? null : req.getMemberIds());
+    }
+
+    /** 我的沙盒历史(管理员看全部)。游客不返回 token/花费。 */
+    @GetMapping("/sandbox")
+    public List<SandboxRun> sandboxList(Principal principal) {
+        List<SandboxRun> list = sandboxService.list(principal);
+        if (principal == null || principal.guest()) list.forEach(WorldController::stripSandboxCost);
+        return list;
+    }
+
+    /** 某次沙盒详情(含世界报告)。游客不返回 token/花费。 */
+    @GetMapping("/sandbox/{id}")
+    public SandboxRun sandboxGet(@PathVariable Long id, Principal principal) {
+        SandboxRun r = sandboxService.get(id);
+        if (principal == null || principal.guest()) stripSandboxCost(r);
+        return r;
+    }
+
+    /** 某次沙盒的事件时间线(供回放)。 */
+    @GetMapping("/sandbox/{id}/events")
+    public List<SandboxEvent> sandboxEvents(@PathVariable Long id) {
+        return sandboxService.events(id);
     }
 
     // ---- 会议 ----
@@ -232,6 +392,38 @@ public class WorldController {
         private Boolean autonomousEnabled;
         private Integer intervalSeconds;
         private String model;
+    }
+
+    @Data
+    public static class SandboxReq {
+        private String title;
+        private Integer years;
+        private List<Long> memberIds;
+    }
+
+    /** /sandbox/estimate 响应:预估明细 + 本人是否已用过一次(前端据此置灰入口)。 */
+    public record SandboxEstimateResp(SandboxService.Estimate estimate, boolean alreadyUsed) {}
+
+    /** /agents/{id}/detail 响应:居民 + 创造人展示名 + 杰出动态 + 近期行动 + 关系 + 产物。 */
+    @Data
+    public static class AgentDetail {
+        private AgentEmployee agent;
+        private String creatorName;
+        private String spouseName;
+        private List<AgentMemory> highlights;
+        private List<AgentAction> recentActions;
+        private List<RelationView> relations;
+        private List<AgentProduct> products;
+    }
+
+    /** 详情页里的一条关系展示:对方 id/名字 + 亲密度 + 关系状态。 */
+    public record RelationView(Long agentId, String name, Integer intimacy, String status) {}
+
+    /** /reports/{date} 响应:日报 + 当日产物。 */
+    @Data
+    public static class ReportDetail {
+        private WorldDailyReport report;
+        private List<AgentProduct> products;
     }
 
     /** feed 统一条目:动作/记忆合流,前端据此驱动地图动画与时间线。 */

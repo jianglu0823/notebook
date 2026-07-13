@@ -3,42 +3,41 @@ package io.llmnote.llm;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.message.TextBlock;
+import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.ChatUsage;
-import io.agentscope.core.model.DashScopeChatModel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/** 对 DashScopeChatModel 的薄封装:阻塞式取完整文本,供各生成场景复用。 */
+/** 对聊天模型的薄封装:阻塞式取完整文本,供各生成场景复用。默认走小镇文本模型(GLM 免费)。 */
 @Component
 @RequiredArgsConstructor
 public class ChatCompletion {
 
-    private final DashScopeChatModel chatModel;
+    private final ChatModelFactory modelFactory;
 
     /** 单轮 system+user 提示,阻塞返回完整文本。 */
     public String complete(String system, String user) {
-        return completeWithUsage(system, user, chatModel).text();
+        return completeWithUsage(system, user, null).text();
     }
 
     public String complete(List<Msg> messages) {
-        return completeWithUsage(messages, chatModel).text();
+        return completeWithUsage(messages, null).text();
     }
 
     /** 指定模型的单轮补全,返回文本 + token 用量。model 传 null 用默认。 */
-    public Result completeWithUsage(String system, String user, DashScopeChatModel model) {
+    public Result completeWithUsage(String system, String user, ChatModelBase model) {
         List<Msg> messages = List.of(
                 Msg.builder().role(MsgRole.SYSTEM).content(TextBlock.builder().text(system).build()).build(),
                 Msg.builder().role(MsgRole.USER).content(TextBlock.builder().text(user).build()).build());
         return completeWithUsage(messages, model);
     }
 
-    public Result completeWithUsage(List<Msg> messages, DashScopeChatModel model) {
-        DashScopeChatModel m = model == null ? chatModel : model;
-        List<ChatResponse> responses = m.stream(messages, List.of(), null)
-                .collectList().block();
+    public Result completeWithUsage(List<Msg> messages, ChatModelBase model) {
+        ChatModelBase m = model == null ? modelFactory.forModel(null) : model;
+        List<ChatResponse> responses = modelFactory.streamText(m, messages);
         StringBuilder sb = new StringBuilder();
         long in = 0, out = 0;
         if (responses != null) {
