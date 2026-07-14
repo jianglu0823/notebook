@@ -381,7 +381,11 @@
   .sbx-hi { border:1px solid var(--line); border-radius:var(--radius); background:var(--panel2); padding:9px 11px; cursor:pointer; transition:all .15s ease-in-out; }
   .sbx-hi:hover { border-color:var(--accent); }
   .sbx-hi-t { font-weight:700; font-size:12.5px; color:var(--fg); }
-  .sbx-hi-m { font-size:11px; margin-top:3px; }
+  .sbx-hi-m { font-size:11px; margin-top:5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .sbx-badge { font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:12px; border:1px solid var(--line); background:var(--panel); }
+  .sbx-badge.PENDING, .sbx-badge.RUNNING { color:var(--accent); border-color:color-mix(in srgb, var(--accent) 40%, transparent); background:color-mix(in srgb, var(--accent) 12%, transparent); }
+  .sbx-badge.DONE { color:var(--ok); border-color:color-mix(in srgb, var(--ok) 35%, transparent); background:color-mix(in srgb, var(--ok) 12%, transparent); }
+  .sbx-badge.FAILED { color:var(--err); border-color:color-mix(in srgb, var(--err) 35%, transparent); background:color-mix(in srgb, var(--err) 12%, transparent); }
   .sbx-run-head { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
   .sbx-run-title { font-weight:800; font-size:16px; color:var(--fg); }
   .sbx-run-status { font-size:12px; padding:3px 10px; border-radius:14px; background:var(--panel2); border:1px solid var(--line); color:var(--mut); }
@@ -1115,7 +1119,7 @@
           <div class="gallery-body" id="galleryBody"><div class="mut">加载中…</div></div>
         </div>
 
-        <!-- 沙盒快进视图:选居民 + 选年限 → 预估 → 确认开始 → 世界报告 + 回放 -->
+        <!-- 沙盒快进视图:选居民 + 选年限 → 开始快进 → 世界报告 + 回放 -->
         <div class="widget hidden" id="sandboxPane">
           <div class="wt">🚀 沙盒快进</div>
           <div class="wd">选定几位居民,在<b>隔离沙盒</b>里快进若干年:关系、姻缘、新生、逝去、作品全由规则引擎推演,<b>完全不影响真实世界</b>。统一使用默认免费模型,<b>所有人可无限次体验</b>,结束出一份世界报告并支持回放。</div>
@@ -1136,8 +1140,7 @@
                 <input type="number" id="sbxYearsCustom" min="1" max="50" placeholder="自定义年数 1-50" oninput="pickSbxYears(null)">
               </div>
               <div class="sbx-actions">
-                <button class="sec" id="sbxEstBtn" onclick="estimateSandbox()">🧮 预估花费</button>
-                <button class="primary" id="sbxRunBtn" onclick="runSandbox()" disabled>🚀 开始快进</button>
+                <button class="primary" id="sbxRunBtn" onclick="runSandbox()">🚀 开始快进</button>
               </div>
               <div class="sbx-est mut" id="sbxEst"></div>
             </div>
@@ -3543,7 +3546,7 @@ async function openReader(agentId) {
   document.getElementById('readerTitle').textContent = `${d.authorAvatar || '📖'} ${d.authorName} 的连载`;
   if (!readerChapters.length) { document.getElementById('readerContent').innerHTML = `<div class="mut">暂无章节。</div>`; return; }
   document.getElementById('readerToc').innerHTML = readerChapters.map((ch, i) =>
-    `<button class="rt-item" data-i="${i}" onclick="readerOpen(${i})">第${ch.seq || i+1}章 ${esc(ch.title || '')}</button>`).join('');
+    `<button class="rt-item" data-i="${i}" onclick="readerOpen(${i})">第${ch.seq || i+1}章 ${esc(unwrapChapter(ch.title, ch.content).title)}</button>`).join('');
   readerOpen(0);
 }
 function readerOpen(i) {
@@ -3553,12 +3556,29 @@ function readerOpen(i) {
   document.querySelectorAll('#readerToc .rt-item').forEach(b =>
     b.classList.toggle('active', +b.dataset.i === i));
   const el = document.getElementById('readerContent');
-  el.innerHTML = `<div class="rc-chap-t">第${ch.seq || i+1}章 ${esc(ch.title || '')}</div>${esc(ch.content || '')}`;
+  const tb = unwrapChapter(ch.title, ch.content);
+  el.innerHTML = `<div class="rc-chap-t">第${ch.seq || i+1}章 ${esc(tb.title)}</div>${esc(tb.content)}`;
   el.scrollTop = 0;
   document.getElementById('readerPos').textContent = `${i+1} / ${readerChapters.length}`;
   document.getElementById('readerPrev').disabled = i === 0;
   document.getElementById('readerNext').disabled = i === readerChapters.length - 1;
   mountComments(document.getElementById('readerComments'), 'product', ch.id);
+}
+// 兼容旧数据:早期 novel 章节把 {"title":...,"content":...} 原样存进了 content。
+// 尝试还原(JSON 可能被截断,故 JSON.parse 失败时用正则兜底抽取 title/content)。
+function unwrapChapter(title, content) {
+  let t = title || '无题', c = content || '';
+  const s = c.trim();
+  if (s.startsWith('{') && /"content"\s*:/.test(s)) {
+    try {
+      const o = JSON.parse(s);
+      if (o && typeof o.content === 'string') return { title: o.title || t, content: o.content };
+    } catch (e) { /* 截断的 JSON,走正则 */ }
+    const mt = s.match(/"title"\s*:\s*"([^"]*)"/);
+    const mc = s.match(/"content"\s*:\s*"([\s\S]*?)"?\s*(?:,\s*"quality"|\}\s*)?$/);
+    if (mc) return { title: (mt && mt[1]) || t, content: mc[1] };
+  }
+  return { title: t, content: c };
 }
 function readerGo(delta) { readerOpen(readerIdx + delta); }
 function closeReader() { document.getElementById('readerModal').classList.add('hidden'); }
@@ -3667,6 +3687,10 @@ function switchWorldTab(tab) {
   if (tab === 'report') loadReports();
   if (tab === 'gallery') loadGallery();
   if (tab === 'sandbox') initSandbox();
+  else { // 离开沙盒标签:停掉两个轮询定时器,避免后台空跑
+    if (sbxHistoryTimer) { clearTimeout(sbxHistoryTimer); sbxHistoryTimer = null; }
+    if (sbxPollTimer) { clearTimeout(sbxPollTimer); sbxPollTimer = null; }
+  }
 }
 
 // 世界日报:列出最近 30 天,点开看某日详情(季节/天气/叙事/成就/产物/花费)
@@ -3759,8 +3783,9 @@ function parseJson(s){ try { return s ? JSON.parse(s) : null; } catch(e){ return
 const SBX_YEARS = [1, 5, 10, 20, 30];
 let sbxSelected = new Set();   // 选中的居民 id
 let sbxYears = 10;             // 当前选定年数
-let sbxUsed = false;           // 本人是否已用过一次(非管理员)
-let sbxPollTimer = null;       // 运行状态轮询
+let sbxPollTimer = null;       // 当前详情页运行状态轮询
+let sbxHistoryTimer = null;    // 历史列表状态轮询(有未完成任务时才跑)
+let sbxDetailFails = 0;        // 详情轮询连续失败计数(用于韧性重试)
 let sbxEvents = [];            // 当前回放事件
 let sbxReplayTimer = null, sbxReplayIdx = 0;
 
@@ -3771,7 +3796,6 @@ function initSandbox() {
   renderSbxMembers();
   renderSbxYears();
   document.getElementById('sbxEst').textContent = '';
-  document.getElementById('sbxRunBtn').disabled = true;
   loadSbxHistory();
 }
 function renderSbxMembers() {
@@ -3786,16 +3810,12 @@ function renderSbxMembers() {
 function toggleSbxMember(id) {
   if (sbxSelected.has(id)) sbxSelected.delete(id); else sbxSelected.add(id);
   renderSbxMembers();
-  document.getElementById('sbxRunBtn').disabled = true;
-  document.getElementById('sbxEst').textContent = '选择有变,请重新预估。';
 }
 function selectAllSbx(on) {
   const active = agents.filter(a => a.status !== 'jailed');
   if (on) active.forEach(a => sbxSelected.add(a.id));
   else sbxSelected.clear();
   renderSbxMembers();
-  document.getElementById('sbxRunBtn').disabled = true;
-  document.getElementById('sbxEst').textContent = '选择有变,请重新预估。';
 }
 function renderSbxYears() {
   document.getElementById('sbxYearsChips').innerHTML = SBX_YEARS.map(y =>
@@ -3810,29 +3830,9 @@ function pickSbxYears(y) {
     document.getElementById('sbxYearsCustom').value = '';
   }
   renderSbxYears();
-  document.getElementById('sbxRunBtn').disabled = true;
-}
-async function estimateSandbox() {
-  if (!sbxSelected.size) { document.getElementById('sbxEst').textContent = '请至少选择一名居民。'; return; }
-  const est = document.getElementById('sbxEst');
-  est.textContent = '预估中…';
-  try {
-    const resp = await j(`${API}/world/sandbox/estimate`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ years: sbxYears, memberIds: [...sbxSelected] })
-    });
-    sbxUsed = resp.alreadyUsed;
-    const e = resp.estimate;
-    const costTxt = (e.estCostRmb != null)
-      ? `约 <b>¥${Number(e.estCostRmb).toFixed(4)}</b> · tokens ${e.estInputTokens}/${e.estOutputTokens} · LLM ${e.estLlmCalls} 次`
-      : '（花费仅管理者可见）';
-    est.innerHTML = `预估:${e.years} 年 / ${e.seeds} 位居民,${costTxt}。`
-      + (sbxUsed ? ` <span class="sbx-warn">你已体验过一次沙盒,无法再次发起。</span>` : '');
-    document.getElementById('sbxRunBtn').disabled = sbxUsed;
-  } catch (err) { est.textContent = '预估失败:' + (err.message || err); }
 }
 async function runSandbox() {
-  if (!sbxSelected.size) return;
+  if (!sbxSelected.size) { document.getElementById('sbxEst').textContent = '请至少选择一名居民。'; return; }
   const btn = document.getElementById('sbxRunBtn');
   btn.disabled = true; btn.textContent = '发起中…';
   try {
@@ -3845,19 +3845,48 @@ async function runSandbox() {
   } catch (err) {
     alert('发起失败:' + (err.message || err));
     document.getElementById('sbxEst').textContent = err.message || String(err);
-  } finally { btn.textContent = '🚀 开始快进'; }
+  } finally { btn.disabled = false; btn.textContent = '🚀 开始快进'; }
 }
 async function loadSbxHistory() {
   const box = document.getElementById('sbxHistory');
-  try {
-    const list = await j(`${API}/world/sandbox`);
-    if (!list.length) { box.innerHTML = `<div class="mut">还没有沙盒任务。</div>`; return; }
-    box.innerHTML = list.map(r => `
+  let list;
+  try { list = await j(`${API}/world/sandbox`); }
+  catch (e) { box.innerHTML = `<div class="mut">加载失败,稍后重试。</div>`; scheduleSbxHistoryPoll(true); return; }
+  if (!list.length) {
+    box.innerHTML = `<div class="mut">还没有沙盒任务。选好居民与年数,点「开始快进」发起第一次吧。</div>`;
+    scheduleSbxHistoryPoll(false);
+    return;
+  }
+  box.innerHTML = list.map(r => {
+    const st = r.status;
+    const running = st === 'PENDING' || st === 'RUNNING';
+    return `
       <div class="sbx-hi" onclick="openSandboxRun(${r.id})">
         <div class="sbx-hi-t">${esc(r.title || (r.years + ' 年推演'))}</div>
-        <div class="sbx-hi-m mut">${esc(r.years)} 年 · ${sbxStatusLabel(r.status)}</div>
-      </div>`).join('');
-  } catch (e) { box.innerHTML = `<div class="mut">加载失败。</div>`; }
+        <div class="sbx-hi-m">
+          <span class="sbx-badge ${esc(st)}">${running ? '🌀 ' : ''}${sbxStatusLabel(st)}</span>
+          <span class="mut">${esc(r.years)} 年 · ${esc(sbxWhen(r.createdAt))}</span>
+        </div>
+      </div>`;
+  }).join('');
+  // 只要还有未完成任务,就每 2 秒自动刷新列表状态,让「推演中…」能自动翻成「已完成」。
+  const anyRunning = list.some(r => r.status === 'PENDING' || r.status === 'RUNNING');
+  scheduleSbxHistoryPoll(anyRunning);
+}
+// 历史列表轮询:on=true 时 2 秒后再拉一次(仅当沙盒标签仍打开);off 时停表。
+function scheduleSbxHistoryPoll(on) {
+  if (sbxHistoryTimer) { clearTimeout(sbxHistoryTimer); sbxHistoryTimer = null; }
+  if (!on) return;
+  sbxHistoryTimer = setTimeout(() => {
+    if (worldTab === 'sandbox') loadSbxHistory();
+  }, 2000);
+}
+function sbxWhen(iso) {
+  if (!iso) return '';
+  const d = new Date(iso.replace(' ', 'T'));
+  if (isNaN(d)) return '';
+  const p = n => String(n).padStart(2, '0');
+  return `${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 function sbxStatusLabel(s){return {PENDING:'排队中',RUNNING:'推演中…',DONE:'已完成',FAILED:'失败'}[s]||s;}
 
@@ -3868,12 +3897,24 @@ async function openSandboxRun(id) {
   document.getElementById('sbxReport').innerHTML = `<div class="mut">加载中…</div>`;
   document.getElementById('sbxReplay').classList.add('hidden');
   stopSbxReplay();
+  sbxDetailFails = 0;
   await refreshSandboxRun(id);
 }
 async function refreshSandboxRun(id) {
   let r;
-  try { r = await j(`${API}/world/sandbox/${id}`); }
-  catch (e) { document.getElementById('sbxReport').innerHTML = `<div class="mut">加载失败。</div>`; return; }
+  try { r = await j(`${API}/world/sandbox/${id}`); sbxDetailFails = 0; }
+  catch (e) {
+    // 网络/鉴权瞬断不该让界面永久卡死:连试若干次,期间保持轮询。
+    sbxDetailFails++;
+    if (sbxDetailFails <= 8) {
+      if (sbxPollTimer) clearTimeout(sbxPollTimer);
+      sbxPollTimer = setTimeout(() => refreshSandboxRun(id), 1500);
+    } else {
+      document.getElementById('sbxReport').innerHTML =
+        `<div class="mut">加载失败,请点「← 返回」后重试。</div>`;
+    }
+    return;
+  }
   document.getElementById('sbxRunTitle').textContent = r.title || (r.years + ' 年推演');
   document.getElementById('sbxRunStatus').textContent = sbxStatusLabel(r.status);
   const rep = document.getElementById('sbxReport');
@@ -3885,6 +3926,7 @@ async function refreshSandboxRun(id) {
     return;
   }
   if (sbxPollTimer) { clearTimeout(sbxPollTimer); sbxPollTimer = null; }
+  loadSbxHistory();   // 终态时顺手刷新侧栏列表状态
   if (r.status === 'FAILED') {
     rep.innerHTML = `<div class="sbx-warn">推演失败:${esc(r.errorMsg || '未知错误')}</div>`;
     return;

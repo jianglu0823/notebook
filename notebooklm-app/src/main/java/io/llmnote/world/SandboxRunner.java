@@ -59,8 +59,8 @@ public class SandboxRunner {
         }
     }
 
-    /** 一次沙盒运行(异步)。members 为选定居民快照种子。 */
-    @Async
+    /** 一次沙盒运行(异步,专属线程池,避免被其它世界任务饿死)。members 为选定居民快照种子。 */
+    @Async("sandboxExecutor")
     public void run(Long runId, List<AgentEmployee> members, int years, LocalDate startDate) {
         SandboxRun run = runRepo.findById(runId).orElse(null);
         if (run == null) return;
@@ -159,7 +159,7 @@ public class SandboxRunner {
             stats.put("births", totalBirths);
             stats.put("deaths", totalDeaths);
 
-            String report = writeReport(members, years, stats, pop, tok);
+            String report = writeReportWithTimeout(members, years, stats, pop, tok);
 
             run = runRepo.findById(runId).orElse(run);
             run.setStatus("DONE");
@@ -187,6 +187,30 @@ public class SandboxRunner {
         if (roll < 65) { e.energy = clamp(e.energy + (8 + rnd(20)), 0, 100); return e.name + " 坚持锻炼,身体愈发硬朗。"; }
         if (roll < 82) { long l = Math.min(e.coins, 500 + rnd(2000)); e.coins -= l; return e.name + " 生意受挫,损失 " + l + " 金币。"; }
         return "小镇今年办了盛大庙会," + e.name + " 成了焦点。";
+    }
+
+    /**
+     * 给最终报告的 LLM 调用套一个硬超时:规则引擎已产出全部事件与统计,报告只是锦上添花。
+     * GLM 账户级限流(429/1302)时,{@code streamTextWithFallback} 会在整条降级链上反复重试,
+     * 可能拖住整个 run 让前端一直卡在「推演中」。超时即用统计兜底文本,保证 run 必定收敛到 DONE。
+     */
+    private String writeReportWithTimeout(List<AgentEmployee> members, int years,
+                                          Map<String, Object> stats, List<SimAgent> pop, long[] tok) {
+        String fallback = "历经 " + years + " 年,小镇几经春秋:" + stats + "。";
+        java.util.concurrent.ExecutorService ex = java.util.concurrent.Executors.newSingleThreadExecutor();
+        try {
+            java.util.concurrent.Future<String> f = ex.submit(() -> writeReport(members, years, stats, pop, tok));
+            String out = f.get(45, java.util.concurrent.TimeUnit.SECONDS);
+            return out == null || out.isBlank() ? fallback : out;
+        } catch (java.util.concurrent.TimeoutException te) {
+            log.warn("sandbox report LLM 超时,改用统计兜底文本");
+            return fallback;
+        } catch (Exception e) {
+            log.warn("sandbox report LLM 失败,改用统计兜底文本: {}", e.getMessage());
+            return fallback;
+        } finally {
+            ex.shutdownNow();
+        }
     }
 
     /** 最终世界报告:把统计与结局喂 qwen-turbo 写一段叙事(唯一 LLM 调用点)。 */

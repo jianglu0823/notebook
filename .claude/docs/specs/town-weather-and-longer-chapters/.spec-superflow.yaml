@@ -2,27 +2,27 @@
 # Derived data. Always rebuildable from artifacts. Lost/corrupt → fall back to content-level detection.
 
 # === Core state ===
-state: exploring
+state: closing
 workflow: full
 revision: 1
 
 # === Hashes (fast staleness detection) ===
-artifacts_hash: sha256:c202c203f3eef6a0dad7c1a2a3eb8f3b4ad8c096ef628e5b8c6764305582c5d4
+artifacts_hash: sha256:4ad06651d52f0d2d2f0af63f054420c6be379f13a6f38ae5a5b7f04437ea2e5b
 contract_hash: sha256:74d055828c5e0d52651958d7e62e122e4cfc08784db50ac105c76b5381d8edaa
 
 # === Execution progress ===
 execution_mode: inline
-execution_plan_hash: sha256:76cb7852bfad75cf26da97b55507ecac01e17559e1f4553c4b01926794aff393
+execution_plan_hash: sha256:b2ae1cd036a0c1ad969e623eec9d8ddb02a69ec06d9c4f703b96f1444b2c0ff4
 execution_plan_revision: 1
 batches_completed: 5
-test_result: null
-spec_merged: false
+test_result: pass
+spec_merged: true
 
 # === Metadata ===
 change_name: town-weather-and-longer-chapters
-last_transition: 2026-07-13T07:11:45.789Z
-last_transition_from: null
-last_transition_to: null
+last_transition: 2026-07-13T08:59:20.586Z
+last_transition_from: executing
+last_transition_to: closing
 
 # === Decision points ===
 dp_0_decisions: 合成单一变更(天气系统+加长小说章节);规模=full;天气=完整天气模型+前端展示;章节=完整正文800~1500字;沟通=每个决策点确认
@@ -35,11 +35,11 @@ dp_2_result: approved: proposal/specs(town-weather+resident-novel-length)/design
 dp_2_timestamp: 2026-07-13T07:08:05Z
 dp_3_result: approved: execution-contract 5 batches/17 tasks, 17 requirements 全覆盖无遗漏, scope fence 明确, 用户手动步骤=migration.sql+容器重建
 dp_3_timestamp: 2026-07-13T07:29:07Z
-dp_4_result: inline: plan revision 1; user-override; 用户显式选择 Inline
-dp_4_timestamp: 2026-07-13T07:33:11.445Z
+dp_4_result: inline: plan revision 1; user-override; inline mode; docs moved to .claude/docs/specs, plan rebuilt from current tasks.md
+dp_4_timestamp: 2026-07-13T08:50:19.591Z
 dp_5_result: null
 dp_5_timestamp: null
-dp_6_result: null
-dp_6_timestamp: null
-dp_7_result: null
-dp_7_timestamp: null
+dp_6_result: pass: 17需求全实现,5批评审全pass,fresh compile exit 0,部署验证(迁移+重启无temperature报错,settings API 返回 temperature:null 兼容降级正确),无越界修改
+dp_6_timestamp: 2026-07-13T08:20:36Z
+dp_7_result: confirmed: 文档迁移至 .claude/docs/specs/;delta specs 已合并至 _base-specs/{town-weather,resident-novel-length};5 wave 评审全 pass;state 推进至 closing
+dp_7_timestamp: 2026-07-13T08:59:55Z

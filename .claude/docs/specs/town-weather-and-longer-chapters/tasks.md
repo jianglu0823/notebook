@@ -12,7 +12,7 @@
 - **Modify** `src/main/java/io/llmnote/world/AutonomousRunner.java` — 镜像 temperature;buildPrompt 注入温度。
 - **Modify** `src/main/resources/static/index.html` — 时钟区(3170)与日报详情(3687/3717)展示温度,缺失优雅降级。
 - **Modify** `../infra/mysql/init.sql` — 两表加 `temperature INT NULL` 列(供未来新库)。
-- **Create** `changes/town-weather-and-longer-chapters/migration.sql` — 交用户手动执行的 `ALTER TABLE` 迁移。
+- **Create** `.claude/docs/specs/town-weather-and-longer-chapters/migration.sql` — 交用户手动执行的 `ALTER TABLE` 迁移。
 
 ## Interfaces
 
@@ -269,6 +269,16 @@
 
 ## 交付后置(非任务,交付说明中标注)
 
-1. **迁移**:用户须在 docker exec MySQL 内执行 `changes/town-weather-and-longer-chapters/migration.sql`(两条 ALTER),否则结算写 temperature 报列不存在(DB 写入需用户授权,用 `!` 前缀)。
+1. **迁移**:用户须在 docker exec MySQL 内执行 `.claude/docs/specs/town-weather-and-longer-chapters/migration.sql`(两条 ALTER),否则结算写 temperature 报列不存在(DB 写入需用户授权,用 `!` 前缀)。
 2. **重建**:代码改动需重建 app 容器方生效(需用户确认后执行)。
 3. **验证**:开启自主行动跑数日,观察日报温度逐日连续、极端天气突发 news、novel 章节达 800~1500 字。
+
+---
+
+## 完成清单(所有任务已实现并通过 wave 评审 pass)
+
+- [x] Batch 1 — 实体温度字段 + 迁移 SQL(Task 1.1~1.4)
+- [x] Batch 2 — ChatModelFactory options 透传(Task 2.1~2.2)
+- [x] Batch 3 — WorldSimEngine 天气模型 + 效应 + 章节加长(Task 3.1~3.9)
+- [x] Batch 4 — AutonomousRunner 镜像 + prompt 注入(Task 4.1~4.2)
+- [x] Batch 5 — 前端天气可视化(Task 5.1~5.2)

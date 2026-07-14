@@ -621,27 +621,43 @@ public class WorldSimEngine {
     private AgentProduct produce(AgentEmployee e, LocalDate date, String kind, String theme, String style, long[] tok) {
         long seq = nextSeq(e.getId(), kind);
         String styleHint = (style == null || style.isBlank()) ? "" : "风格倾向:" + style.trim() + "。";
-        String system = switch (theme) {
-            case "novel" -> "你是小说家的创作助手。请为一部连载小说写「第 " + seq + " 章」:先给一个章节标题,再写一段 800~1500 字的完整章节正文(要有情节推进、场景描写、人物对白与心理活动),而不是梗概或提纲。";
-            case "song" -> "你是作词人。请为一首新歌写歌名与一段 60~100 字的歌词片段(有画面感)。";
-            default -> "你是艺术评论助手。请为一幅新画作起标题并写一段 60~100 字的画面描述。";
-        } + styleHint + "只输出 JSON:{\"title\":\"标题\",\"content\":\"正文\",\"quality\":1到10的整数}。简体中文,不要 markdown 围栏。";
-        String user = "创作者「" + safe(e.getName()) + "」,身份「" + safe(e.getTitle()) + "」,人设:" + safe(e.getPersona())
-                + "。今天是" + date + "(" + seasonOf(date) + "季)。请创作。";
-        // 仅小说章节需 800~1500 字完整正文,给显式 max_tokens 上限防截断;其余产物不受影响。
-        GenerateOptions options = "novel".equals(theme) ? GenerateOptions.builder().maxTokens(3000).build() : null;
-        String raw = call(system, user, tok, options);
-        if (raw == null || raw.isBlank()) return null;
-        com.fasterxml.jackson.databind.JsonNode j = parse(raw);
         AgentProduct p = new AgentProduct();
         p.setAgentId(e.getId());
         p.setSimDate(date);
         p.setOccupation(skillOfKind(kind));
         p.setKind(kind);
         p.setSeq((int) seq);
-        p.setTitle(txt(j, "title", "无题"));
-        p.setContent(txt(j, "content", raw.trim()));
-        p.setQuality(clamp(j.path("quality").asInt(6), 1, 10));
+
+        if ("novel".equals(theme)) {
+            // 小说章节正文含大量换行,且长文本可能被 max_tokens 截断而无法闭合 JSON,
+            // 故改用纯文本协议(首行=章节标题,空行后=正文),对换行与截断都稳健。
+            String system = "你是小说家的创作助手。请为一部连载小说写「第 " + seq + " 章」:"
+                    + "第一行只写章节标题(不加书名号、不加\"第X章\"、不加任何前缀),然后空一行,"
+                    + "再写一段 800~1500 字的完整章节正文(要有情节推进、场景描写、人物对白与心理活动),而不是梗概或提纲。"
+                    + styleHint + "简体中文,直接输出标题与正文,不要 JSON、不要 markdown 围栏。";
+            String user = "创作者「" + safe(e.getName()) + "」,身份「" + safe(e.getTitle()) + "」,人设:" + safe(e.getPersona())
+                    + "。今天是" + date + "(" + seasonOf(date) + "季)。请创作。";
+            GenerateOptions options = GenerateOptions.builder().maxTokens(3000).build();
+            String raw = call(system, user, tok, options);
+            if (raw == null || raw.isBlank()) return null;
+            String[] tc = splitTitleBody(raw);
+            p.setTitle(tc[0]);
+            p.setContent(tc[1]);
+            p.setQuality(6);
+        } else {
+            String system = switch (theme) {
+                case "song" -> "你是作词人。请为一首新歌写歌名与一段 60~100 字的歌词片段(有画面感)。";
+                default -> "你是艺术评论助手。请为一幅新画作起标题并写一段 60~100 字的画面描述。";
+            } + styleHint + "只输出 JSON:{\"title\":\"标题\",\"content\":\"正文\",\"quality\":1到10的整数}。简体中文,不要 markdown 围栏。";
+            String user = "创作者「" + safe(e.getName()) + "」,身份「" + safe(e.getTitle()) + "」,人设:" + safe(e.getPersona())
+                    + "。今天是" + date + "(" + seasonOf(date) + "季)。请创作。";
+            String raw = call(system, user, tok, null);
+            if (raw == null || raw.isBlank()) return null;
+            com.fasterxml.jackson.databind.JsonNode j = parse(raw);
+            p.setTitle(txt(j, "title", "无题"));
+            p.setContent(txt(j, "content", raw.trim()));
+            p.setQuality(clamp(j.path("quality").asInt(6), 1, 10));
+        }
         AgentProduct saved = productRepo.save(p);
         memoryService.record(e.getId(), "reflection",
                 "我完成了《" + saved.getTitle() + "》(" + kindLabel(kind) + ")。", 7, null);
@@ -832,6 +848,48 @@ public class WorldSimEngine {
     private String txt(com.fasterxml.jackson.databind.JsonNode j, String field, String dflt) {
         com.fasterxml.jackson.databind.JsonNode n = j.path(field);
         return n.isMissingNode() || n.isNull() || n.asText().isBlank() ? dflt : n.asText().trim();
+    }
+
+    /**
+     * 从纯文本小说输出中拆出标题与正文:首个非空行=标题(剥离书名号/「第X章」等前缀),
+     * 其余为正文。若模型仍误返回 JSON,则退回解析 title/content 字段。返回 {title, content}。
+     */
+    private String[] splitTitleBody(String raw) {
+        String s = raw == null ? "" : raw.trim();
+        // 兜底:模型偶尔仍吐 JSON,尽力解析
+        if (s.startsWith("{")) {
+            com.fasterxml.jackson.databind.JsonNode j = parse(s);
+            if (j.hasNonNull("content") && !j.path("content").asText().isBlank()) {
+                return new String[]{txt(j, "title", "无题"), j.path("content").asText().trim()};
+            }
+        }
+        String[] lines = s.split("\\r?\\n", -1);
+        String title = "无题";
+        int bodyStart = 0;
+        for (int idx = 0; idx < lines.length; idx++) {
+            if (!lines[idx].isBlank()) {
+                title = cleanTitle(lines[idx].trim());
+                bodyStart = idx + 1;
+                break;
+            }
+        }
+        StringBuilder body = new StringBuilder();
+        for (int idx = bodyStart; idx < lines.length; idx++) {
+            body.append(lines[idx]).append('\n');
+        }
+        String content = body.toString().trim();
+        if (content.isBlank()) content = s; // 只有一行时正文退回全文
+        if (title.isBlank()) title = "无题";
+        return new String[]{title, content};
+    }
+
+    /** 清理标题里的书名号、「第X章」/「第X章:」等前缀与首尾标点。 */
+    private static String cleanTitle(String t) {
+        String s = t.replaceAll("^第\\s*[0-9零一二三四五六七八九十百]+\\s*章[::、.\\s]*", "")
+                .replaceAll("^[《【\\[\"'“”]+", "")
+                .replaceAll("[》】\\]\"'“”]+$", "")
+                .trim();
+        return s.isBlank() ? "无题" : s;
     }
 
     private static String kindLabel(String k) {
