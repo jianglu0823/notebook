@@ -71,13 +71,24 @@ public class ZhipuMediaClient {
 
     // ---- 视频(异步,CogVideoX Flash 分钟级) ----
 
-    /** 提交文生视频任务,返回任务 id。失败返回 null。 */
+    /** 提交文生视频任务(默认参数),返回任务 id。失败返回 null。 */
     public String submitVideo(String prompt) {
+        return submitVideo(prompt, null, false);
+    }
+
+    /**
+     * 提交文生视频任务,可指定分辨率与是否附带 AAC 音轨。
+     * {@code size} 为空则不传(用模型默认);{@code withAudio=false} 生成纯画面(供自行铺 TTS)。
+     * 失败返回 null。
+     */
+    public String submitVideo(String prompt, String size, boolean withAudio) {
         try {
             ObjectNode body = objectMapper.createObjectNode();
             body.put("model", props.getZhipu().getVideoModel());
             body.put("prompt", prompt);
             body.put("watermark_enabled", false);
+            if (size != null && !size.isBlank()) body.put("size", size);
+            body.put("with_audio", withAudio);
             JsonNode resp = postWithRetry("/videos/generations", body);
             if (resp == null) return null;
             String id = resp.path("id").asText(null);

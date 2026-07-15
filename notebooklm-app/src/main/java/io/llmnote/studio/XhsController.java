@@ -63,6 +63,12 @@ public class XhsController {
         return xhsService.genImages(id, principal.ownerId());
     }
 
+    /** Step5:异步生成配音短视频(分段 CogVideoX + TTS + ffmpeg 合成)。 */
+    @PostMapping("/{id}/video")
+    public XhsProject video(@PathVariable Long id, Principal principal) {
+        return xhsService.genVideo(id, principal.ownerId());
+    }
+
     /** 发布管理:切换本地状态(草稿/待发/已发)。 */
     @PutMapping("/{id}/publish")
     public XhsProject publish(@PathVariable Long id, @RequestBody PublishReq req, Principal principal) {
@@ -93,6 +99,20 @@ public class XhsController {
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"xhs_" + id + "_" + idx + ".png\"")
+                .body(res);
+    }
+
+    /** 展示/下载成片 mp4。 */
+    @GetMapping("/{id}/video")
+    public ResponseEntity<Resource> videoFile(@PathVariable Long id, Principal principal) {
+        XhsProject p = xhsService.get(id, principal.ownerId());
+        if (p.getVideoPath() == null || p.getVideoPath().isBlank()) return ResponseEntity.notFound().build();
+        Path path = Paths.get(p.getVideoPath());
+        Resource res = new FileSystemResource(path);
+        if (!res.exists()) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("video/mp4"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"xhs_" + id + ".mp4\"")
                 .body(res);
     }
 

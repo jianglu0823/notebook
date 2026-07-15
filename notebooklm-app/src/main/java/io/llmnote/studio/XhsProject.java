@@ -53,6 +53,14 @@ public class XhsProject {
     @Column(name = "image_paths", columnDefinition = "TEXT")
     private String imagePaths;
 
+    /** 成片 mp4 路径(imageDir 下 <owner>/<id>/video.mp4) */
+    @Column(name = "video_path", length = 512)
+    private String videoPath;
+
+    /** 视频阶段细分状态:PENDING/RENDERING/DONE/FAILED(可空) */
+    @Column(name = "video_status", length = 32)
+    private String videoStatus;
+
     /** 发布管理:DRAFT/READY/PUBLISHED */
     @Column(name = "publish_status", nullable = false, length = 32)
     private String publishStatus = "DRAFT";

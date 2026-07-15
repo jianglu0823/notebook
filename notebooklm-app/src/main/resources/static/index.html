@@ -916,9 +916,19 @@
             <div id="imagesStage"></div>
           </div>
 
+          <!-- Step5 视频 -->
+          <div class="widget xstep hidden" id="xstep5">
+            <div class="wt">⑤ 生成配音视频</div>
+            <div class="wd">AI 把文案改写成口播稿与分镜,用 CogVideoX 生成竖屏短片,再配上 AI 朗读合成成片。约需 1~3 分钟。</div>
+            <div class="img-actions">
+              <button id="videoBtn" onclick="genVideo()">🎬 生成配音视频</button>
+            </div>
+            <div id="videoStage"></div>
+          </div>
+
           <!-- 发布管理 -->
           <div class="widget xstep hidden" id="xstepPublish">
-            <div class="wt">⑤ 发布管理</div>
+            <div class="wt">⑥ 发布管理</div>
             <div class="wd">小红书暂无公开发布 API,这里做本地状态管理 + 一键复制导出。</div>
             <div class="pub-row">
               <span class="mut">发布状态:</span>
@@ -1632,7 +1642,7 @@ const XHS_STYLES = [
   {k:'DUSHE',    e:'🐍', t:'毒舌吐槽', d:'犀利幽默、敢说真话,反差感强但不低俗'},
   {k:'GANHUO',   e:'📚', t:'干货教程', d:'条理清晰、可执行,多用步骤清单要点'},
   {k:'ZHIYU',    e:'🌸', t:'治愈温柔', d:'舒缓文艺、有情绪价值,给人陪伴感'}];
-const XHS_STEP_STATUS = {NEW:0, TITLES_DONE:1, RESEARCH_DONE:2, COPY_DONE:3, IMAGES_DONE:4};
+const XHS_STEP_STATUS = {NEW:0, TITLES_DONE:1, RESEARCH_DONE:2, COPY_DONE:3, IMAGES_DONE:4, VIDEO_DONE:5};
 const PUB_LABEL = {DRAFT:'草稿', READY:'待发', PUBLISHED:'已发'};
 // ---- 多智能体协作写作 ----
 let writing = null;            // 当前协作写作项目
@@ -2710,7 +2720,7 @@ function renderStyleCards() {
 function pickStyle(k) { xhsStyle = k; renderStyleCards(); }
 
 function renderSteps(active) {
-  const labels = ['方向','标题','风格文案','配图','发布'];
+  const labels = ['方向','标题','风格文案','配图','视频','发布'];
   const el = document.getElementById('studioSteps');
   el.innerHTML = labels.map((l, i) => {
     const cls = i < active ? 'done' : (i === active ? 'active' : '');
@@ -2723,6 +2733,7 @@ function showXstep(n) {
   document.getElementById('xstep2').classList.toggle('hidden', n < 2);
   document.getElementById('xstep3').classList.toggle('hidden', n < 3);
   document.getElementById('xstep4').classList.toggle('hidden', n < 4);
+  document.getElementById('xstep5').classList.toggle('hidden', n < 4);
   document.getElementById('xstepPublish').classList.toggle('hidden', n < 4);
 }
 
@@ -2770,6 +2781,16 @@ async function genImages() {
   } catch (e) { toast('提交失败:' + errText(e), 'err'); }
   finally { btn.disabled = false; }
 }
+async function genVideo() {
+  if (!xhs) return;
+  const btn = document.getElementById('videoBtn'); btn.disabled = true;
+  document.getElementById('videoStage').innerHTML = '<div class="xnotice">AI 正在生成分镜、渲染竖屏短片并合成配音,约需 1~3 分钟…</div>' + skeletonCards(1);
+  try {
+    xhs = await j(`${API}/studio/xhs/${xhs.id}/video`, {method:'POST', headers:{'Content-Type':'application/json'}});
+    pollXhs('VIDEO_DONE');
+  } catch (e) { toast('提交失败:' + errText(e), 'err'); }
+  finally { btn.disabled = false; }
+}
 
 // 轮询到目标状态(或 FAILED)为止。各异步阶段进行中,status 仍停留在上一完成态,
 // 故不能靠 status 判忙,而是显式轮询直至 status === 目标态。
@@ -2781,7 +2802,8 @@ function pollXhs(target) {
     if (!document.body.classList.contains('studio') || !xhs) { xhsBusy = false; return; }
     try {
       xhs = await j(`${API}/studio/xhs/${xhs.id}`);
-      if (xhs.status === target || xhs.status === 'FAILED') xhsBusy = false;
+      if (xhs.status === target || xhs.status === 'FAILED' ||
+          (target === 'VIDEO_DONE' && xhs.videoStatus === 'FAILED')) xhsBusy = false;
       renderXhs();
       if (!xhsBusy) return;
       xhsPoll = setTimeout(tick, 3000);
@@ -2801,6 +2823,7 @@ function renderXhs() {
   else if (xhs.status === 'RESEARCH_DONE') activeStep = 2;
   else if (xhs.status === 'COPY_DONE') activeStep = 3;
   else if (xhs.status === 'IMAGES_DONE') activeStep = 4;
+  else if (xhs.status === 'VIDEO_DONE') activeStep = 5;
   renderSteps(activeStep);
 
   // Step1 标题产出
@@ -2841,10 +2864,22 @@ function renderXhs() {
     renderPubChips();
     showXstep(4);
   }
+  // Step5 视频产出:仅当成功(videoPath 存在)才展示;失败只给可重试提示,绝不显示失败视频
+  if (xhs.videoStatus === 'FAILED') {
+    document.getElementById('videoStage').innerHTML =
+      `<div class="xnotice">视频生成失败了,可点上方按钮重试。（失败作品会自动清理)</div>`;
+    showXstep(4);
+  } else if (xhs.videoPath) {
+    const url = `${API}/studio/xhs/${xhs.id}/video${audioTokenQs()}`;
+    document.getElementById('videoStage').innerHTML =
+      `<div class="video-cell"><video controls playsinline preload="metadata" src="${url}" style="max-width:270px;width:100%;border-radius:12px;background:#000"></video>
+         <div class="ic-bar"><a href="${url}" download="xhs_${xhs.id}.mp4">⬇ 下载视频</a></div></div>`;
+    showXstep(4);
+  }
 }
 function renderXhsFailed() {
   const msg = esc(xhs.errorMsg || '任务失败,请重试');
-  const stage = ['titlesStage','researchStage','copyStage','imagesStage']
+  const stage = ['titlesStage','researchStage','copyStage','imagesStage','videoStage']
     .find(id => { const e = document.getElementById(id); return e && e.querySelector('.xnotice'); });
   const html = `<div class="xnotice xerr">✗ ${msg}</div>`;
   if (stage) document.getElementById(stage).innerHTML = html;

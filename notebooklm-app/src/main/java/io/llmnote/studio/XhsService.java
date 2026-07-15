@@ -3,6 +3,10 @@ package io.llmnote.studio;
 import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesis;
 import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisParam;
 import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisResult;
+import com.alibaba.dashscope.audio.ttsv2.SpeechSynthesisAudioFormat;
+import com.alibaba.dashscope.audio.ttsv2.SpeechSynthesisParam;
+import com.alibaba.dashscope.audio.ttsv2.SpeechSynthesizer;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
@@ -12,18 +16,24 @@ import io.agentscope.core.model.DashScopeChatModel;
 import io.agentscope.core.model.GenerateOptions;
 import io.llmnote.config.NotebookLmProperties;
 import io.llmnote.llm.ChatCompletion;
+import io.llmnote.llm.ZhipuMediaClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.OutputStream;
 import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 小红书文案生成工作流服务。四个异步阶段各自更新 xhs_project.status,前端逐段轮询:
@@ -41,12 +51,19 @@ public class XhsService {
     private static final int TITLE_COUNT = 8;
     private static final int MAX_IMAGES = 3;
     private static final String IMG_SIZE = "1024*1024";
+    /** 视频镜头段数上限(每段约 5s)。 */
+    private static final int MAX_SCENES = 4;
+    private static final int MIN_SCENES = 2;
+    /** 竖屏 9:16。 */
+    private static final String VIDEO_SIZE = "1080x1920";
+    private static final SpeechSynthesisAudioFormat TTS_FMT = SpeechSynthesisAudioFormat.MP3_22050HZ_MONO_256KBPS;
 
     private final DashScopeChatModel chatModel;
     private final ChatCompletion chat;
     private final NotebookLmProperties props;
     private final ObjectMapper objectMapper;
     private final XhsProjectRepository repo;
+    private final ZhipuMediaClient mediaClient;
 
     // ---- 提交入口 ----
 
@@ -84,6 +101,52 @@ public class XhsService {
         repo.save(p);
         genImagesAsync(id);
         return p;
+    }
+
+    public XhsProject genVideo(Long id, String ownerId) {
+        XhsProject p = owned(id, ownerId);
+        p.setStatus("IMAGES_DONE");
+        p.setVideoStatus("PENDING");
+        p.setErrorMsg(null);
+        repo.save(p);
+        genVideoAsync(id);
+        return p;
+    }
+
+    /**
+     * 每日凌晨清理失败的视频作品:删除该项目视频目录下的中间/半成品文件(seg_*.mp4/narration.mp3/
+     * segs.mp4/concat.txt/video.mp4),并清空 video_path/video_status,使前端彻底不残留失败视频。
+     * 只针对 videoStatus=FAILED,不影响配图与文案。
+     */
+    @Scheduled(cron = "0 17 3 * * *")
+    public void cleanupFailedVideos() {
+        List<XhsProject> failed = repo.findByVideoStatus("FAILED");
+        if (failed.isEmpty()) return;
+        int files = 0, rows = 0;
+        for (XhsProject p : failed) {
+            try {
+                Path dir = Paths.get(props.getStorage().getImageDir(), safe(p.getOwnerId()), String.valueOf(p.getId()))
+                        .toAbsolutePath().normalize();
+                if (Files.isDirectory(dir)) {
+                    try (var s = Files.list(dir)) {
+                        for (Path f : s.toList()) {
+                            String n = f.getFileName().toString();
+                            if (n.equals("video.mp4") || n.equals("segs.mp4") || n.equals("concat.txt")
+                                    || n.equals("narration.mp3") || n.startsWith("seg_")) {
+                                if (Files.deleteIfExists(f)) files++;
+                            }
+                        }
+                    }
+                }
+                p.setVideoPath(null);
+                p.setVideoStatus(null);
+                repo.save(p);
+                rows++;
+            } catch (Exception e) {
+                log.warn("清理失败视频作品出错 id={}: {}", p.getId(), e.getMessage());
+            }
+        }
+        log.info("每日清理失败视频作品:项目 {} 个,删除文件 {} 个", rows, files);
     }
 
     public XhsProject updatePublishStatus(Long id, String ownerId, String publishStatus) {
@@ -205,7 +268,249 @@ public class XhsService {
         }
     }
 
+    /**
+     * 视频阶段:文案 → LLM 出口播文案 + N 条镜头 prompt → CogVideoX-flash 逐段生成 5s 竖屏无声片段
+     * → cosyvoice 合成口播 mp3 → ffmpeg 拼接 + 铺配音 → 成片 mp4。任一镜头失败用剩余片段兜底。
+     */
+    @Async
+    public void genVideoAsync(Long id) {
+        XhsProject p = repo.findById(id).orElse(null);
+        if (p == null) return;
+        Path dir = null;
+        try {
+            p.setVideoStatus("RENDERING");
+            repo.save(p);
+
+            VideoScript vs = videoScript(p.getCopyText());
+            if (vs == null || vs.scenes.isEmpty()) { failVideo(p, "未能生成视频镜头,请重试。"); return; }
+
+            dir = Paths.get(props.getStorage().getImageDir(), safe(p.getOwnerId()), String.valueOf(id))
+                    .toAbsolutePath().normalize();
+            Files.createDirectories(dir);
+
+            // 1) 逐段生成 5s 竖屏无声片段
+            List<Path> segs = new ArrayList<>();
+            for (int i = 0; i < vs.scenes.size(); i++) {
+                String taskId = mediaClient.submitVideo(vs.scenes.get(i), VIDEO_SIZE, false);
+                if (taskId == null) { log.warn("xhs video seg {} 提交失败 id={}", i, id); continue; }
+                String url = mediaClient.pollVideo(taskId, 40, 5000);
+                if (url == null) { log.warn("xhs video seg {} 轮询无结果 id={}", i, id); continue; }
+                Path seg = dir.resolve("seg_" + i + ".mp4");
+                try (var in = URI.create(url).toURL().openStream()) {
+                    Files.copy(in, seg, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+                segs.add(seg);
+            }
+            if (segs.isEmpty()) { failVideo(p, "视频片段生成失败,请重试。"); return; }
+
+            // 2) 口播 TTS
+            Path narration = null;
+            if (vs.narration != null && !vs.narration.isBlank()) {
+                narration = dir.resolve("narration.mp3");
+                if (!ttsToFile(vs.narration, narration)) narration = null;
+            }
+
+            // 3) ffmpeg 拼接 + 铺配音
+            Path out = dir.resolve("video.mp4");
+            muxVideo(dir, segs, narration, out);
+
+            p.setVideoPath(out.toString());
+            p.setVideoStatus("DONE");
+            p.setStatus("VIDEO_DONE");
+            repo.save(p);
+            log.info("xhs video done: id={} segs={} narration={}", id, segs.size(), narration != null);
+        } catch (Exception e) {
+            log.error("xhs genVideo failed: id={}", id, e);
+            failVideo(p, e.getMessage());
+        }
+    }
+
     // ---- 工具方法 ----
+
+    /** 口播文案 + 镜头 prompt。 */
+    private static final class VideoScript {
+        String narration = "";
+        List<String> scenes = new ArrayList<>();
+    }
+
+    /** 让 LLM 从文案产出口播文案与 2~4 条镜头画面 prompt(JSON)。带退避重试以躲 GLM 限流。 */
+    private VideoScript videoScript(String copy) {
+        VideoScript vs = new VideoScript();
+        String system = "你是短视频导演。请根据小红书文案,产出一条竖屏短视频的口播稿与分镜。"
+                + "严格只输出一个 JSON 对象,格式:{\"narration\":\"口播稿\",\"scenes\":[\"镜头1画面描述\",\"镜头2画面描述\"]}。"
+                + "narration 为可直接朗读的简体中文口播稿(" + MIN_SCENES * 18 + "~" + MAX_SCENES * 22 + " 字,"
+                + "口语连贯、有感染力,纯文字,绝不能出现 emoji、#话题、markdown 符号、序号、括号备注);"
+                + "scenes 为 " + MIN_SCENES + "~" + MAX_SCENES + " 条镜头画面描述,每条具体可用于文生视频"
+                + "(含主体、场景、动作、风格、光线、竖屏构图),各镜头画面应有区分度。不要多余文字、不要 markdown 代码块。";
+        String user = "文案:\n" + (copy == null ? "" : copy);
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                String raw = chat.complete(system, user);
+                String json = extractJsonObject(raw);
+                if (json != null) {
+                    JsonNode node = objectMapper.readTree(json);
+                    vs.narration = cleanNarration(node.path("narration").asText(""));
+                    JsonNode scenes = node.path("scenes");
+                    if (scenes.isArray()) {
+                        for (JsonNode s : scenes) {
+                            String t = s.asText("").trim();
+                            if (!t.isBlank()) vs.scenes.add(t);
+                            if (vs.scenes.size() >= MAX_SCENES) break;
+                        }
+                    }
+                }
+                if (!vs.scenes.isEmpty()) break; // 成功
+            } catch (Exception e) {
+                log.warn("xhs videoScript 第 {} 次失败: {}", attempt + 1, e.getMessage());
+            }
+            try { Thread.sleep(2000L * (attempt + 1)); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); break; }
+        }
+        // 兜底:LLM 失败时从文案自造多条镜头,避免只有 1 个 5s 空镜
+        if (vs.scenes.isEmpty()) {
+            vs.scenes.addAll(fallbackScenes(copy));
+        }
+        if (vs.narration.isBlank()) {
+            vs.narration = fallbackNarration(copy, vs.scenes.size());
+        }
+        return vs;
+    }
+
+    /** 清洗口播文本:去掉 emoji、#话题、markdown 符号、序号项目符,避免 TTS 逐字念出。 */
+    private String cleanNarration(String raw) {
+        if (raw == null) return "";
+        String s = raw
+                .replaceAll("#\\S+", " ")                                   // 话题标签
+                .replaceAll("[*_`>#~]", " ")                                // markdown 标记
+                .replaceAll("[\\x{1F000}-\\x{1FAFF}\\x{2600}-\\x{27BF}\\p{So}\\uFE0F\\u20E3]", " ") // emoji/符号
+                .replaceAll("^[\\s\\-•·—\\d.、)）]+", " ")                   // 行首序号/项目符
+                .replaceAll("[\\r\\n]+", ",")                               // 换行→停顿
+                .replaceAll("\\s{2,}", " ")
+                .trim();
+        return s;
+    }
+
+    /** LLM 失败时:按文案切出 2~3 条尽量不同的镜头画面 prompt。 */
+    private List<String> fallbackScenes(String copy) {
+        List<String> out = new ArrayList<>();
+        String base = copy == null ? "" : cleanNarration(copy);
+        String[] parts = base.split("[。!?;,\\n]+");
+        String[] moods = {"明亮清新的特写", "温暖生活感的中景", "时尚氛围的全景"};
+        for (int i = 0; i < moods.length && out.size() < MAX_SCENES; i++) {
+            String hint = "";
+            for (String p : parts) { if (p.trim().length() >= 6) { hint = p.trim(); break; } }
+            if (i < parts.length && parts[i].trim().length() >= 6) hint = parts[i].trim();
+            out.add("小红书风格竖屏画面,9:16 构图," + moods[i] + ",主题:"
+                    + (hint.isBlank() ? "精致生活" : hint.substring(0, Math.min(40, hint.length()))));
+        }
+        if (out.isEmpty()) out.add("小红书风格竖屏画面,9:16 构图,精致生活场景");
+        return out;
+    }
+
+    /** LLM 失败时的口播兜底:清洗 + 按镜头数控制长度 + 句末截断。 */
+    private String fallbackNarration(String copy, int sceneCount) {
+        String s = cleanNarration(copy);
+        if (s.isBlank()) return "";
+        int max = Math.max(30, sceneCount * 22); // 每段约 5s ≈ 22 字
+        if (s.length() <= max) return s;
+        String cut = s.substring(0, max);
+        int p = Math.max(cut.lastIndexOf('。'), Math.max(cut.lastIndexOf(','), cut.lastIndexOf('!')));
+        return p > 10 ? cut.substring(0, p + 1) : cut;
+    }
+
+    /** 从可能包裹代码块的输出里抠出 JSON 对象主体。 */
+    private String extractJsonObject(String raw) {
+        if (raw == null) return null;
+        String s = raw.strip();
+        int start = s.indexOf('{');
+        int end = s.lastIndexOf('}');
+        return (start >= 0 && end > start) ? s.substring(start, end + 1) : null;
+    }
+
+    /** cosyvoice 合成口播为 mp3 文件。成功返回 true。 */
+    private boolean ttsToFile(String text, Path out) {
+        try {
+            SpeechSynthesisParam param = SpeechSynthesisParam.builder()
+                    .apiKey(props.getDashscope().getApiKey())
+                    .model(props.getDashscope().getTtsModel())
+                    .voice(props.getDashscope().getTtsVoiceA())
+                    .format(TTS_FMT)
+                    .build();
+            ByteBuffer audio = new SpeechSynthesizer(param, null).call(text);
+            if (audio == null || !audio.hasRemaining()) return false;
+            byte[] bytes = new byte[audio.remaining()];
+            audio.get(bytes);
+            try (OutputStream os = Files.newOutputStream(out)) { os.write(bytes); }
+            return true;
+        } catch (Exception e) {
+            log.warn("xhs 口播 TTS 失败: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * ffmpeg:先 concat 拼接纯画面(-c copy),再铺 TTS 配音(-shortest 对齐)。
+     * 无口播时直接把拼接结果作为成片。concat -c copy 失败时重编码兜底。
+     */
+    private void muxVideo(Path dir, List<Path> segs, Path narration, Path out) throws Exception {
+        Path concatList = dir.resolve("concat.txt");
+        StringBuilder sb = new StringBuilder();
+        for (Path seg : segs) sb.append("file '").append(seg.getFileName().toString()).append("'\n");
+        Files.writeString(concatList, sb.toString(), StandardCharsets.UTF_8);
+
+        Path merged = dir.resolve("segs.mp4");
+        boolean ok = runFfmpeg(dir, List.of("-y", "-f", "concat", "-safe", "0",
+                "-i", "concat.txt", "-c", "copy", "segs.mp4"));
+        if (!ok) {
+            // 编码参数不一致时,重编码兜底
+            runFfmpegOrThrow(dir, List.of("-y", "-f", "concat", "-safe", "0",
+                    "-i", "concat.txt", "-c:v", "libx264", "-pix_fmt", "yuv420p", "segs.mp4"));
+        }
+
+        if (narration != null && Files.exists(narration)) {
+            runFfmpegOrThrow(dir, List.of("-y", "-i", "segs.mp4", "-i", narration.getFileName().toString(),
+                    "-c:v", "copy", "-c:a", "aac", "-shortest", out.getFileName().toString()));
+        } else {
+            Files.move(merged, out, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    private boolean runFfmpeg(Path workDir, List<String> args) throws Exception {
+        List<String> cmd = new ArrayList<>();
+        cmd.add("ffmpeg");
+        cmd.addAll(args);
+        Process proc = new ProcessBuilder(cmd)
+                .directory(workDir.toFile())
+                .redirectErrorStream(true)
+                .start();
+        StringBuilder tail = new StringBuilder();
+        try (var r = new java.io.BufferedReader(new java.io.InputStreamReader(proc.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = r.readLine()) != null) if (tail.length() < 4000) tail.append(line).append('\n');
+        }
+        boolean done = proc.waitFor(120, TimeUnit.SECONDS);
+        if (!done) { proc.destroyForcibly(); throw new IllegalStateException("ffmpeg 超时"); }
+        int code = proc.exitValue();
+        if (code != 0) log.warn("ffmpeg exit={} args={} tail={}", code, args, tail);
+        return code == 0;
+    }
+
+    private void runFfmpegOrThrow(Path workDir, List<String> args) throws Exception {
+        if (!runFfmpeg(workDir, args)) throw new IllegalStateException("ffmpeg 执行失败: " + args);
+    }
+
+    /**
+     * 视频阶段失败:只标记 {@code videoStatus=FAILED},不动项目主 {@code status}
+     * (视频只是配图之后的可选第 5 步,失败不应把整个项目判死;失败产物由每日任务清理)。
+     * 顺手清掉可能已写入的半成品 video_path。
+     */
+    private void failVideo(XhsProject p, String msg) {
+        if (p == null) return;
+        p.setVideoStatus("FAILED");
+        p.setVideoPath(null);
+        p.setStatus("IMAGES_DONE");
+        p.setErrorMsg(msg != null && msg.length() > 2000 ? msg.substring(0, 2000) : msg);
+        repo.save(p);
+    }
 
     /** 让 qwen 把文案压成 1~3 条画面描述 prompt。 */
     private List<String> imagePrompts(String copy) throws Exception {

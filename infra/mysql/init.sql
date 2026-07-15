@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS news_job (
 CREATE TABLE IF NOT EXISTS xhs_project (
     id             BIGINT PRIMARY KEY AUTO_INCREMENT,
     owner_id       VARCHAR(64)   NOT NULL COMMENT '主体:u:<id> / g:<uuid>',
-    status         VARCHAR(32)   NOT NULL DEFAULT 'NEW' COMMENT 'NEW/TITLES_DONE/RESEARCH_DONE/COPY_DONE/IMAGES_DONE/FAILED',
+    status         VARCHAR(32)   NOT NULL DEFAULT 'NEW' COMMENT 'NEW/TITLES_DONE/RESEARCH_DONE/COPY_DONE/IMAGES_DONE/VIDEO_DONE/FAILED',
     direction      VARCHAR(255)  NOT NULL COMMENT '用户输入/选择的方向',
     title_options  TEXT          NULL COMMENT '候选标题 JSON 数组',
     chosen_title   VARCHAR(512)  NULL COMMENT '用户选定的标题',
@@ -139,6 +139,8 @@ CREATE TABLE IF NOT EXISTS xhs_project (
     style          VARCHAR(32)   NULL COMMENT '风格:ZHONGCAO/DUSHE/GANHUO/ZHIYU',
     copy_text      MEDIUMTEXT    NULL COMMENT '生成的小红书文案',
     image_paths    TEXT          NULL COMMENT '配图本地路径 JSON 数组',
+    video_path     VARCHAR(512)  NULL COMMENT '成片 mp4 相对/绝对路径',
+    video_status   VARCHAR(32)   NULL COMMENT 'PENDING/RENDERING/DONE/FAILED(阶段内细分,可空)',
     publish_status VARCHAR(32)   NOT NULL DEFAULT 'DRAFT' COMMENT 'DRAFT/READY/PUBLISHED',
     error_msg      VARCHAR(2048) NULL,
     created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
