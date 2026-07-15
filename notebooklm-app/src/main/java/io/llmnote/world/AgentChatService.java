@@ -11,7 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 用户与某位小镇居民的 1:1 对话。用带长期记忆的 {@link HarnessAgent}(默认最便宜模型)应答,
@@ -27,6 +29,7 @@ public class AgentChatService {
     private final EmployeeAgentFactory agentFactory;
     private final ChatModelFactory modelFactory;
     private final AgentMemoryService memoryService;
+    private final AgentMemoryRepository memoryRepo;
     private final NotebookLmProperties props;
 
     public List<AgentChatMsg> history(Long agentId, String ownerId) {
@@ -51,7 +54,11 @@ public class AgentChatService {
         String model = props.getWorld().getAutonomousModel(); // 默认最便宜
         HarnessAgent agent = agentFactory.forEmployee(e, model);
 
-        String prompt = "有人来找你聊天,对你说:「" + message.trim() + "」。请以你的身份和性格自然回应(2~4 句)。";
+        // 婚姻/家庭关系与高光记忆存在 DB(spouse_id / agent_memory),但 HarnessAgent 的
+        // workspace 记忆与之独立;不注入的话对话时它「不记得」自己结了婚。每次带上当前快照。
+        String facts = relationshipFacts(e);
+        String prompt = (facts.isEmpty() ? "" : facts + "\n")
+                + "有人来找你聊天,对你说:「" + message.trim() + "」。请以你的身份和性格自然回应(2~4 句)。";
         long inTok = 0, outTok = 0;
         String reply;
         try {
@@ -80,5 +87,71 @@ public class AgentChatService {
                 "有人对我说「" + message.trim() + "」,我回应:" + reply, 5, null);
 
         return saved;
+    }
+
+    /**
+     * 拼出该居民当前的关系状态 + 几条高光记忆,作为对话前置事实注入,避免它「忘记」自己结了婚/有孩子。
+     * 数据取自 DB(spouse_id/partner_id/parent_ids + agent_memory 高权重记录),每次实时读取,故不受
+     * agent 缓存签名影响。
+     */
+    private String relationshipFacts(AgentEmployee e) {
+        StringBuilder sb = new StringBuilder();
+
+        if (e.getSpouseId() != null) {
+            nameOf(e.getSpouseId()).ifPresent(n -> sb.append("你已经和「").append(n).append("」结婚了。"));
+        } else if (e.getPartnerId() != null) {
+            nameOf(e.getPartnerId()).ifPresent(n -> sb.append("你正在和「").append(n).append("」恋爱。"));
+        }
+        if (e.getParentIds() != null && !e.getParentIds().isBlank()) {
+            List<String> parents = new ArrayList<>();
+            for (String pid : e.getParentIds().split(",")) {
+                if (pid.isBlank()) continue;
+                try {
+                    nameOf(Long.parseLong(pid.trim())).ifPresent(parents::add);
+                } catch (NumberFormatException ignore) {
+                }
+            }
+            if (!parents.isEmpty()) {
+                sb.append("你的父母是").append(String.join("、", parents)).append("。");
+            }
+        }
+        // 谁把它当作父母(即它的孩子)。
+        List<AgentEmployee> children = employeeRepo.findByParentIdsContaining(String.valueOf(e.getId()));
+        List<String> kids = new ArrayList<>();
+        for (AgentEmployee c : children) {
+            if (c.getParentIds() == null) continue;
+            for (String pid : c.getParentIds().split(",")) {
+                if (pid.trim().equals(String.valueOf(e.getId()))) {
+                    kids.add(c.getName());
+                    break;
+                }
+            }
+        }
+        if (!kids.isEmpty()) {
+            sb.append("你有孩子:").append(String.join("、", kids)).append("。");
+        }
+
+        // 高光记忆(结婚/生子/重大事件等),取重要度最高的前几条。
+        List<AgentMemory> highlights = memoryRepo.findTop12ByAgentIdOrderByImportanceDescIdDesc(e.getId());
+        List<String> lines = new ArrayList<>();
+        for (AgentMemory m : highlights) {
+            if (m.getImportance() != null && m.getImportance() >= 7
+                    && m.getContent() != null && !m.getContent().isBlank()) {
+                String c = m.getContent().trim();
+                if (c.length() > 60) c = c.substring(0, 60);
+                lines.add(c);
+                if (lines.size() >= 5) break;
+            }
+        }
+        if (!lines.isEmpty()) {
+            sb.append("你人生中的重要记忆:").append(String.join(";", lines)).append("。");
+        }
+
+        return sb.length() == 0 ? "" : "【关于你自己的事实,请当作真实经历】" + sb;
+    }
+
+    private Optional<String> nameOf(Long id) {
+        if (id == null) return Optional.empty();
+        return employeeRepo.findById(id).map(AgentEmployee::getName);
     }
 }

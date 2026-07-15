@@ -357,7 +357,7 @@ CREATE TABLE IF NOT EXISTS world_daily_report (
     INDEX idx_report_date (sim_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 智能体小世界:货币流水(仅记大额)
+-- 智能体小世界:货币流水(经济体系上线后全额记账,支撑日/月净收入聚合)
 CREATE TABLE IF NOT EXISTS agent_transaction (
     id          BIGINT PRIMARY KEY AUTO_INCREMENT,
     agent_id    BIGINT        NOT NULL COMMENT '居民 id',
@@ -366,7 +366,8 @@ CREATE TABLE IF NOT EXISTS agent_transaction (
     balance     BIGINT        NOT NULL DEFAULT 0 COMMENT '变动后余额',
     reason      VARCHAR(64)   NULL COMMENT '事由',
     created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_txn_agent (agent_id)
+    INDEX idx_txn_agent (agent_id),
+    INDEX idx_txn_agent_date (agent_id, sim_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 智能体小世界:居民两两关系(亲密度,归一化 a_id<b_id)
@@ -449,3 +450,71 @@ CREATE TABLE IF NOT EXISTS access_log (
     INDEX idx_alog_action (action),
     INDEX idx_alog_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 智能体小镇:经济与金融体系 ----------------------------------------------
+
+-- 每日经济快照(每日一行,PK=sim_date 天然幂等)
+CREATE TABLE IF NOT EXISTS town_economy_daily (
+    sim_date            DATE          NOT NULL COMMENT '小镇日期(主键)',
+    total_coins         BIGINT        NOT NULL DEFAULT 0 COMMENT '结算后全体活跃居民金币总量',
+    total_income        BIGINT        NOT NULL DEFAULT 0 COMMENT '当日总收入(正向流水之和)',
+    total_expense       BIGINT        NOT NULL DEFAULT 0 COMMENT '当日总支出(负向流水绝对值之和)',
+    total_place_revenue BIGINT        NOT NULL DEFAULT 0 COMMENT '当日场所营收总额',
+    created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (sim_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 场所营收(每日每场所一行)
+CREATE TABLE IF NOT EXISTS place_revenue (
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+    sim_date    DATE          NOT NULL COMMENT '小镇日期',
+    place_key   VARCHAR(32)   NOT NULL COMMENT '场所 key(对齐 TownMap:restaurant/grocery/clinic/market)',
+    amount      BIGINT        NOT NULL DEFAULT 0 COMMENT '当日营收',
+    created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_place_rev (sim_date, place_key),
+    INDEX idx_place_rev_date (sim_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 股票定义(种子数据,code 唯一)
+CREATE TABLE IF NOT EXISTS town_stock (
+    code        VARCHAR(16)   NOT NULL COMMENT '股票代码(主键)',
+    name        VARCHAR(64)   NOT NULL COMMENT '股票名称',
+    sector      VARCHAR(32)   NULL COMMENT '板块(catering/culture/medical/retail/crafts…,可挂钩场所)',
+    base_price  BIGINT        NOT NULL DEFAULT 100 COMMENT '初始价(正数)',
+    created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 每日行情(每股每日一行)
+CREATE TABLE IF NOT EXISTS stock_daily (
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+    sim_date    DATE          NOT NULL COMMENT '小镇日期',
+    code        VARCHAR(16)   NOT NULL COMMENT '股票代码',
+    open_price  BIGINT        NOT NULL DEFAULT 0 COMMENT '开盘价(=前收)',
+    close_price BIGINT        NOT NULL DEFAULT 0 COMMENT '收盘价(正数)',
+    change_pct  DECIMAL(6,4)  NOT NULL DEFAULT 0 COMMENT '当日涨跌幅(小数,如 0.0800=+8%)',
+    created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_stock_daily (sim_date, code),
+    INDEX idx_stock_daily_code (code, sim_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 居民持仓(每人每股一行)
+CREATE TABLE IF NOT EXISTS stock_holding (
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+    agent_id    BIGINT        NOT NULL COMMENT '居民 id',
+    code        VARCHAR(16)   NOT NULL COMMENT '股票代码',
+    shares      BIGINT        NOT NULL DEFAULT 0 COMMENT '持有股数',
+    cost        BIGINT        NOT NULL DEFAULT 0 COMMENT '累计买入总成本(金币),浮盈=现价×股数-cost',
+    updated_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_holding (agent_id, code),
+    INDEX idx_holding_agent (agent_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 股票种子
+INSERT IGNORE INTO town_stock (code, name, sector, base_price) VALUES
+    ('CATER', '鹿鸣食业',  'catering', 100),
+    ('CULT',  '林间文创',  'culture',  120),
+    ('MED',   '回春医健',  'medical',  150),
+    ('RETAIL','井畔零售',  'retail',    80),
+    ('ARTS',  '匠作工坊',  'crafts',    90);

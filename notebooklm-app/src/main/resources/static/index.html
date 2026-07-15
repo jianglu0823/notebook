@@ -309,6 +309,48 @@
   .rd-prod-media img, .rd-prod-media video { width:100%; max-width:360px; border-radius:var(--radius); border:1px solid var(--line); display:block; background:var(--panel2); }
   .rd-cost { margin-top:14px; padding-top:10px; border-top:1px dashed var(--line); font-size:12px; color:var(--mut); }
   @media (max-width:640px){ .report-layout { grid-template-columns:1fr; } }
+  /* 经济面板 */
+  .eco-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-top:6px; }
+  .eco-card { background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; }
+  .eco-card.eco-summary, .eco-card.eco-stocks { grid-column:1 / -1; }
+  .eco-h { font-weight:700; font-size:14px; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .eco-h .mut { font-weight:400; font-size:12px; }
+  .eco-stat-row { display:flex; flex-wrap:wrap; gap:18px; margin-bottom:10px; }
+  .eco-stat { min-width:96px; }
+  .eco-stat .es-v { font-size:22px; font-weight:800; letter-spacing:-.5px; }
+  .eco-stat .es-k { font-size:12px; color:var(--mut); margin-top:2px; }
+  .eco-stat.up .es-v { color:#c0392b; }
+  .eco-stat.down .es-v { color:#1e8e3e; }
+  .eco-spark { margin:6px 0 2px; }
+  .eco-list { display:flex; flex-direction:column; gap:2px; }
+  .eco-li { display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:8px; cursor:pointer; transition:background .12s; }
+  .eco-li:hover { background:var(--bg); }
+  .eco-rank { width:20px; height:20px; flex:none; text-align:center; line-height:20px; font-size:12px; font-weight:700; background:var(--line); border-radius:50%; }
+  .eco-name { flex:1; font-weight:600; font-size:13px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .eco-coins { font-weight:700; font-size:13px; white-space:nowrap; }
+  .eco-coins.up, .eco-pct.up { color:#c0392b; }
+  .eco-coins.down, .eco-pct.down { color:#1e8e3e; }
+  .eco-pct { font-size:12px; margin-left:4px; }
+  .eco-spark-mini { flex:none; width:120px; opacity:.85; }
+  .eco-spark-mini svg { width:120px; height:26px; }
+  .eco-bars { display:flex; flex-direction:column; gap:8px; }
+  .eco-bar-row { display:flex; align-items:center; gap:10px; }
+  .eco-bar-name { width:72px; flex:none; font-size:13px; }
+  .eco-bar-track { flex:1; height:14px; background:var(--bg); border-radius:7px; overflow:hidden; }
+  .eco-bar-fill { display:block; height:100%; background:linear-gradient(90deg,#f0c040,#e0a800); }
+  .eco-bar-val { width:64px; flex:none; text-align:right; font-weight:700; font-size:13px; }
+  .eco-detail { margin-top:14px; background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; }
+  .eco-detail-h { display:flex; align-items:center; justify-content:space-between; font-weight:700; margin-bottom:10px; }
+  .eco-detail-tabs { display:inline-flex; gap:4px; margin-bottom:12px; background:var(--bg); border:1px solid var(--line); border-radius:var(--radius); padding:3px; }
+  .eco-detail-tabs .etab { border:none; background:transparent; color:var(--mut); font-weight:650; font-size:13px; padding:5px 12px; border-radius:calc(var(--radius) - 3px); cursor:pointer; }
+  .eco-detail-tabs .etab.active { background:var(--panel); color:var(--fg); box-shadow:0 1px 2px rgba(0,0,0,.06); }
+  .eco-day-sum { margin-bottom:10px; font-size:13px; }
+  .eco-tbl { width:100%; border-collapse:collapse; font-size:13px; }
+  .eco-tbl th { text-align:left; color:var(--mut); font-weight:600; font-size:12px; padding:5px 8px; border-bottom:1px solid var(--line); }
+  .eco-tbl td { padding:5px 8px; border-bottom:1px solid var(--line); }
+  .eco-tbl td.up { color:#c0392b; font-weight:700; }
+  .eco-tbl td.down { color:#1e8e3e; font-weight:700; }
+  @media (max-width:640px){ .eco-grid { grid-template-columns:1fr; } .eco-spark-mini { display:none; } }
   /* 作品馆 */
   .gallery-tabs { display:inline-flex; gap:4px; margin:4px 0 14px; background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:3px; }
   .gallery-tabs .gtab { border:none; background:transparent; color:var(--mut); font-weight:650; font-size:13px; padding:6px 14px; border-radius:calc(var(--radius) - 3px); cursor:pointer; transition:all .15s ease-in-out; }
@@ -1027,6 +1069,7 @@
             <button class="wtab" data-tab="map" onclick="switchWorldTab('map')">🗺 小镇</button>
             <button class="wtab" data-tab="residents" onclick="switchWorldTab('residents')">🏢 村民</button>
             <button class="wtab" data-tab="gallery" onclick="switchWorldTab('gallery')">🖼 作品馆</button>
+            <button class="wtab" data-tab="economy" onclick="switchWorldTab('economy')">💰 经济</button>
             <button class="wtab" data-tab="report" onclick="switchWorldTab('report')">📰 日报</button>
             <button class="wtab" data-tab="sandbox" onclick="switchWorldTab('sandbox')">🚀 沙盒快进</button>
             <button class="wtab" data-tab="jail" onclick="switchWorldTab('jail')">🚫 小黑屋</button>
@@ -1127,6 +1170,40 @@
             <button class="gtab" data-cat="song" onclick="switchGalleryCat('song')">🎵 歌曲</button>
           </div>
           <div class="gallery-body" id="galleryBody"><div class="mut">加载中…</div></div>
+        </div>
+
+        <!-- 经济视图:整体金币/收支 + 富豪榜 + 场所营收 + 股市 + 持仓 -->
+        <div class="widget hidden" id="economyPane">
+          <div class="wt">💰 小镇经济与金融</div>
+          <div class="wd">开启「自主行动」让时间流动后,每天结算工资、作品售卖、日常消费与炒股。下面是全镇金币总量与收支、富豪榜、各场所营收、股市行情与居民持仓。</div>
+          <div class="eco-grid">
+            <div class="eco-card eco-summary">
+              <div class="eco-h">📊 全镇经济</div>
+              <div id="ecoSummary"><div class="mut">加载中…</div></div>
+            </div>
+            <div class="eco-card">
+              <div class="eco-h">🏆 富豪榜</div>
+              <div id="ecoRich"><div class="mut">加载中…</div></div>
+            </div>
+            <div class="eco-card">
+              <div class="eco-h">🏪 场所营收<span class="mut" id="ecoPlacesDate"></span></div>
+              <div id="ecoPlaces"><div class="mut">加载中…</div></div>
+            </div>
+            <div class="eco-card eco-stocks">
+              <div class="eco-h">📈 股市行情</div>
+              <div id="ecoStocks"><div class="mut">加载中…</div></div>
+            </div>
+          </div>
+          <div class="eco-detail hidden" id="ecoDetail">
+            <div class="eco-detail-h"><span id="ecoDetailTitle"></span>
+              <button class="sec" onclick="closeEcoDetail()">✕ 关闭</button></div>
+            <div class="eco-detail-tabs">
+              <button class="etab active" data-r="day" onclick="ecoIncomeRange('day')">当日收支</button>
+              <button class="etab" data-r="month" onclick="ecoIncomeRange('month')">按月收入</button>
+              <button class="etab" data-r="holdings" onclick="ecoIncomeRange('holdings')">持仓</button>
+            </div>
+            <div id="ecoDetailBody"><div class="mut">选择上方居民查看。</div></div>
+          </div>
         </div>
 
         <!-- 沙盒快进视图:选居民 + 选年限 → 开始快进 → 世界报告 + 回放 -->
@@ -3671,6 +3748,123 @@ async function delComment(id, targetType, targetId) {
   } catch (e) { toast('删除失败:' + errText(e), 'err'); }
 }
 
+// ---- 经济面板 ----
+let ecoDetailAgent = null;
+async function loadEconomy() {
+  renderEconomySummary();
+  renderRich();
+  renderPlaceRevenue();
+  renderStocks();
+}
+function fmtCoins(n){ return (n==null?0:n).toLocaleString('zh-CN'); }
+async function renderEconomySummary() {
+  const el = document.getElementById('ecoSummary');
+  try {
+    const d = await j(`${API}/world/economy/summary`);
+    if (!d.latest) { el.innerHTML = `<div class="mut">还没有经济数据。开启「自主行动」让小镇跨过一天后再来看。</div>`; return; }
+    const L = d.latest;
+    const series = d.series || [];
+    el.innerHTML = `
+      <div class="eco-stat-row">
+        <div class="eco-stat"><div class="es-v">${fmtCoins(L.totalCoins)}</div><div class="es-k">全镇金币</div></div>
+        <div class="eco-stat up"><div class="es-v">+${fmtCoins(L.totalIncome)}</div><div class="es-k">当日总收入</div></div>
+        <div class="eco-stat down"><div class="es-v">${fmtCoins(L.totalExpense)}</div><div class="es-k">当日总支出</div></div>
+        <div class="eco-stat"><div class="es-v">${fmtCoins(L.totalPlaceRevenue)}</div><div class="es-k">场所营收</div></div>
+      </div>
+      <div class="eco-spark">${sparkline(series.map(s=>s.totalCoins))}</div>
+      <div class="mut" style="font-size:12px">金币总量近 ${series.length} 日走势 · 截至 ${esc(L.simDate||'')}</div>`;
+  } catch (e) { el.innerHTML = `<div class="mut">加载失败。</div>`; }
+}
+function sparkline(vals){
+  vals = (vals||[]).filter(v=>v!=null);
+  if (vals.length < 2) return '';
+  const w=280,h=40,min=Math.min(...vals),max=Math.max(...vals),span=(max-min)||1;
+  const pts = vals.map((v,i)=>`${(i/(vals.length-1)*w).toFixed(1)},${(h-(v-min)/span*h).toFixed(1)}`).join(' ');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline fill="none" stroke="#e0a800" stroke-width="2" points="${pts}"/></svg>`;
+}
+async function renderRich() {
+  const el = document.getElementById('ecoRich');
+  try {
+    const rows = await j(`${API}/world/economy/rich?limit=10`);
+    if (!rows.length) { el.innerHTML = `<div class="mut">暂无居民数据。</div>`; return; }
+    el.innerHTML = `<div class="eco-list">` + rows.map((r,i)=>`
+      <div class="eco-li" onclick="openEcoDetail(${r.id},'${esc(r.name)}')">
+        <span class="eco-rank">${i+1}</span>
+        <span class="eco-name">${esc(r.name)}<span class="mut"> ${esc(r.occupation||'')}</span></span>
+        <span class="eco-coins">${fmtCoins(r.coins)} 币<span class="mut"> · 净值 ${fmtCoins(r.netWorth)}</span></span>
+      </div>`).join('') + `</div>`;
+  } catch (e) { el.innerHTML = `<div class="mut">加载失败。</div>`; }
+}
+async function renderPlaceRevenue() {
+  const el = document.getElementById('ecoPlaces');
+  try {
+    const d = await j(`${API}/world/economy/places`);
+    document.getElementById('ecoPlacesDate').textContent = d.date ? ' · ' + d.date : '';
+    const rows = d.places || [];
+    if (!rows.length) { el.innerHTML = `<div class="mut">暂无场所营收数据。</div>`; return; }
+    const max = Math.max(...rows.map(r=>r.amount||0)) || 1;
+    el.innerHTML = `<div class="eco-bars">` + rows.map(r=>`
+      <div class="eco-bar-row">
+        <span class="eco-bar-name">${esc(r.name)}</span>
+        <span class="eco-bar-track"><span class="eco-bar-fill" style="width:${Math.round((r.amount||0)/max*100)}%"></span></span>
+        <span class="eco-bar-val">${fmtCoins(r.amount)}</span>
+      </div>`).join('') + `</div>`;
+  } catch (e) { el.innerHTML = `<div class="mut">加载失败。</div>`; }
+}
+async function renderStocks() {
+  const el = document.getElementById('ecoStocks');
+  try {
+    const rows = await j(`${API}/world/stocks`);
+    if (!rows.length) { el.innerHTML = `<div class="mut">暂无股票。</div>`; return; }
+    el.innerHTML = `<div class="eco-list">` + rows.map(r=>{
+      const pct = r.changePct != null ? Number(r.changePct) : null;
+      const cls = pct == null ? '' : (pct >= 0 ? 'up' : 'down');
+      const sign = pct == null ? '' : (pct >= 0 ? '+' : '');
+      const pctTxt = pct == null ? '' : `${sign}${(pct*100).toFixed(2)}%`;
+      return `<div class="eco-li">
+        <span class="eco-name">${esc(r.name)}<span class="mut"> ${esc(r.code)}·${esc(r.sector||'')}</span></span>
+        <span class="eco-spark-mini">${sparkline((r.series||[]).map(s=>s.close))}</span>
+        <span class="eco-coins ${cls}">${fmtCoins(r.price)} <span class="eco-pct ${cls}">${pctTxt}</span></span>
+      </div>`;
+    }).join('') + `</div>`;
+  } catch (e) { el.innerHTML = `<div class="mut">加载失败。</div>`; }
+}
+function openEcoDetail(id, name) {
+  ecoDetailAgent = id;
+  document.getElementById('ecoDetail').classList.remove('hidden');
+  document.getElementById('ecoDetailTitle').textContent = '👤 ' + name;
+  document.querySelectorAll('.eco-detail-tabs .etab').forEach((b,i)=>b.classList.toggle('active', i===0));
+  ecoIncomeRange('day');
+}
+function closeEcoDetail(){ document.getElementById('ecoDetail').classList.add('hidden'); ecoDetailAgent=null; }
+async function ecoIncomeRange(range) {
+  if (!ecoDetailAgent) return;
+  document.querySelectorAll('.eco-detail-tabs .etab').forEach(b=>b.classList.toggle('active', b.dataset.r===range));
+  const body = document.getElementById('ecoDetailBody');
+  body.innerHTML = `<div class="mut">加载中…</div>`;
+  try {
+    if (range === 'holdings') {
+      const rows = await j(`${API}/world/agents/${ecoDetailAgent}/holdings`);
+      if (!rows.length) { body.innerHTML = `<div class="mut">未持有任何股票。</div>`; return; }
+      body.innerHTML = `<table class="eco-tbl"><tr><th>股票</th><th>股数</th><th>成本</th><th>现价</th><th>市值</th><th>浮盈</th></tr>` +
+        rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.shares}</td><td>${fmtCoins(r.cost)}</td><td>${fmtCoins(r.price)}</td><td>${fmtCoins(r.marketValue)}</td><td class="${r.pnl>=0?'up':'down'}">${r.pnl>=0?'+':''}${fmtCoins(r.pnl)}</td></tr>`).join('') + `</table>`;
+    } else if (range === 'month') {
+      const d = await j(`${API}/world/agents/${ecoDetailAgent}/income?range=month`);
+      const ms = d.months || [];
+      if (!ms.length) { body.innerHTML = `<div class="mut">暂无月度收入。</div>`; return; }
+      body.innerHTML = `<table class="eco-tbl"><tr><th>月份</th><th>净收入</th></tr>` +
+        ms.map(m=>`<tr><td>${m.year}-${String(m.month).padStart(2,'0')}</td><td class="${m.net>=0?'up':'down'}">${m.net>=0?'+':''}${fmtCoins(m.net)}</td></tr>`).join('') + `</table>`;
+    } else {
+      const d = await j(`${API}/world/agents/${ecoDetailAgent}/income?range=day`);
+      const det = d.detail || [];
+      const head = `<div class="eco-day-sum">当日净收支 <b class="${(d.net||0)>=0?'up':'down'}">${(d.net||0)>=0?'+':''}${fmtCoins(d.net)}</b> · 余额 ${fmtCoins(d.coins)} · 净资产 ${fmtCoins(d.netWorth)}<span class="mut"> ${d.date||''}</span></div>`;
+      if (!det.length) { body.innerHTML = head + `<div class="mut">当日暂无流水。</div>`; return; }
+      body.innerHTML = head + `<table class="eco-tbl"><tr><th>事项</th><th>变动</th><th>余额</th></tr>` +
+        det.map(t=>`<tr><td>${esc(t.reason||'')}</td><td class="${t.delta>=0?'up':'down'}">${t.delta>=0?'+':''}${fmtCoins(t.delta)}</td><td>${fmtCoins(t.balance)}</td></tr>`).join('') + `</table>`;
+    }
+  } catch (e) { body.innerHTML = `<div class="mut">加载失败。</div>`; }
+}
+
 
 async function renderJail() {
   const el = document.getElementById('jailGrid');
@@ -3714,6 +3908,7 @@ function switchWorldTab(tab) {
   document.getElementById('jailPane').classList.toggle('hidden', tab !== 'jail');
   document.getElementById('reportPane').classList.toggle('hidden', tab !== 'report');
   document.getElementById('galleryPane').classList.toggle('hidden', tab !== 'gallery');
+  document.getElementById('economyPane').classList.toggle('hidden', tab !== 'economy');
   document.getElementById('sandboxPane').classList.toggle('hidden', tab !== 'sandbox');
   if (tab === 'map') { loadTownMap().then(() => { renderMap(); }); renderFeed(); }
   else if (mapAnim) { cancelAnimationFrame(mapAnim); mapAnim = null; }
@@ -3721,6 +3916,7 @@ function switchWorldTab(tab) {
   if (tab === 'jail') renderJail();
   if (tab === 'report') loadReports();
   if (tab === 'gallery') loadGallery();
+  if (tab === 'economy') loadEconomy();
   if (tab === 'sandbox') initSandbox();
   else { // 离开沙盒标签:停掉两个轮询定时器,避免后台空跑
     if (sbxHistoryTimer) { clearTimeout(sbxHistoryTimer); sbxHistoryTimer = null; }

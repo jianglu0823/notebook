@@ -1,0 +1,88 @@
+{
+  "mode": "sdd",
+  "source": "default",
+  "rationale": "full 默认 SDD;按 tasks.md 6 批次+依赖",
+  "waves": [
+    {
+      "id": "B0",
+      "strategy": "serial",
+      "tasks": [
+        "0.1"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B1",
+      "strategy": "serial",
+      "tasks": [
+        "1.1",
+        "1.2",
+        "1.3"
+      ],
+      "depends_on": [
+        "B0"
+      ]
+    },
+    {
+      "id": "B2",
+      "strategy": "serial",
+      "tasks": [
+        "2.1",
+        "2.2",
+        "2.3"
+      ],
+      "depends_on": [
+        "B1"
+      ]
+    },
+    {
+      "id": "B3",
+      "strategy": "serial",
+      "tasks": [
+        "3.1",
+        "3.2"
+      ],
+      "depends_on": [
+        "B1"
+      ]
+    },
+    {
+      "id": "B4",
+      "strategy": "serial",
+      "tasks": [
+        "4.1",
+        "4.2"
+      ],
+      "depends_on": [
+        "B2",
+        "B3"
+      ]
+    },
+    {
+      "id": "B5",
+      "strategy": "serial",
+      "tasks": [
+        "5.1"
+      ],
+      "depends_on": [
+        "B4"
+      ]
+    },
+    {
+      "id": "B6",
+      "strategy": "serial",
+      "tasks": [
+        "6.1",
+        "6.2"
+      ],
+      "depends_on": [
+        "B5"
+      ]
+    }
+  ],
+  "artifacts_hash": "sha256:130dd0f56d843cabe3760a976d1a5956342cb77f41acba6111ca61c475e32f51",
+  "contract_hash": "sha256:2db3246670c3a3219d56ca8fa1bf77203131cb06587730c13fc4bbb70bfea083",
+  "workflow": "full",
+  "revision": 1,
+  "hash": "sha256:d5f89efe166a1c80cd08c67260d1d1fe3f7f7f116c57556ed4b819c7b2e20ff2"
+}

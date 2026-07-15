@@ -71,7 +71,6 @@ public class WorldSimEngine {
 
     private final AgentEmployeeRepository employeeRepo;
     private final AgentProductRepository productRepo;
-    private final AgentTransactionRepository txRepo;
     private final WorldDailyReportRepository reportRepo;
     private final AgentMemoryService memoryService;
     private final ChatModelFactory modelFactory;
@@ -81,6 +80,8 @@ public class WorldSimEngine {
     private final io.llmnote.llm.ZhipuMediaClient mediaClient;
     private final WorldMediaRunner mediaRunner;
     private final AgentCommentRepository commentRepo;
+    private final TownEconomyService economyService;
+    private final StockMarketService stockMarketService;
 
     /** 由日期求季节(北半球:3-5春 6-8夏 9-11秋 12-2冬)。 */
     public static String seasonOf(LocalDate d) {
@@ -163,6 +164,7 @@ public class WorldSimEngine {
 
         List<Map<String, Object>> highlights = new ArrayList<>();
         int chapters = 0, songs = 0, artworks = 0, films = 0, learns = 0;
+        List<AgentProduct> productsToday = new ArrayList<>();
 
         for (AgentEmployee e : active) {
             // 工资/岗位收入(按职业风味给点钱,不再由职业决定产物)
@@ -175,6 +177,7 @@ public class WorldSimEngine {
             // 技能驱动的创作事件:当日至多产出一件作品(按技能等级加权抽取)
             AgentProduct p = maybeCreate(e, date, skills, tok, eff);
             if (p != null) {
+                productsToday.add(p);
                 switch (p.getKind()) {
                     case "chapter" -> { chapters++; addHighlight(highlights, e, "连载小说", p.getTitle()); }
                     case "song" -> { songs++; addHighlight(highlights, e, "新歌", p.getTitle()); }
@@ -206,6 +209,18 @@ public class WorldSimEngine {
         // ---- Phase D:村民互评(每人 50% 几率评论近期作品,互相讨论)----
         int comments = villagerComments(active, date, tok);
         stats.put("comments", comments);
+
+        // ---- Phase E:经济与股市结算(规则驱动,零 LLM;异常隔离,不阻断日报)----
+        try {
+            economyService.settleDay(active, productsToday, date);
+        } catch (Exception ex) {
+            log.warn("economy settleDay failed date={}: {}", date, ex.toString());
+        }
+        try {
+            stockMarketService.settleDay(active, date);
+        } catch (Exception ex) {
+            log.warn("stockMarket settleDay failed date={}: {}", date, ex.toString());
+        }
 
         String narrative = writeNarrative(date, season, weather, temperature, highlights, stats, news, tok);
 
@@ -564,7 +579,7 @@ public class WorldSimEngine {
         String desc;
         if (roll < 20) {
             long win = 200 + rnd(800);
-            e.setCoins((e.getCoins() == null ? 0 : e.getCoins()) + win);
+            economyService.applyDelta(e, date, "集市抽奖", win);
             e.setMood("狂喜"); e.setMoodEmoji("🤑");
             desc = e.getName() + "在集市抽奖中了 " + win + " 金币!";
         } else if (roll < 40) {
@@ -577,7 +592,7 @@ public class WorldSimEngine {
             desc = e.getName() + "在公园晨练,神清气爽,精力恢复。";
         } else if (roll < 70) {
             long loss = Math.min(e.getCoins() == null ? 0 : e.getCoins(), 50 + rnd(150));
-            e.setCoins((e.getCoins() == null ? 0 : e.getCoins()) - loss);
+            economyService.applyDelta(e, date, "遗失金币", -loss);
             e.setMood("懊恼"); e.setMoodEmoji("😤");
             desc = e.getName() + "不慎丢了 " + loss + " 金币,懊恼不已。";
         } else if (roll < 85) {
@@ -775,18 +790,7 @@ public class WorldSimEngine {
     /** 发放工资/收入并记流水(仅大额进流水表)。 */
     private void payWages(AgentEmployee e, LocalDate date, String reason, long amount) {
         if (amount <= 0) return;
-        long bal = (e.getCoins() == null ? 0L : e.getCoins()) + amount;
-        e.setCoins(bal);
-        employeeRepo.save(e);
-        if (amount >= 100) {
-            AgentTransaction t = new AgentTransaction();
-            t.setAgentId(e.getId());
-            t.setSimDate(date);
-            t.setDelta(amount);
-            t.setBalance(bal);
-            t.setReason(reason);
-            txRepo.save(t);
-        }
+        economyService.applyDelta(e, date, reason, amount);
     }
 
     // ---- LLM 直调(复用 AgentBuilderController 模式) ----

@@ -1,0 +1,45 @@
+# .spec-superflow.yaml — lightweight state machine
+# Derived data. Always rebuildable from artifacts. Lost/corrupt → fall back to content-level detection.
+
+# === Core state ===
+state: executing
+workflow: full
+revision: 1
+
+# === Hashes (fast staleness detection) ===
+artifacts_hash: sha256:130dd0f56d843cabe3760a976d1a5956342cb77f41acba6111ca61c475e32f51
+contract_hash: sha256:2db3246670c3a3219d56ca8fa1bf77203131cb06587730c13fc4bbb70bfea083
+
+# === Execution progress ===
+execution_mode: sdd
+execution_plan_hash: sha256:d5f89efe166a1c80cd08c67260d1d1fe3f7f7f116c57556ed4b819c7b2e20ff2
+execution_plan_revision: 1
+batches_completed: 0
+test_result: null
+spec_merged: false
+
+# === Metadata ===
+change_name: town-economy-finance
+last_transition: 2026-07-15T04:16:19.032Z
+last_transition_from: approved-for-build
+last_transition_to: executing
+
+# === Decision points ===
+dp_0_decisions: 变更名:智能体小镇 规则细化(经济/金融方向)。意图:前端样式优化+展示更多数据;引入小镇整体金币与金融系统;每位居民每日/每月收入;搭建小镇经济运转机制(饭店/超市/医院等场所);引入股票市场,居民可炒股。约束:待评审时细化。沟通偏好:先起草再评审。范围较大,需拆分阶段。
+dp_0_result: confirmed
+dp_0_confirmed: true
+dp_0_timestamp: 2026-07-15T03:08:19Z
+dp_1_result: null
+dp_1_timestamp: null
+dp_2_result: approved: proposal+specs(4)+design+tasks 全部评审通过;含 town-economy-core/resident-income/town-stock-market/town-economy-ui 四能力,6 批次实现计划,6 处手工 DDL
+dp_2_timestamp: 2026-07-15T04:00:46Z
+dp_3_result: approved: 执行契约批准;17条需求全覆盖、7批次(B0迁移→B1底账→B2经济核心→B3股市→B4接线→B5 API→B6前端)、8条约束、零LLM规则化
+dp_3_timestamp: 2026-07-15T04:10:15Z
+dp_4_result: sdd: plan revision 1; default; full 默认 SDD;按 tasks.md 6 批次+依赖
+dp_4_timestamp: 2026-07-15T04:13:03.444Z
+dp_5_result: null
+dp_5_timestamp: null
+dp_6_result: null
+dp_6_timestamp: null
+dp_7_result: null
+dp_7_timestamp: null
