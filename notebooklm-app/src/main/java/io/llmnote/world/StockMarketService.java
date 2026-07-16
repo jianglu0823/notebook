@@ -27,10 +27,10 @@ public class StockMarketService {
 
     /** 单日涨跌幅上限(±20%)。 */
     static final double MAX_PCT = 0.20;
-    /** 场所营收对板块的信号强度。 */
-    private static final double SECTOR_GAIN = 0.08;
-    /** 触发场所正信号的营收阈值(高于此营收给板块正向拉动)。 */
-    private static final long SECTOR_REVENUE_PIVOT = 200;
+    /** 场所营收对板块的信号强度(与 ±8% 噪声相比要小得多,避免单边漂移)。 */
+    private static final double SECTOR_GAIN = 0.015;
+    /** 触发场所正信号的营收阈值(按单场所日均营收量级设定,正常营收不给正拉动)。 */
+    private static final long SECTOR_REVENUE_PIVOT = 3500;
 
     /** 板块 → TownMap place key(用当日营收派生行情信号)。 */
     private static final Map<String, String> SECTOR_PLACE = Map.of(

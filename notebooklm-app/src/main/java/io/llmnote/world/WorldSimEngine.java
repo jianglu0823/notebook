@@ -268,6 +268,48 @@ public class WorldSimEngine {
         };
     }
 
+    /** 画作风格变体池:每次创作随机叠加,避免同一居民反复同风格。 */
+    private static final String[] ART_MEDIUM = {"水彩", "油画", "丙烯", "彩铅", "炭笔素描", "水墨写意", "数字插画", "木刻版画", "粉彩", "马克笔速写"};
+    private static final String[] ART_PALETTE = {"暖橙夕阳调", "冷蓝月夜调", "低饱和莫兰迪", "高对比撞色", "柔和粉彩", "黑白单色", "金黄麦田调", "青绿山林调"};
+    private static final String[] ART_LIGHT = {"逆光剪影", "侧光塑造体积", "漫射柔光", "斑驳树影", "窗边自然光", "烛光暖调", "雨后透光"};
+    private static final String[] ART_COMPOSE = {"中心对称构图", "黄金分割构图", "留白写意", "俯瞰全景", "低角度仰视", "近景特写", "三分法构图"};
+    private static final String[] ART_MOOD = {"宁静悠远", "童趣天真", "怀旧感伤", "明快雀跃", "神秘幽深", "田园牧歌", "都市疏离"};
+
+    /** 视频风格变体池:镜头/节奏/色调/质感随机叠加。 */
+    private static final String[] VID_SHOT = {"手持跟拍", "固定长镜头", "缓慢推镜", "航拍俯瞰", "特写微距", "轨道平移", "升降镜头"};
+    private static final String[] VID_TONE = {"胶片质感", "过曝清新", "低饱和纪实", "暖黄复古", "冷青电影感", "高对比黑白"};
+    private static final String[] VID_PACE = {"慢节奏留白", "快切蒙太奇", "固定机位长拍", "呼吸式轻微晃动"};
+
+    /** 文字作品(小说/歌词)风格变体池:叙事调性随机叠加。 */
+    private static final String[] TEXT_TONE = {"白描克制", "抒情绵密", "魔幻现实", "黑色幽默", "意识流", "市井烟火气", "诗意象征"};
+
+    /** 画作:基础风格 + 当次随机变体(画种/色调/光线/构图/情绪各抽一)。 */
+    private static String artStyleVariant(String base) {
+        return variant(base, ART_MEDIUM, ART_PALETTE, ART_LIGHT, ART_COMPOSE, ART_MOOD);
+    }
+
+    /** 视频:基础风格 + 随机变体(镜头/色调/节奏)。 */
+    private static String videoStyleVariant(String base) {
+        return variant(base, VID_SHOT, VID_TONE, VID_PACE);
+    }
+
+    /** 文字:基础风格 + 随机变体(叙事调性)。 */
+    private static String textStyleVariant(String base) {
+        return variant(base, TEXT_TONE);
+    }
+
+    /** 把基础风格与各词库的随机各一拼接成变体提示词。 */
+    private static String variant(String base, String[]... pools) {
+        StringBuilder sb = new StringBuilder();
+        if (base != null && !base.isBlank()) sb.append(base.trim());
+        for (String[] pool : pools) {
+            String pick = pool[ThreadLocalRandom.current().nextInt(pool.length)];
+            if (sb.length() > 0) sb.append("、");
+            sb.append(pick);
+        }
+        return sb.toString();
+    }
+
     private static String skillForOccupation(String occ) {
         if (occ == null) return null;
         return switch (occ) {
@@ -635,7 +677,8 @@ public class WorldSimEngine {
     /** 用默认文本模型为居民生成一件作品(小说章节/歌曲歌词),style 为该技能的风格提示词。 */
     private AgentProduct produce(AgentEmployee e, LocalDate date, String kind, String theme, String style, long[] tok) {
         long seq = nextSeq(e.getId(), kind);
-        String styleHint = (style == null || style.isBlank()) ? "" : "风格倾向:" + style.trim() + "。";
+        String variant = textStyleVariant(style);
+        String styleHint = variant.isBlank() ? "" : "风格倾向:" + variant + "。";
         AgentProduct p = new AgentProduct();
         p.setAgentId(e.getId());
         p.setSimDate(date);
@@ -685,7 +728,8 @@ public class WorldSimEngine {
      */
     private AgentProduct produceArtwork(AgentEmployee e, LocalDate date, String style, long[] tok) {
         long seq = nextSeq(e.getId(), "image");
-        String styleHint = (style == null || style.isBlank()) ? "" : "整体风格:" + style.trim() + "。";
+        String variant = artStyleVariant(style);
+        String styleHint = variant.isBlank() ? "" : "整体风格:" + variant + "。";
         String system = "你是画师的创作助手。请为一幅新画作起一个富有意境的标题,并写一段可直接用于文生图的画面描述"
                 + "(含主体、场景、风格、光线、构图,尽量具体)。" + styleHint + "只输出 JSON:"
                 + "{\"title\":\"标题\",\"prompt\":\"文生图画面描述\",\"quality\":1到10的整数}。简体中文,不要 markdown 围栏。";
@@ -731,7 +775,8 @@ public class WorldSimEngine {
      */
     private AgentProduct produceVideo(AgentEmployee e, LocalDate date, String style, long[] tok) {
         long seq = nextSeq(e.getId(), "video");
-        String styleHint = (style == null || style.isBlank()) ? "" : "整体风格:" + style.trim() + "。";
+        String variant = videoStyleVariant(style);
+        String styleHint = variant.isBlank() ? "" : "整体风格:" + variant + "。";
         String system = "你是短片导演的创作助手。请为一部新短片起一个有画面感的标题,并写一段可直接用于文生视频的分镜描述"
                 + "(含主体、动作、场景、镜头运动、光线、风格,尽量具体,单个连续镜头)。" + styleHint + "只输出 JSON:"
                 + "{\"title\":\"标题\",\"prompt\":\"文生视频分镜描述\",\"quality\":1到10的整数}。简体中文,不要 markdown 围栏。";
