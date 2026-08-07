@@ -27,6 +27,21 @@ public class AccessLogService {
         save(e);
     }
 
+    /** 游客首次到访(生成新游客 cookie 时调用):记录到访日期与来源,便于统计 UV。 */
+    public void logGuestVisit(HttpServletRequest req, String ownerId) {
+        AccessLog e = new AccessLog();
+        e.setAction("GUEST_VISIT");
+        e.setOwnerId(ownerId);
+        e.setGuest(true);
+        e.setMethod(req.getMethod());
+        e.setPath(truncate(req.getRequestURI(), 512));
+        String ua = req.getHeader("User-Agent");
+        e.setIp(truncate(clientIp(req), 64));
+        e.setUserAgent(truncate(ua, 512));
+        e.setDeviceType(deviceType(ua));
+        save(e);
+    }
+
     /** 登录 / 注册 等身份事件:显式携带用户名与结果。 */
     public void logAuth(HttpServletRequest req, String action, Long userId, String username, boolean guest) {
         AccessLog e = new AccessLog();

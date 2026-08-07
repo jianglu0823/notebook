@@ -19,6 +19,7 @@ import io.llmnote.llm.ChatCompletion;
 import io.llmnote.llm.ZhipuMediaClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,12 @@ public class XhsService {
     /** 视频镜头段数上限(每段约 5s)。 */
     private static final int MAX_SCENES = 4;
     private static final int MIN_SCENES = 2;
+    /** 短剧固定分镜段数(每段约 5s ≈ 30s 成片)。 */
+    private static final int DRAMA_SCENES = 6;
+    /** 短剧每段视频「等待重试到成功」的最大尝试次数(遇 429/超时会等待后重试)。 */
+    private static final int DRAMA_SEG_MAX_ATTEMPTS = 8;
+    /** 短剧分段重试的基础等待(ms),按尝试次数线性递增以躲免费额度限流。 */
+    private static final long DRAMA_SEG_RETRY_BASE_MS = 15000;
     /** 竖屏 9:16。 */
     private static final String VIDEO_SIZE = "1080x1920";
     private static final SpeechSynthesisAudioFormat TTS_FMT = SpeechSynthesisAudioFormat.MP3_22050HZ_MONO_256KBPS;
@@ -64,6 +71,8 @@ public class XhsService {
     private final ObjectMapper objectMapper;
     private final XhsProjectRepository repo;
     private final ZhipuMediaClient mediaClient;
+    /** 自身代理:用于触发本类的 @Async 方法(同类自调用会绕过代理退化成同步,故经此拿到代理 bean)。 */
+    private final ObjectProvider<XhsService> selfProvider;
 
     // ---- 提交入口 ----
 
@@ -113,6 +122,38 @@ public class XhsService {
         return p;
     }
 
+    public XhsProject genDrama(Long id, String ownerId) {
+        XhsProject p = owned(id, ownerId);
+        p.setDramaStatus("PENDING");
+        p.setDramaPath(null);
+        p.setErrorMsg(null);
+        repo.save(p);
+        selfProvider.getObject().genDramaAsync(id);
+        return p;
+    }
+
+    /**
+     * 短剧独立入口:直接用一句剧情主题创建项目并开始生成短剧,不走小红书标题→素材→文案流程。
+     * theme 同时作为 direction 与 chosenTitle,copyText 留空(dramaScript 会据主题创作剧情)。
+     */
+    public XhsProject createDrama(String ownerId, String theme) {
+        String t = (theme == null || theme.isBlank()) ? "一个温暖的小故事" : theme.trim();
+        XhsProject p = new XhsProject();
+        p.setOwnerId(ownerId);
+        p.setDirection(t.length() > 255 ? t.substring(0, 255) : t);
+        p.setChosenTitle(t.length() > 512 ? t.substring(0, 512) : t);
+        p.setStatus("DRAMA");
+        p.setDramaStatus("PENDING");
+        p = repo.save(p);
+        selfProvider.getObject().genDramaAsync(p.getId());
+        return p;
+    }
+
+    /** 该主体的全部短剧项目(最新在前)。 */
+    public List<XhsProject> listDrama(String ownerId) {
+        return repo.findByOwnerIdAndDramaStatusIsNotNullOrderByIdDesc(ownerId);
+    }
+
     /**
      * 每日凌晨清理失败的视频作品:删除该项目视频目录下的中间/半成品文件(seg_*.mp4/narration.mp3/
      * segs.mp4/concat.txt/video.mp4),并清空 video_path/video_status,使前端彻底不残留失败视频。
@@ -132,7 +173,8 @@ public class XhsService {
                         for (Path f : s.toList()) {
                             String n = f.getFileName().toString();
                             if (n.equals("video.mp4") || n.equals("segs.mp4") || n.equals("concat.txt")
-                                    || n.equals("narration.mp3") || n.startsWith("seg_")) {
+                                    || n.equals("narration.mp3") || n.startsWith("seg_")
+                                    || n.equals("drama.mp4") || n.equals("drama_narration.mp3") || n.startsWith("drama_seg_")) {
                                 if (Files.deleteIfExists(f)) files++;
                             }
                         }
@@ -323,6 +365,162 @@ public class XhsService {
             log.error("xhs genVideo failed: id={}", id, e);
             failVideo(p, e.getMessage());
         }
+    }
+
+    /**
+     * 短剧阶段:文案 → LLM 出一个「连续剧情」的 {@value #DRAMA_SCENES} 段分镜脚本(统一主角/场景,起承转合)
+     * + 旁白口播 → CogVideoX-flash 逐段生成 5s 竖屏无声片段。与普通视频不同:
+     * <b>任一段遇 429/超时/失败都等待后重试,直到该段成功;所有分镜都生成成功后才 ffmpeg 合并铺配音</b>,
+     * 保证短剧剧情不缺段。全部尝试用尽仍失败才判定失败。
+     */
+    @Async
+    public void genDramaAsync(Long id) {
+        XhsProject p = repo.findById(id).orElse(null);
+        if (p == null) return;
+        Path dir = null;
+        try {
+            p.setDramaStatus("RENDERING");
+            repo.save(p);
+
+            VideoScript vs = dramaScript(p.getCopyText(), p.getChosenTitle());
+            if (vs == null || vs.scenes.isEmpty()) { failDrama(p, "未能生成短剧分镜,请重试。"); return; }
+
+            dir = Paths.get(props.getStorage().getImageDir(), safe(p.getOwnerId()), String.valueOf(id))
+                    .toAbsolutePath().normalize();
+            Files.createDirectories(dir);
+
+            // 1) 逐段生成 5s 竖屏无声片段:每段等待重试到成功,任一段最终失败则整部短剧失败(不缺段)
+            List<Path> segs = new ArrayList<>();
+            for (int i = 0; i < vs.scenes.size(); i++) {
+                Path seg = dir.resolve("drama_seg_" + i + ".mp4");
+                boolean ok = renderSegmentWithRetry(vs.scenes.get(i), seg, id, i);
+                if (!ok) {
+                    failDrama(p, "第 " + (i + 1) + " 段分镜多次重试仍失败(可能免费额度限流),请稍后重试。");
+                    return;
+                }
+                segs.add(seg);
+            }
+
+            // 2) 旁白 TTS
+            Path narration = null;
+            if (vs.narration != null && !vs.narration.isBlank()) {
+                narration = dir.resolve("drama_narration.mp3");
+                if (!ttsToFile(vs.narration, narration)) narration = null;
+            }
+
+            // 3) ffmpeg 拼接 + 铺配音
+            Path out = dir.resolve("drama.mp4");
+            muxVideo(dir, segs, narration, out);
+
+            p.setDramaPath(out.toString());
+            p.setDramaStatus("DONE");
+            repo.save(p);
+            log.info("xhs drama done: id={} segs={} narration={}", id, segs.size(), narration != null);
+        } catch (Exception e) {
+            log.error("xhs genDrama failed: id={}", id, e);
+            failDrama(p, e.getMessage());
+        }
+    }
+
+    /**
+     * 生成单段短剧视频并落盘到 {@code seg},失败(含 429 限流、轮询无结果)按线性递增等待重试,
+     * 最多 {@value #DRAMA_SEG_MAX_ATTEMPTS} 次。全部用尽仍失败返回 false。
+     */
+    private boolean renderSegmentWithRetry(String scene, Path seg, Long id, int idx) {
+        for (int attempt = 1; attempt <= DRAMA_SEG_MAX_ATTEMPTS; attempt++) {
+            try {
+                String taskId = mediaClient.submitVideo(scene, VIDEO_SIZE, false);
+                if (taskId != null) {
+                    String url = mediaClient.pollVideo(taskId, 60, 5000);
+                    if (url != null) {
+                        try (var in = URI.create(url).toURL().openStream()) {
+                            Files.copy(in, seg, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                        }
+                        log.info("xhs drama seg {} 成功 id={} attempt={}", idx, id, attempt);
+                        return true;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("xhs drama seg {} 第 {} 次异常 id={}: {}", idx, attempt, id, e.getMessage());
+            }
+            if (attempt < DRAMA_SEG_MAX_ATTEMPTS) {
+                long wait = DRAMA_SEG_RETRY_BASE_MS * attempt;
+                log.warn("xhs drama seg {} 第 {} 次未成功 id={},等待 {}ms 后重试", idx, attempt, id, wait);
+                try { Thread.sleep(wait); } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 让 LLM 从文案产出一部「连续剧情」短剧的旁白口播 + {@value #DRAMA_SCENES} 段分镜(JSON)。
+     * 强调:统一主角与场景、镜头间时间/情节连续(起承转合),各段画面描述里都带上主角外貌以尽量保持一致。
+     * 带退避重试以躲 GLM 限流;失败回退到普通分镜。
+     */
+    private VideoScript dramaScript(String copy, String title) {
+        VideoScript vs = new VideoScript();
+        String system = "你是短剧导演兼编剧。请根据给定文案/主题,创作一部竖屏(9:16)微短剧的旁白口播稿与连续分镜。"
+                + "严格只输出一个 JSON 对象,格式:{\"narration\":\"旁白口播稿\",\"scenes\":[\"镜头1画面\",\"镜头2画面\", ...]}。"
+                + "要求:1) scenes 恰好 " + DRAMA_SCENES + " 条,构成一个有起承转合的完整小故事,镜头之间时间与情节连续;"
+                + "2) 全程围绕同一位主角,请在每条镜头描述开头都复述主角的固定外貌特征(如「短发白衬衫的年轻女子」),"
+                + "并保持场景风格一致,以尽量让 AI 生成的人物前后一致;"
+                + "3) 每条镜头具体可用于文生视频(含主体、动作、场景、光线、镜头语言、竖屏构图),约 5 秒一个画面;"
+                + "4) narration 为可直接朗读的简体中文旁白(" + DRAMA_SCENES * 16 + "~" + DRAMA_SCENES * 24 + " 字,"
+                + "口语连贯、有故事感与情绪,纯文字,绝不能出现 emoji、#话题、markdown 符号、序号、括号备注)。"
+                + "不要多余文字、不要 markdown 代码块。";
+        String user = "短剧主题:「" + (title == null ? "" : title) + "」\n\n参考文案:\n" + (copy == null ? "" : copy);
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                String raw = chat.complete(system, user);
+                String json = extractJsonObject(raw);
+                if (json != null) {
+                    JsonNode node = objectMapper.readTree(json);
+                    vs.narration = cleanNarration(node.path("narration").asText(""));
+                    JsonNode scenes = node.path("scenes");
+                    vs.scenes.clear();
+                    if (scenes.isArray()) {
+                        for (JsonNode s : scenes) {
+                            String t = s.asText("").trim();
+                            if (!t.isBlank()) vs.scenes.add(t);
+                            if (vs.scenes.size() >= DRAMA_SCENES) break;
+                        }
+                    }
+                }
+                if (vs.scenes.size() == DRAMA_SCENES) break; // 需要满段数才算成功
+            } catch (Exception e) {
+                log.warn("xhs dramaScript 第 {} 次失败: {}", attempt + 1, e.getMessage());
+            }
+            try { Thread.sleep(2000L * (attempt + 1)); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); break; }
+        }
+        // 兜底:分镜不足时用文案自造,补齐到 DRAMA_SCENES 段
+        if (vs.scenes.size() < DRAMA_SCENES) {
+            for (String s : fallbackScenes(copy)) {
+                if (vs.scenes.size() >= DRAMA_SCENES) break;
+                if (!vs.scenes.contains(s)) vs.scenes.add(s);
+            }
+            int seq = 1;
+            while (vs.scenes.size() < DRAMA_SCENES) {
+                vs.scenes.add("竖屏 9:16 连续剧情画面,第 " + (seq++) + " 幕,主角在同一场景中继续故事,情绪递进,电影质感光线");
+            }
+        }
+        if (vs.narration.isBlank()) {
+            vs.narration = fallbackNarration(copy, vs.scenes.size());
+        }
+        return vs;
+    }
+
+    /**
+     * 短剧阶段失败:只标记 {@code dramaStatus=FAILED} 并清 dramaPath,不动项目主 status 与普通视频。
+     */
+    private void failDrama(XhsProject p, String msg) {
+        if (p == null) return;
+        p.setDramaStatus("FAILED");
+        p.setDramaPath(null);
+        p.setErrorMsg(msg != null && msg.length() > 2000 ? msg.substring(0, 2000) : msg);
+        repo.save(p);
     }
 
     // ---- 工具方法 ----

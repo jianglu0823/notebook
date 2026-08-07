@@ -1,0 +1,118 @@
+{
+  "mode": "sdd",
+  "source": "default",
+  "rationale": "full SDD 模式,按 tasks.md 9 批次顺序执行,每批独立可验收",
+  "waves": [
+    {
+      "id": "B0",
+      "strategy": "serial",
+      "tasks": [
+        "0.1",
+        "0.2",
+        "0.3"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B1",
+      "strategy": "serial",
+      "tasks": [
+        "1.1",
+        "1.2",
+        "1.3"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B2",
+      "strategy": "serial",
+      "tasks": [
+        "2.1",
+        "2.2",
+        "2.3",
+        "2.4"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B3",
+      "strategy": "serial",
+      "tasks": [
+        "3.1",
+        "3.2",
+        "3.3",
+        "3.4"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B4",
+      "strategy": "serial",
+      "tasks": [
+        "4.1",
+        "4.2",
+        "4.3",
+        "4.4"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B5",
+      "strategy": "serial",
+      "tasks": [
+        "5.1",
+        "5.2",
+        "5.3"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B6",
+      "strategy": "serial",
+      "tasks": [
+        "6.1",
+        "6.2",
+        "6.3"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B7",
+      "strategy": "serial",
+      "tasks": [
+        "7.1",
+        "7.2",
+        "7.3"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B8",
+      "strategy": "serial",
+      "tasks": [
+        "8.1",
+        "8.2",
+        "8.3",
+        "8.4",
+        "8.5",
+        "8.6",
+        "8.7"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B9",
+      "strategy": "serial",
+      "tasks": [
+        "9.1",
+        "9.2"
+      ],
+      "depends_on": []
+    }
+  ],
+  "artifacts_hash": "sha256:9df508bf3d929dc7bb975c9c5d7d822b93303b2eb3f0578821dabd950db20d54",
+  "contract_hash": "sha256:be4d8fd49d61be80df899ad3366298cd8d51f16227d5192c576d91f62d4b893e",
+  "workflow": "full",
+  "revision": 1,
+  "hash": "sha256:256450a1928c227f10629661f1f3f7d961286ed006fcfd66735c25328b50232e"
+}

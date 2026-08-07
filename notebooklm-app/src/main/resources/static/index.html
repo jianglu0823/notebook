@@ -221,6 +221,12 @@
   body.writing #aiFab { display:none !important; }
   body.writing #homeView { display:none !important; }
   body.writing #writingView { display:block; }
+  /* ---- 工作台 · 短剧 ---- */
+  #dramaView { display:none; grid-column:2 / -1; grid-row:1; overflow-y:auto; background:var(--bg); padding:0 0 var(--sp-4); }
+  body.drama #listCol, body.drama #editorCol, body.drama #aiPanel { display:none !important; }
+  body.drama #aiFab { display:none !important; }
+  body.drama #homeView { display:none !important; }
+  body.drama #dramaView { display:block; }
   /* ---- 工作台 · 智能体小世界 ---- */
   #worldView { display:none; grid-column:2 / -1; grid-row:1; overflow-y:auto; background:var(--bg); padding:0 0 var(--sp-4); }
   body.world #listCol, body.world #editorCol, body.world #aiPanel { display:none !important; }
@@ -239,6 +245,69 @@
   .price-tbl { width:100%; border-collapse:collapse; font-size:13px; }
   .price-tbl th, .price-tbl td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); }
   .price-tbl th { color:var(--mut); font-weight:650; }
+  /* ---- 工作台 · AI 伴侣 ---- */
+  #companionView { display:none; grid-column:2 / -1; grid-row:1; background:var(--bg); overflow:hidden; }
+  body.companion #listCol, body.companion #editorCol, body.companion #aiPanel { display:none !important; }
+  body.companion #aiFab { display:none !important; }
+  body.companion #homeView { display:none !important; }
+  body.companion #companionView { display:grid; grid-template-columns: 240px 1fr; }
+  .cpn-sidebar { background:var(--panel); border-right:1px solid var(--line); display:flex; flex-direction:column; overflow:hidden; }
+  .cpn-sidebar-hd { padding:14px 14px 8px; display:flex; align-items:center; justify-content:space-between; }
+  .cpn-sidebar-hd .vt { font-size:15px; font-weight:800; }
+  .cpn-list { flex:1; overflow-y:auto; padding:0 8px 12px; }
+  .cpn-item { display:flex; gap:10px; padding:10px 10px; border-radius:var(--radius); border:1px solid transparent; cursor:pointer; align-items:center; transition:background .15s, border-color .15s; }
+  .cpn-item:hover { background:var(--panel2); }
+  .cpn-item.active { background:var(--accent-weak); border-color:color-mix(in srgb, var(--accent) 40%, transparent); }
+  .cpn-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, white)); color:#04211d; display:flex; align-items:center; justify-content:center; font-weight:800; flex:none; font-size:14px; }
+  .cpn-info { flex:1; min-width:0; }
+  .cpn-name { font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cpn-meta { font-size:11px; color:var(--mut); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cpn-empty { text-align:center; color:var(--mut); padding:40px 12px; font-size:13px; }
+  .cpn-side-actions { padding:8px 8px 12px; display:flex; flex-direction:column; gap:6px; }
+  .cpn-side-actions button { width:100%; }
+  .cpn-main { display:flex; flex-direction:column; overflow:hidden; }
+  .cpn-hd { padding:12px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; background:var(--panel); flex:none; }
+  .cpn-hd .nm { font-size:15px; font-weight:800; }
+  .cpn-hd .desc { font-size:12px; color:var(--mut); }
+  .cpn-hd .spacer { flex:1; }
+  .cpn-hd .intm { font-size:12px; color:var(--mut); display:flex; align-items:center; gap:6px; }
+  .cpn-hd .intm b { color:var(--accent); font-weight:700; font-size:14px; }
+  .cpn-hd select { width:auto; min-width:120px; }
+  .cpn-msgs { flex:1; overflow-y:auto; padding:18px 20px 8px; display:flex; flex-direction:column; gap:12px; }
+  .cpn-msg { display:flex; gap:10px; max-width:78%; }
+  .cpn-msg.me { align-self:flex-end; flex-direction:row-reverse; }
+  .cpn-msg .av { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, white)); color:#04211d; display:flex; align-items:center; justify-content:center; font-weight:800; flex:none; font-size:12px; }
+  .cpn-msg.me .av { background:linear-gradient(135deg, #0ea5e9, #6366f1); color:#fff; }
+  .cpn-msg .bub { padding:10px 13px; border-radius:14px; background:var(--panel); border:1px solid var(--line); font-size:14px; line-height:1.55; white-space:pre-wrap; word-wrap:break-word; }
+  .cpn-msg.me .bub { background:var(--accent-weak); border-color:color-mix(in srgb, var(--accent) 35%, transparent); }
+  .cpn-msg.sys .bub { background:transparent; border:1px dashed var(--line); color:var(--mut); font-size:12.5px; text-align:center; width:100%; max-width:none; }
+  .cpn-msg.sys { max-width:96%; align-self:center; }
+  .cpn-msg .att { margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; }
+  .cpn-msg .att img { max-width:160px; max-height:160px; border-radius:8px; border:1px solid var(--line); }
+  .cpn-msg .meta { font-size:10.5px; color:var(--mut); margin-top:4px; }
+  .cpn-input { padding:10px 14px 14px; background:var(--panel); border-top:1px solid var(--line); display:flex; flex-direction:column; gap:8px; flex:none; }
+  .cpn-input .row1 { display:flex; gap:8px; align-items:flex-end; }
+  .cpn-input textarea { flex:1; resize:none; min-height:42px; max-height:160px; }
+  .cpn-input .row1 button { padding:9px 14px; }
+  .cpn-input .row2 { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--mut); }
+  .cpn-input .row2 .spacer { flex:1; }
+  .cpn-input .ico { background:transparent; border:1px solid var(--line); color:var(--mut); padding:7px 10px; }
+  .cpn-input .ico.rec { color:var(--err); border-color:color-mix(in srgb, var(--err) 50%, transparent); background:color-mix(in srgb, var(--err) 12%, transparent); }
+  .cpn-input .ico:hover { color:var(--fg); }
+  .cpn-modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:100; }
+  .cpn-modal { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-lg); padding:24px; max-width:540px; width:90%; max-height:90vh; overflow-y:auto; }
+  .cpn-modal h3 { font-size:18px; font-weight:800; margin-bottom:14px; }
+  .cpn-modal label { display:block; font-size:12.5px; color:var(--mut); margin-top:10px; margin-bottom:4px; }
+  .cpn-modal input, .cpn-modal select, .cpn-modal textarea { margin-bottom:4px; }
+  .cpn-modal .ctags { display:flex; gap:6px; flex-wrap:wrap; }
+  .cpn-modal .ctag { padding:5px 11px; border:1px solid var(--line); border-radius:20px; font-size:12px; cursor:pointer; }
+  .cpn-modal .ctag.on { background:var(--accent-weak); border-color:var(--accent); color:var(--accent); }
+  .cpn-modal .trow { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; max-height:40vh; overflow-y:auto; }
+  .cpn-modal .tcard { padding:12px; border:1px solid var(--line); border-radius:var(--radius); cursor:pointer; background:var(--panel2); }
+  .cpn-modal .tcard:hover { border-color:var(--accent); }
+  .cpn-modal .tcard h4 { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .cpn-modal .tcard p { font-size:12px; color:var(--mut); }
+  .cpn-modal .acts { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
   .price-tbl td.mut { color:var(--mut); }
   .office-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-top:6px; }
   .office-room { position:relative; border:1px solid var(--line); border-top:3px solid var(--rc,#2dd4bf); border-radius:var(--radius); background:var(--panel2); padding:16px 14px 14px; transition:all .2s ease-in-out; overflow:visible; cursor:pointer; }
@@ -366,6 +435,10 @@
   .gal-meta .gm-sub { font-size:11.5px; color:var(--mut); margin-top:4px; display:flex; align-items:center; gap:8px; justify-content:space-between; }
   .book-card { display:flex; gap:12px; align-items:center; }
   .book-card .bc-cover { width:56px; height:72px; border-radius:6px; background:linear-gradient(135deg,var(--accent),#0b4d43); display:flex; align-items:center; justify-content:center; font-size:30px; flex-shrink:0; }
+  .gal-pager { display:flex; justify-content:center; margin-top:18px; }
+  .gal-pager .gal-more { border:1px solid var(--line); background:var(--panel2); color:var(--fg); font-weight:650; font-size:13px; padding:9px 22px; border-radius:var(--radius); cursor:pointer; transition:all .15s ease-in-out; }
+  .gal-pager .gal-more:hover { border-color:var(--line-strong); background:var(--panel); }
+  .gal-pager .gal-more:disabled { opacity:.55; cursor:default; }
   /* 帖子查看 */
   .post-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
   .post-head .ph-avatar { font-size:30px; }
@@ -891,6 +964,7 @@
           <div class="wd">多智能体协作工作流,把一个方向变成可直接发布的内容。</div>
           <div class="studio-entries">
             <button class="tbtn" onclick="selectStudio()"><span class="ti">📱</span><span class="tl">小红书文案</span></button>
+            <button class="tbtn" onclick="selectDrama()"><span class="ti">🎭</span><span class="tl">短剧</span></button>
             <button class="tbtn" onclick="selectWriting()"><span class="ti">✍️</span><span class="tl">协作写作</span></button>
             <button class="tbtn" onclick="selectWorld()"><span class="ti">🏙️</span><span class="tl">智能体小世界</span></button>
           </div>
@@ -964,8 +1038,10 @@
             <div class="wd">AI 把文案改写成口播稿与分镜,用 CogVideoX 生成竖屏短片,再配上 AI 朗读合成成片。约需 1~3 分钟。</div>
             <div class="img-actions">
               <button id="videoBtn" onclick="genVideo()">🎬 生成配音视频</button>
+              <button id="dramaBtn" onclick="genDrama()">🎭 生成短剧</button>
             </div>
             <div id="videoStage"></div>
+            <div id="dramaStage"></div>
           </div>
 
           <!-- 发布管理 -->
@@ -1045,6 +1121,44 @@
               <button onclick="copyWFinal()">📋 复制终稿</button>
               <button class="sec" onclick="newWriting()">＋ 再来一篇</button>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 工作台 · 短剧 -->
+    <section id="dramaView">
+      <div class="studio-hero">
+        <div class="hi">工作台 · 短剧</div>
+        <div class="greetline"><h1>一句剧情,生成一部连续短剧</h1></div>
+        <div class="sub">输入剧情主题,AI 编写起承转合的连续分镜(约 6 段 30 秒),用 CogVideoX 逐段渲染竖屏画面,遇限流自动等待重试直到每段成功,全部齐了再合成配音成片。耗时较长,请耐心等待。</div>
+      </div>
+      <div class="studio-wrap">
+        <div class="studio-topbar">
+          <button class="sec" onclick="newDrama()">＋ 新建短剧</button>
+          <button class="sec" onclick="toggleDramaWorks()" id="dramaWorksToggle">📁 我的短剧</button>
+        </div>
+
+        <div id="dramaWorksPanel" class="widget hidden">
+          <div class="wt">📁 我的短剧</div>
+          <div id="dramaWorksList"><div class="mut">加载中…</div></div>
+        </div>
+
+        <!-- 提交表单 -->
+        <div class="widget" id="dramaForm">
+          <div class="wt">🎭 新建短剧</div>
+          <div class="wd">输入剧情主题或一句话梗概,AI 会自动扩写成一部连续短剧。</div>
+          <div class="news-run">
+            <input id="dramaTheme" placeholder="剧情主题,如「一个加班到深夜的程序员遇见了会说话的猫」「雨夜便利店里的重逢」…" onkeydown="if(event.key==='Enter')submitDrama()">
+          </div>
+          <div class="img-actions"><button id="dramaSubmitBtn" onclick="submitDrama()">🎬 开始生成短剧</button></div>
+        </div>
+
+        <!-- 生成过程 + 成片 -->
+        <div id="dramaRun" class="hidden">
+          <div class="widget">
+            <div class="wt">🎬 生成进度 <span class="mut" id="dramaStatusHint"></span></div>
+            <div id="dramaRunStage"></div>
           </div>
         </div>
       </div>
@@ -1294,8 +1408,10 @@
         <div class="navitem active" id="view-home" onclick="selectHome()"><span class="ic">🏠</span><span class="lbl">首页</span></div>
         <div class="navitem" id="view-all" onclick="selectAll()"><span class="ic">📝</span><span class="lbl">全部笔记</span></div>
         <div class="navitem" id="view-studio" onclick="selectStudio()"><span class="ic">🛠</span><span class="lbl">工作台</span></div>
+        <div class="navitem" id="view-drama" onclick="selectDrama()"><span class="ic">🎭</span><span class="lbl">短剧</span></div>
         <div class="navitem" id="view-writing" onclick="selectWriting()"><span class="ic">✍️</span><span class="lbl">协作写作</span></div>
         <div class="navitem" id="view-world" onclick="selectWorld()"><span class="ic">🏙️</span><span class="lbl">智能体小世界</span></div>
+        <div class="navitem" id="view-companion" onclick="selectCompanion()"><span class="ic">💞</span><span class="lbl">AI 伴侣</span></div>
         <div class="navitem muted" onclick="soon()"><span class="ic">🕐</span><span class="lbl">最近</span></div>
         <div class="navitem muted" onclick="soon()"><span class="ic">⭐</span><span class="lbl">快捷方式</span></div>
       </div>
@@ -1378,6 +1494,25 @@
       <div id="editorBar" class="hidden">
         <span class="who" id="noteSaveState"></span>
         <span class="mut" style="flex:none">✎ 自动保存</span>
+      </div>
+    </section>
+
+    <section id="companionView">
+      <aside class="cpn-sidebar">
+        <div class="cpn-sidebar-hd">
+          <span class="vt">AI 伴侣</span>
+          <button class="sec" style="padding:4px 10px;font-size:12px" onclick="openCompanionCreate()">＋ 新建</button>
+        </div>
+        <div class="cpn-list" id="cpnList"></div>
+      </aside>
+      <div class="cpn-main" id="cpnMain">
+        <div class="cpn-empty" id="cpnEmpty">
+          <p style="font-size:15px;margin-bottom:10px">还没有伴侣,从模板快速开始,或自定义一个</p>
+          <div style="display:flex;gap:8px;justify-content:center">
+            <button onclick="openCompanionTemplates()">📋 从模板创建</button>
+            <button class="sec" onclick="openCompanionCreate()">✏️ 自定义创建</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1721,6 +1856,9 @@ const XHS_STYLES = [
   {k:'ZHIYU',    e:'🌸', t:'治愈温柔', d:'舒缓文艺、有情绪价值,给人陪伴感'}];
 const XHS_STEP_STATUS = {NEW:0, TITLES_DONE:1, RESEARCH_DONE:2, COPY_DONE:3, IMAGES_DONE:4, VIDEO_DONE:5};
 const PUB_LABEL = {DRAFT:'草稿', READY:'待发', PUBLISHED:'已发'};
+// ---- 短剧(独立工作台)----
+let drama = null;              // 当前短剧项目
+let dramaPoll = null;          // 短剧轮询定时器
 // ---- 多智能体协作写作 ----
 let writing = null;            // 当前协作写作项目
 let writingPoll = null;        // 轮询定时器
@@ -2072,9 +2210,12 @@ function setActiveNav(elId) {
 }
 // ---- 首页 ----
 function selectHome() {
+  closeAI();
   document.body.classList.remove('studio');
   document.body.classList.remove('writing');
   document.body.classList.remove('world');
+  document.body.classList.remove('drama');
+  document.body.classList.remove('schedule');
   document.body.classList.remove('home');
   document.body.classList.add('home');
   setActiveNav('view-home');
@@ -2160,6 +2301,7 @@ async function openNewsNote(notebookId, noteId) {
   document.body.classList.remove('studio');
   document.body.classList.remove('writing');
   document.body.classList.remove('world');
+  document.body.classList.remove('drama');
   await loadNotebooks();
   currentNb = nbById(notebookId) || null;
   setActiveNav('');
@@ -2180,6 +2322,7 @@ async function selectAll() {
   document.body.classList.remove('studio');
   document.body.classList.remove('writing');
   document.body.classList.remove('world');
+  document.body.classList.remove('drama');
   currentNb = null;
   setActiveNav('view-all');
   document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
@@ -2193,6 +2336,7 @@ async function selectNb(id) {
   document.body.classList.remove('studio');
   document.body.classList.remove('writing');
   document.body.classList.remove('world');
+  document.body.classList.remove('drama');
   currentNb = nbById(id) || null;
   document.getElementById('view-home').classList.remove('active');
   document.getElementById('view-all').classList.remove('active');
@@ -2750,6 +2894,7 @@ function selectStudio() {
   document.body.classList.remove('home');
   document.body.classList.remove('writing');
   document.body.classList.remove('world');
+  document.body.classList.remove('drama');
   document.body.classList.add('studio');
   setActiveNav('view-studio');
   currentNb = null;
@@ -2869,6 +3014,35 @@ async function genVideo() {
   finally { btn.disabled = false; }
 }
 
+async function genDrama() {
+  if (!xhs) return;
+  const btn = document.getElementById('dramaBtn'); btn.disabled = true;
+  document.getElementById('dramaStage').innerHTML = '<div class="xnotice">AI 正在编写连续剧情分镜,逐段渲染竖屏短剧(遇限流会自动等待重试,不缺段),耗时较长请耐心等待…</div>' + skeletonCards(1);
+  try {
+    xhs = await j(`${API}/studio/xhs/${xhs.id}/drama`, {method:'POST', headers:{'Content-Type':'application/json'}});
+    pollXhsDrama();
+  } catch (e) { toast('提交失败:' + errText(e), 'err'); }
+  finally { btn.disabled = false; }
+}
+
+// 短剧不改主 status,单独轮询 dramaStatus 到 DONE/FAILED 为止。
+function pollXhsDrama() {
+  if (xhsPoll) { clearTimeout(xhsPoll); xhsPoll = null; }
+  if (!xhs) return;
+  xhsBusy = true;
+  const tick = async () => {
+    if (!document.body.classList.contains('studio') || !xhs) { xhsBusy = false; return; }
+    try {
+      xhs = await j(`${API}/studio/xhs/${xhs.id}`);
+      if (xhs.dramaStatus === 'DONE' || xhs.dramaStatus === 'FAILED') xhsBusy = false;
+      renderXhs();
+      if (!xhsBusy) return;
+      xhsPoll = setTimeout(tick, 4000);
+    } catch (e) { xhsPoll = setTimeout(tick, 4000); }
+  };
+  xhsPoll = setTimeout(tick, 2000);
+}
+
 // 轮询到目标状态(或 FAILED)为止。各异步阶段进行中,status 仍停留在上一完成态,
 // 故不能靠 status 判忙,而是显式轮询直至 status === 目标态。
 function pollXhs(target) {
@@ -2953,6 +3127,18 @@ function renderXhs() {
          <div class="ic-bar"><a href="${url}" download="xhs_${xhs.id}.mp4">⬇ 下载视频</a></div></div>`;
     showXstep(4);
   }
+  // Step5 短剧产出:连续剧情多分镜合成,仅成功才展示
+  if (xhs.dramaStatus === 'FAILED') {
+    document.getElementById('dramaStage').innerHTML =
+      `<div class="xnotice">短剧生成失败了${xhs.errorMsg ? '(' + esc(xhs.errorMsg) + ')' : ''},可点上方「🎭 生成短剧」重试。</div>`;
+    showXstep(4);
+  } else if (xhs.dramaPath) {
+    const url = `${API}/studio/xhs/${xhs.id}/drama${audioTokenQs()}`;
+    document.getElementById('dramaStage').innerHTML =
+      `<div class="video-cell"><video controls playsinline preload="metadata" src="${url}" style="max-width:270px;width:100%;border-radius:12px;background:#000"></video>
+         <div class="ic-bar"><a href="${url}" download="xhs_drama_${xhs.id}.mp4">⬇ 下载短剧</a></div></div>`;
+    showXstep(4);
+  }
 }
 function renderXhsFailed() {
   const msg = esc(xhs.errorMsg || '任务失败,请重试');
@@ -3025,6 +3211,114 @@ async function loadWorks() {
 function xhsStatusLabel(s) {
   return {NEW:'新建',TITLES_DONE:'待选标题',RESEARCH_DONE:'待写文案',COPY_DONE:'待配图',IMAGES_DONE:'已完成',FAILED:'失败'}[s]||s;
 }
+
+// ==== 短剧独立工作台 ====
+function selectDrama() {
+  document.body.classList.remove('home');
+  document.body.classList.remove('studio');
+  document.body.classList.remove('writing');
+  document.body.classList.remove('world');
+  document.body.classList.remove('drama');
+  document.body.classList.add('drama');
+  setActiveNav('view-drama');
+  currentNb = null;
+  document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
+  document.getElementById('dramaWorksPanel').classList.add('hidden');
+  if (drama) renderDrama(); else newDrama();
+  closeNav();
+}
+function newDrama() {
+  if (dramaPoll) { clearTimeout(dramaPoll); dramaPoll = null; }
+  drama = null;
+  const input = document.getElementById('dramaTheme'); if (input) input.value = '';
+  document.getElementById('dramaRun').classList.add('hidden');
+  document.getElementById('dramaRunStage').innerHTML = '';
+  document.getElementById('dramaForm').classList.remove('hidden');
+  document.getElementById('dramaWorksPanel').classList.add('hidden');
+}
+async function submitDrama() {
+  const theme = document.getElementById('dramaTheme').value.trim();
+  if (!theme) { toast('请先输入剧情主题', 'err'); return; }
+  const btn = document.getElementById('dramaSubmitBtn'); btn.disabled = true;
+  try {
+    drama = await j(`${API}/studio/xhs/drama`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({theme})});
+    document.getElementById('dramaForm').classList.add('hidden');
+    document.getElementById('dramaRun').classList.remove('hidden');
+    renderDrama();
+    pollDrama();
+  } catch (e) { toast('提交失败:' + errText(e), 'err'); }
+  finally { btn.disabled = false; }
+}
+function pollDrama() {
+  if (dramaPoll) { clearTimeout(dramaPoll); dramaPoll = null; }
+  if (!drama) return;
+  const tick = async () => {
+    if (!document.body.classList.contains('drama') || !drama) return;
+    try {
+      drama = await j(`${API}/studio/xhs/${drama.id}`);
+      renderDrama();
+      if (drama.dramaStatus === 'DONE' || drama.dramaStatus === 'FAILED') return;
+      dramaPoll = setTimeout(tick, 4000);
+    } catch (e) { dramaPoll = setTimeout(tick, 4000); }
+  };
+  dramaPoll = setTimeout(tick, 2000);
+}
+function renderDrama() {
+  if (!drama) return;
+  document.getElementById('dramaForm').classList.add('hidden');
+  document.getElementById('dramaRun').classList.remove('hidden');
+  const hint = document.getElementById('dramaStatusHint');
+  const stage = document.getElementById('dramaRunStage');
+  if (drama.dramaStatus === 'DONE' && drama.dramaPath) {
+    if (hint) hint.textContent = '✓ 已完成';
+    const url = `${API}/studio/xhs/${drama.id}/drama${audioTokenQs()}`;
+    stage.innerHTML =
+      `<div class="video-cell"><video controls playsinline preload="metadata" src="${url}" style="max-width:270px;width:100%;border-radius:12px;background:#000"></video>
+         <div class="ic-bar"><a href="${url}" download="xhs_drama_${drama.id}.mp4">⬇ 下载短剧</a></div></div>
+       <div class="img-actions"><button class="sec" onclick="newDrama()">＋ 再拍一部</button></div>`;
+  } else if (drama.dramaStatus === 'FAILED') {
+    if (hint) hint.textContent = '✗ 失败';
+    stage.innerHTML =
+      `<div class="xnotice xerr">✗ 短剧生成失败${drama.errorMsg ? ':' + esc(drama.errorMsg) : ''}</div>
+       <div class="img-actions"><button onclick="retryDrama()">🔄 重试</button><button class="sec" onclick="newDrama()">＋ 换个主题</button></div>`;
+  } else {
+    if (hint) hint.textContent = '⏳ 生成中…';
+    stage.innerHTML = '<div class="xnotice">AI 正在编写连续剧情分镜,逐段渲染竖屏短剧(遇限流会自动等待重试,不缺段),耗时较长请耐心等待…</div>' + skeletonCards(1);
+  }
+}
+async function retryDrama() {
+  if (!drama) return;
+  try {
+    drama = await j(`${API}/studio/xhs/${drama.id}/drama`, {method:'POST', headers:{'Content-Type':'application/json'}});
+    renderDrama();
+    pollDrama();
+  } catch (e) { toast('重试失败:' + errText(e), 'err'); }
+}
+async function toggleDramaWorks() {
+  const panel = document.getElementById('dramaWorksPanel');
+  if (!panel.classList.contains('hidden')) { panel.classList.add('hidden'); return; }
+  panel.classList.remove('hidden');
+  document.getElementById('dramaWorksList').innerHTML = '<div class="mut">加载中…</div>';
+  try {
+    const list = await j(`${API}/studio/xhs/drama`);
+    if (!list.length) { document.getElementById('dramaWorksList').innerHTML = '<div class="mut">还没有短剧作品</div>'; return; }
+    document.getElementById('dramaWorksList').innerHTML = list.map(p => {
+      const label = {DONE:'已完成', FAILED:'失败', RENDERING:'生成中', PENDING:'排队中'}[p.dramaStatus] || p.dramaStatus;
+      return `<div class="w-work-item" onclick="openDrama(${p.id})">
+        <span class="wtopic">${esc(p.chosenTitle || p.direction || ('短剧#'+p.id))}</span>
+        <span class="xbadge">${label}</span>
+      </div>`;
+    }).join('');
+  } catch (e) { document.getElementById('dramaWorksList').innerHTML = '<div class="xnotice xerr">加载失败</div>'; }
+}
+async function openDrama(id) {
+  if (dramaPoll) { clearTimeout(dramaPoll); dramaPoll = null; }
+  try { drama = await j(`${API}/studio/xhs/${id}`); } catch (e) { toast('打开失败:' + errText(e), 'err'); return; }
+  document.getElementById('dramaWorksPanel').classList.add('hidden');
+  renderDrama();
+  if (drama.dramaStatus === 'PENDING' || drama.dramaStatus === 'RENDERING') pollDrama();
+}
+
 async function openWork(id) {
   if (xhsPoll) { clearTimeout(xhsPoll); xhsPoll = null; }
   xhsBusy = false;
@@ -3053,6 +3347,7 @@ function selectWriting() {
   document.body.classList.remove('home');
   document.body.classList.remove('studio');
   document.body.classList.remove('world');
+  document.body.classList.remove('drama');
   document.body.classList.add('writing');
   setActiveNav('view-writing');
   currentNb = null;
@@ -3242,6 +3537,7 @@ function selectWorld() {
   document.body.classList.remove('home');
   document.body.classList.remove('studio');
   document.body.classList.remove('writing');
+  document.body.classList.remove('drama');
   document.body.classList.add('world');
   setActiveNav('view-world');
   currentNb = null;
@@ -3555,6 +3851,9 @@ function closeAgentDetail() {
 
 // ==== 作品馆:小说连载 / 画作 / 短片 / 歌曲 ====
 let galleryCat = 'novel';
+const GALLERY_PAGE_SIZE = 24;
+let galleryPage = 0;      // 已加载到的页码
+let galleryLoading = false;
 function switchGalleryCat(cat) {
   galleryCat = cat;
   document.querySelectorAll('#galleryTabs .gtab').forEach(b =>
@@ -3564,12 +3863,43 @@ function switchGalleryCat(cat) {
 async function loadGallery() {
   const box = document.getElementById('galleryBody');
   box.innerHTML = `<div class="mut">加载中…</div>`;
+  galleryPage = 0;
   try {
     if (galleryCat === 'novel') return renderBooks(box);
-    const cards = await j(`${API}/world/gallery?category=${galleryCat}`);
+    const res = await j(`${API}/world/gallery?category=${galleryCat}&page=0&size=${GALLERY_PAGE_SIZE}`);
+    const cards = res.items || [];
     if (!cards.length) { box.innerHTML = `<div class="mut">这个分类还没有作品。开启「自主行动」让居民创作起来吧。</div>`; return; }
-    box.innerHTML = `<div class="gal-grid">${cards.map(c => galCard(c, galleryCat)).join('')}</div>`;
+    box.innerHTML = `<div class="gal-grid" id="galGrid">${cards.map(c => galCard(c, galleryCat)).join('')}</div>
+      <div class="gal-pager" id="galPager"></div>`;
+    renderGalPager(res);
   } catch (e) { box.innerHTML = `<div class="mut">加载失败。</div>`; }
+}
+function renderGalPager(res) {
+  const pager = document.getElementById('galPager');
+  if (!pager) return;
+  if (res.hasMore) {
+    pager.innerHTML = `<button class="gal-more" onclick="loadMoreGallery()">加载更多(共 ${res.total} 件)</button>`;
+  } else {
+    pager.innerHTML = `<span class="mut" style="font-size:12px">已展示全部 ${res.total} 件作品</span>`;
+  }
+}
+async function loadMoreGallery() {
+  if (galleryLoading) return;
+  galleryLoading = true;
+  const grid = document.getElementById('galGrid');
+  const pager = document.getElementById('galPager');
+  const btn = pager && pager.querySelector('.gal-more');
+  if (btn) { btn.disabled = true; btn.textContent = '加载中…'; }
+  const cat = galleryCat, next = galleryPage + 1;
+  try {
+    const res = await j(`${API}/world/gallery?category=${cat}&page=${next}&size=${GALLERY_PAGE_SIZE}`);
+    if (cat !== galleryCat || !grid) return; // 期间已切换分类
+    galleryPage = next;
+    grid.insertAdjacentHTML('beforeend', (res.items || []).map(c => galCard(c, cat)).join(''));
+    renderGalPager(res);
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = '加载失败,点此重试'; }
+  } finally { galleryLoading = false; }
 }
 function galCard(c, cat) {
   const p = c.product || {};
@@ -3993,7 +4323,7 @@ async function openReport(date, el) {
         </div>`).join('')}</div>` : ''}
     ${costLine}`;
 }
-function newsKind(t){return {marriage:'喜事',birth:'新生',death:'离世',event:'突发'}[t]||t;}
+function newsKind(t){return {marriage:'喜事',pregnancy:'有喜',birth:'新生',death:'离世',event:'突发',weather:'天气'}[t]||t;}
 function prodKind(k){return {chapter:'小说',song:'歌曲',artwork:'画作',image:'画作',video:'短片'}[k]||k;}
 /** 产物内容渲染:图片→img、视频→video、其余→文字。图片/视频走 /products/{id}/media。 */
 function prodMedia(p){
@@ -5755,6 +6085,7 @@ function schedulePoll(active, fn) {
 function kindLabel(k){return {SUMMARY:'摘要',STUDY_GUIDE:'学习指南',FAQ:'FAQ'}[k]||k;}
 function audioTokenQs(){ const t=token(); return t ? ('?token='+encodeURIComponent(t)) : ''; }
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+const escapeHtml = esc, escapeAttr = esc;
 function stripHtml(html){ if(!html) return ''; const d=document.createElement('div'); d.innerHTML=html; return (d.textContent||'').replace(/\s+/g,' ').trim().slice(0,140); }
 function dayBucket(s){
   if(!s) return '更早';
@@ -5787,6 +6118,499 @@ window.addEventListener('resize', () => {
     document.getElementById('aiPanel').setAttribute('aria-hidden','false');
   }
 });
+
+// =====================================================================
+//  AI 伴侣视图 (B8)
+//  - selectCompanion():切换视图 + 拉列表
+//  - create / template / delete + 加载模型
+//  - WS /api/ws/companion JSON 帧 + 二进制 PCM 语音
+// =====================================================================
+const CPN = {
+  list: [], activeId: null, messages: [], model: '', models: [], intimacy: null,
+  ws: null, wsReady: false, sending: false, currentAiMsgId: null, currentAiText: '',
+  recording: false, mediaRecorder: null, audioCtx: null, audioBuf: [],
+  pendingAttachments: [],  // [{url, kind:'image'}]
+};
+const CPN_TAGS = ['GENTLE','LIVELY','COLD','TSUNDERE','CUTE','MATURE','MYSTERIOUS'];
+const CPN_GENDERS = [{k:'FEMALE',t:'女'},{k:'MALE',t:'男'},{k:'NON_BINARY',t:'其他'}];
+const CPN_TONE = [{k:'SWEET',t:'温柔甜蜜'},{k:'CUTE',t:'俏皮可爱'},{k:'INTIMATE',t:'亲密知心'},{k:'COOL',t:'冷静理性'}];
+const CPN_RELATION = [{k:'CASUAL',t:'朋友'},{k:'INTERNET',t:'网友'},{k:'BESTIE',t:'闺蜜'},{k:'ROMANTIC',t:'恋人'}];
+const CPN_VOICE = [{k:'SWEET',t:'温柔'},{k:'MAGNETIC',t:'磁性'},{k:'YOUNG',t:'年轻'},{k:'MATURE',t:'成熟'},{k:'CUTE',t:'可爱'},{k:'HOARSE',t:'沙哑'},{k:'CALM',t:'冷静'}];
+
+function cpnApi(path, opts) { return j('/api/companion' + path, opts || {}); }
+
+function selectCompanion() {
+  ['home','studio','drama','writing','world'].forEach(v => document.body.classList.remove(v));
+  document.body.classList.add('companion');
+  setActiveNav('view-companion');
+  currentNb = null;
+  document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
+  closeNav();
+  if (CPN.models.length === 0) loadCpnModels();
+  loadCpnList();
+}
+
+async function loadCpnModels() {
+  try {
+    const ms = await cpnApi('/models');
+    CPN.models = ms || [];
+    CPN.model = CPN.models[0] ? CPN.models[0].name : '';
+  } catch (e) { toast('加载模型失败: ' + e.message, 'err'); }
+}
+
+async function loadCpnList() {
+  try {
+    const list = await cpnApi('');
+    CPN.list = list || [];
+    renderCpnList();
+    if (CPN.activeId) {
+      const still = CPN.list.find(c => c.id === CPN.activeId);
+      if (still) openCompanion(still.id); else CPN.activeId = null;
+    }
+  } catch (e) { toast('加载伴侣列表失败: ' + e.message, 'err'); }
+}
+
+function renderCpnList() {
+  const el = document.getElementById('cpnList');
+  if (!el) return;
+  if (!CPN.list.length) {
+    el.innerHTML = '<div class="cpn-empty" style="padding:24px 8px">还没有伴侣<br>点右上角"新建"开始</div>';
+    return;
+  }
+  el.innerHTML = CPN.list.map(c => {
+    const ini = (c.name || '?').slice(0, 1);
+    const sub = c.gender === 'FEMALE' ? '♀' : c.gender === 'MALE' ? '♂' : '⚧';
+    return `<div class="cpn-item ${c.id===CPN.activeId?'active':''}" onclick="openCompanion(${c.id})">
+      <div class="cpn-avatar">${escapeHtml(ini)}</div>
+      <div class="cpn-info">
+        <div class="cpn-name">${escapeHtml(c.name)} ${escapeHtml(sub)} ${c.age||''}岁</div>
+        <div class="cpn-meta">${escapeHtml((c.personalityTags||[]).slice(0,2).join('·') || '未设标签')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function openCompanion(id) {
+  CPN.activeId = id;
+  renderCpnList();
+  try {
+    const [c, msgs, intim] = await Promise.all([
+      cpnApi('/' + id),
+      cpnApi('/' + id + '/messages'),
+      cpnApi('/' + id + '/intimacy'),
+    ]);
+    renderCompanionChat(c, msgs || [], intim);
+    cpnConnectWs();
+  } catch (e) { toast('打开伴侣失败: ' + e.message, 'err'); }
+}
+
+function renderCompanionChat(c, msgs, intim) {
+  CPN.intimacy = intim;
+  const main = document.getElementById('cpnMain');
+  const ini = (c.name || '?').slice(0, 1);
+  const modelOptions = CPN.models.map(m => `<option value="${escapeHtml(m.name)}" ${m.name===CPN.model?'selected':''}>${escapeHtml(m.name)}</option>`).join('');
+  const tags = (c.personalityTags || []).join('·') || '未设标签';
+  main.innerHTML = `
+    <div class="cpn-hd">
+      <div class="cpn-avatar" style="width:38px;height:38px;font-size:14px">${escapeHtml(ini)}</div>
+      <div>
+        <div class="nm">${escapeHtml(c.name)} <span class="mut" style="font-size:12px;font-weight:400">· ${escapeHtml(tags)}</span></div>
+        <div class="desc">${escapeHtml(c.bio || '这个人很神秘,什么都还没写。')}</div>
+      </div>
+      <div class="spacer"></div>
+      <select id="cpnModelSel" onchange="CPN.model=this.value" title="选择模型">${modelOptions}</select>
+      <div class="intm" title="亲密度">💗 <b>${intim?.score ?? 0}</b> · ${intim?.daysCount ?? 0}天</div>
+      <button class="sec" style="padding:6px 10px;font-size:12px" onclick="openCompanionEdit(${c.id})">编辑</button>
+      <button class="danger" style="padding:6px 10px;font-size:12px" onclick="deleteCompanion(${c.id})">删除</button>
+    </div>
+    <div class="cpn-msgs" id="cpnMsgs"></div>
+    <div class="cpn-input">
+      <div id="cpnAttPreview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <div class="row1">
+        <textarea id="cpnInput" placeholder="说点什么…(Enter 发送 / Shift+Enter 换行)" onkeydown="onCpnInputKey(event)"></textarea>
+        <button id="cpnSendBtn" onclick="cpnSend()">发送</button>
+      </div>
+      <div class="row2">
+        <button class="ico" id="cpnMicBtn" onclick="cpnToggleMic()" title="按住说话 / 点击开始录音">🎙️ 语音</button>
+        <button class="ico" onclick="document.getElementById('cpnImgInput').click()" title="发图片">🖼️ 图片</button>
+        <input type="file" id="cpnImgInput" accept="image/*" class="hidden" onchange="cpnAttachImage(event)">
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+          <input type="checkbox" id="cpnTtsChk"> 语音回复
+        </label>
+        <span class="spacer"></span>
+        <span id="cpnConn" class="mut">未连接</span>
+        <button class="sec" style="padding:5px 9px;font-size:12px" onclick="cpnReconnect()">重连</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('cpnInput').focus();
+  CPN.messages = msgs;
+  renderCpnMessages();
+  setTimeout(() => scrollCpnToEnd(), 50);
+}
+
+function renderCpnMessages() {
+  const el = document.getElementById('cpnMsgs');
+  if (!el) return;
+  if (!CPN.messages.length) {
+    el.innerHTML = '<div class="mut" style="text-align:center;padding:40px">开始第一句对话吧 👋</div>';
+    return;
+  }
+  el.innerHTML = CPN.messages.map(m => cpnMessageHtml(m)).join('');
+}
+
+function cpnMessageHtml(m) {
+  const ini = (m.role === 'USER' ? '我' : (m.role === 'ASSISTANT' ? 'AI' : 'SYS')).slice(0,1);
+  let atts = '';
+  const arr = Array.isArray(m.attachments) ? m.attachments : [];
+  if (arr.length) atts = '<div class="att">' + arr.map(a => a.kind === 'image' ? `<img src="${escapeHtml(a.url)}" loading="lazy">` : '').join('') + '</div>';
+  const cls = m.role === 'USER' ? 'me' : m.role === 'SYSTEM' ? 'sys' : '';
+  let meta = '';
+  if (m.role === 'ASSISTANT' && m.metadata && m.metadata.model) {
+    meta = `<div class="meta">${escapeHtml(m.metadata.model)}</div>`;
+  }
+  return `<div class="cpn-msg ${cls}">
+    <div class="av">${escapeHtml(ini)}</div>
+    <div>
+      <div class="bub">${escapeHtml(m.content || '')}${atts}</div>
+      ${meta}
+    </div>
+  </div>`;
+}
+
+function appendCpnMessage(m) {
+  CPN.messages.push(m);
+  const el = document.getElementById('cpnMsgs');
+  if (!el) return;
+  if (el.querySelector('.mut') && CPN.messages.length === 1) el.innerHTML = '';
+  el.insertAdjacentHTML('beforeend', cpnMessageHtml(m));
+  scrollCpnToEnd();
+}
+
+function scrollCpnToEnd() {
+  const el = document.getElementById('cpnMsgs');
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+function onCpnInputKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); cpnSend(); }
+}
+
+function cpnConnectWs() {
+  if (CPN.ws && CPN.ws.readyState === WebSocket.OPEN) return;
+  try { if (CPN.ws) CPN.ws.close(); } catch (e) {}
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const tok = token();
+  const url = `${proto}://${location.host}/api/ws/companion${tok ? ('?token='+encodeURIComponent(tok)) : ''}`;
+  const ws = new WebSocket(url);
+  ws.binaryType = 'arraybuffer';
+  CPN.ws = ws;
+  ws.onopen = () => { CPN.wsReady = true; setCpnConn('已连接'); };
+  ws.onclose = () => { CPN.wsReady = false; setCpnConn('已断开'); };
+  ws.onerror = () => setCpnConn('连接错误');
+  ws.onmessage = (ev) => {
+    if (typeof ev.data !== 'string') {
+      // 二进制 TTS 音频:按 sentenceSeq 入队
+      if (CPN._ttsSeq != null) {
+        const arr = CPN_TTS_QUEUE.get(CPN._ttsSeq);
+        if (arr) arr.push(ev.data);
+      }
+      return;
+    }
+    let f; try { f = JSON.parse(ev.data); } catch (e) { return; }
+    cpnHandleFrame(f);
+  };
+}
+
+function cpnReconnect() { cpnConnectWs(); toast('正在重连…'); }
+
+function setCpnConn(s) {
+  const el = document.getElementById('cpnConn');
+  if (el) el.textContent = s;
+}
+
+function cpnHandleFrame(f) {
+  switch (f.kind) {
+    case 'ready': setCpnConn('已连接 · ' + (f.ownerId || '?')); break;
+    case 'chat.delta': cpnAppendDelta(f.messageId, f.delta); break;
+    case 'chat.done': cpnFinishAi(f.messageId, f.fullText, f.model); break;
+    case 'chat.error': toast('对话错误: ' + (f.error || '?'), 'err'); cpnSendingDone(); break;
+    case 'error': toast(f.error || '错误', 'err'); cpnSendingDone(); break;
+    case 'voice.text': /* 显示中间识别结果 */ break;
+    case 'tts.start': CPN._ttsSeq = f.sentenceSeq; break;
+    case 'tts.sentence': /* binary frames buffered by ws.onmessage */ break;
+    case 'tts.end': cpnDequeueTts(f.sentenceSeq); CPN._ttsSeq = null; break;
+    case 'milestone': appendCpnSystem('💗 ' + f.text); cpnRefreshIntimacy(); break;
+    case 'pong': break;
+  }
+}
+
+let cpnAiMsgEl = null;
+function cpnAppendDelta(messageId, delta) {
+  if (!cpnAiMsgEl) {
+    CPN.currentAiText = '';
+    const el = document.getElementById('cpnMsgs');
+    if (el) {
+      const bubId = 'cpnAiBub_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      el.insertAdjacentHTML('beforeend',
+        `<div class="cpn-msg">
+           <div class="av">AI</div>
+           <div><div class="bub" id="${bubId}"></div><div class="meta"></div></div>
+         </div>`);
+      cpnAiMsgEl = document.getElementById(bubId);
+    }
+  }
+  if (cpnAiMsgEl) cpnAiMsgEl.textContent = (cpnAiMsgEl.textContent || '') + (delta || '');
+  scrollCpnToEnd();
+}
+
+function cpnFinishAi(messageId, fullText, model) {
+  if (cpnAiMsgEl && fullText) cpnAiMsgEl.textContent = fullText;
+  const meta = document.getElementById('cpnAiMeta');
+  if (meta && model) meta.textContent = model;
+  // 落库到 messages(下次重渲会出现)
+  if (messageId) {
+    CPN.messages.push({ id: messageId, role: 'ASSISTANT', content: fullText, attachments: '[]', metadata: JSON.stringify({ model: model || '' }), createdAt: new Date().toISOString() });
+  }
+  cpnAiMsgEl = null;
+  cpnSendingDone();
+}
+
+function cpnSendingDone() {
+  CPN.sending = false;
+  const btn = document.getElementById('cpnSendBtn');
+  if (btn) btn.disabled = false;
+}
+
+function appendCpnSystem(text) {
+  const el = document.getElementById('cpnMsgs');
+  if (!el) return;
+  el.insertAdjacentHTML('beforeend',
+    `<div class="cpn-msg sys"><div class="bub">${escapeHtml(text)}</div></div>`);
+  scrollCpnToEnd();
+}
+
+function cpnRefreshIntimacy() {
+  if (!CPN.activeId) return;
+  cpnApi('/' + CPN.activeId + '/intimacy').then(it => {
+    CPN.intimacy = it;
+    const hd = document.querySelector('.cpn-hd .intm');
+    if (hd) hd.innerHTML = `💗 <b>${it.score ?? 0}</b> · ${it.daysCount ?? 0}天`;
+  }).catch(() => {});
+}
+
+function cpnSend() {
+  if (!CPN.activeId) { toast('请先选一个伴侣', 'info'); return; }
+  if (CPN.sending) return;
+  const input = document.getElementById('cpnInput');
+  const text = (input.value || '').trim();
+  if (!text && !CPN.pendingAttachments.length) return;
+  if (!CPN.wsReady) { toast('WS 未连接,先重连', 'err'); return; }
+  const atts = CPN.pendingAttachments.slice();
+  CPN.pendingAttachments = [];
+  renderCpnAttPreview();
+  const userMsg = {
+    id: 'tmp-' + Date.now(), role: 'USER', content: text, attachments: JSON.stringify(atts),
+    metadata: '{}', createdAt: new Date().toISOString()
+  };
+  appendCpnMessage(userMsg);
+  input.value = '';
+  CPN.sending = true;
+  const btn = document.getElementById('cpnSendBtn'); if (btn) btn.disabled = true;
+  const wantTts = !!document.getElementById('cpnTtsChk')?.checked;
+  const frame = {
+    kind: 'chat.text',
+    companionId: CPN.activeId,
+    content: text,
+    model: CPN.model,
+    attachments: atts,
+    voiceReply: wantTts,
+  };
+  CPN.ws.send(JSON.stringify(frame));
+}
+
+async function cpnAttachImage(ev) {
+  const f = ev.target.files[0]; if (!f) return;
+  ev.target.value = '';
+  try {
+    const fd = new FormData(); fd.append('file', f);
+    const r = await cpnApi('/upload', { method: 'POST', body: fd });
+    CPN.pendingAttachments.push({ url: r.url, kind: 'image' });
+    renderCpnAttPreview();
+  } catch (e) { toast('上传失败: ' + e.message, 'err'); }
+}
+
+function renderCpnAttPreview() {
+  const el = document.getElementById('cpnAttPreview');
+  if (!el) return;
+  el.innerHTML = CPN.pendingAttachments.map((a, i) =>
+    `<div style="position:relative">
+       <img src="${escapeHtml(a.url)}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">
+       <span style="position:absolute;top:-4px;right:-4px;background:var(--err);color:#fff;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer" onclick="cpnRemoveAtt(${i})">×</span>
+     </div>`).join('');
+}
+
+function cpnRemoveAtt(i) { CPN.pendingAttachments.splice(i, 1); renderCpnAttPreview(); }
+
+// ===== 语音输入(浏览器录音 → PCM16/16k → WS binary)=====
+async function cpnToggleMic() {
+  const btn = document.getElementById('cpnMicBtn');
+  if (CPN.recording) { cpnStopMic(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1 } });
+    CPN.audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+    const source = CPN.audioCtx.createMediaStreamSource(stream);
+    const proc = CPN.audioCtx.createScriptProcessor(4096, 1, 1);
+    CPN.audioBuf = [];
+    proc.onaudioprocess = (e) => {
+      const f = e.inputBuffer.getChannelData(0);
+      const pcm = new Int16Array(f.length);
+      for (let i = 0; i < f.length; i++) pcm[i] = Math.max(-1, Math.min(1, f[i])) * 0x7fff;
+      if (CPN.ws && CPN.ws.readyState === WebSocket.OPEN) {
+        CPN.ws.send(pcm.buffer);
+      }
+    };
+    source.connect(proc); proc.connect(CPN.audioCtx.destination);
+    CPN._audioProc = proc; CPN._audioSource = source; CPN._audioStream = stream;
+    CPN.recording = true;
+    if (btn) { btn.classList.add('rec'); btn.textContent = '⏹ 停止'; }
+    if (CPN.wsReady) CPN.ws.send(JSON.stringify({ kind: 'voice.start', companionId: CPN.activeId, model: CPN.model, voiceReply: !!document.getElementById('cpnTtsChk')?.checked }));
+  } catch (e) { toast('麦克风权限失败: ' + e.message, 'err'); }
+}
+
+function cpnStopMic() {
+  const btn = document.getElementById('cpnMicBtn');
+  if (!CPN.recording) return;
+  if (CPN.ws && CPN.ws.readyState === WebSocket.OPEN) CPN.ws.send(JSON.stringify({ kind: 'voice.stop' }));
+  try { CPN._audioStream?.getTracks().forEach(t => t.stop()); } catch (e) {}
+  try { CPN._audioSource?.disconnect(); CPN._audioProc?.disconnect(); CPN.audioCtx?.close(); } catch (e) {}
+  CPN._audioStream = CPN._audioSource = CPN._audioProc = null; CPN.audioCtx = null;
+  CPN.recording = false;
+  if (btn) { btn.classList.remove('rec'); btn.textContent = '🎙️ 语音'; }
+}
+
+const CPN_TTS_QUEUE = new Map();
+function cpnQueueTts(seq) { CPN_TTS_QUEUE.set(seq, []); }
+function cpnDequeueTts(seq) {
+  const bufs = CPN_TTS_QUEUE.get(seq) || [];
+  if (bufs.length) {
+    const blob = new Blob(bufs, { type: 'audio/mpeg' });
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.play().catch(() => {});
+  }
+  CPN_TTS_QUEUE.delete(seq);
+}
+
+// ===== 创建/编辑/删除/模板 =====
+function openCompanionCreate(prefill) {
+  const c = prefill || {};
+  showModal(`
+    <h3>${c.id ? '编辑伴侣' : '自定义创建伴侣'}</h3>
+    <label>名字 *</label><input id="cpnName" value="${escapeAttr(c.name||'')}">
+    <label>性别</label>
+    <select id="cpnGender">${CPN_GENDERS.map(g => `<option value="${g.k}" ${c.gender===g.k?'selected':''}>${g.t}</option>`).join('')}</select>
+    <label>年龄</label><input id="cpnAge" type="number" min="1" max="120" value="${c.age||22}">
+    <label>性格标签(多选)</label>
+    <div class="ctags" id="cpnTags">${CPN_TAGS.map(t => `<span class="ctag" data-t="${t}">${t}</span>`).join('')}</div>
+    <label>说话风格</label>
+    <select id="cpnTone">${CPN_TONE.map(t => `<option value="${t.k}" ${c.tone===t.k?'selected':''}>${t.t}</option>`).join('')}</select>
+    <label>关系设定</label>
+    <select id="cpnRelation">${CPN_RELATION.map(t => `<option value="${t.k}" ${c.relation===t.k?'selected':''}>${t.t}</option>`).join('')}</select>
+    <label>语音音色</label>
+    <select id="cpnVoice">${CPN_VOICE.map(t => `<option value="${t.k}" ${c.voiceStyle===t.k?'selected':''}>${t.t}</option>`).join('')}</select>
+    <label>背景故事(可选)</label>
+    <textarea id="cpnStory" rows="3" placeholder="给 AI 一些你的人设提示…">${escapeHtml(c.backgroundStory||'')}</textarea>
+    <div class="acts">
+      <button class="sec" onclick="closeModal()">取消</button>
+      <button onclick="submitCompanion(${c.id||'null'})">${c.id?'保存':'创建'}</button>
+    </div>
+  `);
+  const tags = (c.personalityTags || []);
+  document.querySelectorAll('#cpnTags .ctag').forEach(el => {
+    if (tags.includes(el.dataset.t)) el.classList.add('on');
+    el.onclick = () => el.classList.toggle('on');
+  });
+}
+
+async function openCompanionEdit(id) {
+  try { const c = await cpnApi('/' + id); openCompanionCreate(c); }
+  catch (e) { toast('加载失败: ' + e.message, 'err'); }
+}
+
+async function submitCompanion(id) {
+  const body = {
+    name: document.getElementById('cpnName').value.trim(),
+    gender: document.getElementById('cpnGender').value,
+    age: parseInt(document.getElementById('cpnAge').value, 10) || 22,
+    personalityTags: Array.from(document.querySelectorAll('#cpnTags .ctag.on')).map(e => e.dataset.t),
+    tone: document.getElementById('cpnTone').value,
+    relation: document.getElementById('cpnRelation').value,
+    voiceStyle: document.getElementById('cpnVoice').value,
+    backgroundStory: document.getElementById('cpnStory').value,
+  };
+  if (!body.name) { toast('请输入名字', 'info'); return; }
+  try {
+    if (id) await cpnApi('/' + id, { method: 'PATCH', body: JSON.stringify(body) });
+    else await cpnApi('', { method: 'POST', body: JSON.stringify(body) });
+    closeModal();
+    toast('已保存');
+    loadCpnList();
+  } catch (e) { toast('保存失败: ' + e.message, 'err'); }
+}
+
+async function deleteCompanion(id) {
+  if (!confirm('确定删除这个伴侣?聊天记录会保留。')) return;
+  try { await cpnApi('/' + id, { method: 'DELETE' }); CPN.activeId = null; loadCpnList();
+    document.getElementById('cpnMain').innerHTML = `<div class="cpn-empty" id="cpnEmpty">
+      <p style="font-size:15px;margin-bottom:10px">还没有伴侣,从模板快速开始,或自定义一个</p>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button onclick="openCompanionTemplates()">📋 从模板创建</button>
+        <button class="sec" onclick="openCompanionCreate()">✏️ 自定义创建</button>
+      </div>
+    </div>`;
+  } catch (e) { toast('删除失败: ' + e.message, 'err'); }
+}
+
+async function openCompanionTemplates() {
+  try {
+    const ts = await cpnApi('/templates');
+    showModal(`
+      <h3>选择模板</h3>
+      <div class="trow">
+        ${ts.map(t => `<div class="tcard" onclick="cpnPickTemplate('${escapeAttr(t.templateKey)}')">
+          <h4>${escapeHtml(t.name)}</h4>
+          <p>${escapeHtml(t.bio||'')}</p>
+          <p class="mut" style="margin-top:6px">${(t.personalityTags||[]).join('·')}</p>
+        </div>`).join('')}
+      </div>
+      <div class="acts"><button class="sec" onclick="closeModal()">取消</button></div>
+    `);
+  } catch (e) { toast('加载模板失败: ' + e.message, 'err'); }
+}
+
+async function cpnPickTemplate(key) {
+  try {
+    const c = await cpnApi('/templates/' + key, { method: 'POST' });
+    closeModal();
+    toast('已创建:' + c.name);
+    loadCpnList();
+    openCompanion(c.id);
+  } catch (e) { toast('创建失败: ' + e.message, 'err'); }
+}
+
+// 极简 modal
+function showModal(html) {
+  closeModal();
+  const bg = document.createElement('div');
+  bg.className = 'cpn-modal-bg';
+  bg.id = 'cpnModalBg';
+  bg.onclick = (e) => { if (e.target === bg) closeModal(); };
+  const m = document.createElement('div'); m.className = 'cpn-modal'; m.innerHTML = html;
+  bg.appendChild(m);
+  document.body.appendChild(bg);
+}
+function closeModal() { const bg = document.getElementById('cpnModalBg'); if (bg) bg.remove(); }
 </script>
 </body>
 </html>

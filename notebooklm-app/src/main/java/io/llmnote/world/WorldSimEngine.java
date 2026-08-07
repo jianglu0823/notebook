@@ -549,12 +549,47 @@ public class WorldSimEngine {
         return count;
     }
 
-    /** 已婚且双方在册,按低概率生子。返回今日出生数。 */
+    /** 孕期(sim-日):约一个月象征「十月怀胎」。 */
+    private static final int GESTATION_DAYS = 30;
+    /** 育龄区间(按女方/触发方年龄粗略约束)。 */
+    private static final int FERTILE_MIN = 18;
+    private static final int FERTILE_MAX = 45;
+
+    /**
+     * 婚育两阶段:①已婚且育龄的夫妻按低概率「怀上」(设 pregnantSince/dueDate,播报有喜);
+     * ②孕期满(到 dueDate)自然分娩,出生新居民并清空孕期字段(播报新生命)。返回今日出生数。
+     */
     private int childbirths(List<AgentEmployee> active, LocalDate date,
                             List<Map<String, Object>> news, List<Map<String, Object>> highlights) {
         int count = 0;
         Map<Long, AgentEmployee> byId = new LinkedHashMap<>();
         for (AgentEmployee e : active) byId.put(e.getId(), e);
+
+        // ---- 阶段②:到预产期的孕妇分娩 ----
+        for (AgentEmployee a : active) {
+            if (a.getDueDate() == null || a.getDueDate().isAfter(date)) continue;
+            AgentEmployee b = a.getSpouseId() == null ? null : byId.get(a.getSpouseId());
+            String childName = uniqueChildName(a.getName());
+            String otherPersona = b == null ? "" : " 也有 " + brief(b.getPersona());
+            String persona = "你继承了父母的性子:" + brief(a.getPersona()) + otherPersona
+                    + " 你天真好奇,正在小镇里慢慢长大。";
+            AgentEmployee child = employeeService.birth(childName, "👶", persona,
+                    a.getHomePlace() != null ? a.getHomePlace() : (b == null ? null : b.getHomePlace()),
+                    a.getId(), b == null ? a.getId() : b.getId(), date);
+            a.setPregnantSince(null); a.setDueDate(null);
+            employeeRepo.save(a);
+            String spouseName = b == null ? "伴侣" : b.getName();
+            memoryService.record(a.getId(), "reflection", "我和" + spouseName + "迎来了孩子" + child.getName() + "!", 9,
+                    b == null ? null : b.getId());
+            if (b != null) memoryService.record(b.getId(), "reflection",
+                    "我和" + a.getName() + "迎来了孩子" + child.getName() + "!", 9, a.getId());
+            addNews(news, "birth", a.getName() + (b == null ? "" : " 与 " + b.getName())
+                    + " 迎来了新生命 " + child.getName() + " 👶");
+            addHighlight(highlights, a, "喜得贵子", child.getName());
+            count++;
+        }
+
+        // ---- 阶段①:已婚育龄夫妻低概率怀上 ----
         java.util.Set<Long> done = new java.util.HashSet<>();
         for (AgentEmployee a : active) {
             Long sid = a.getSpouseId();
@@ -562,20 +597,40 @@ public class WorldSimEngine {
             AgentEmployee b = byId.get(sid);
             if (b == null) continue;
             done.add(a.getId()); done.add(b.getId());
-            if (rnd(100) >= 8) continue; // 8% 概率今日添丁
-            String childName = a.getName().substring(0, 1) + pick("小宝", "囡囡", "小豆", "阿福", "小满", "念念");
-            String persona = "你继承了父母的性子:" + brief(a.getPersona()) + " 也有 " + brief(b.getPersona())
-                    + " 你天真好奇,正在小镇里慢慢长大。";
-            AgentEmployee child = employeeService.birth(childName, "👶", persona,
-                    a.getHomePlace() != null ? a.getHomePlace() : b.getHomePlace(),
-                    a.getId(), b.getId(), date);
-            memoryService.record(a.getId(), "reflection", "我和" + b.getName() + "迎来了孩子" + child.getName() + "!", 9, b.getId());
-            memoryService.record(b.getId(), "reflection", "我和" + a.getName() + "迎来了孩子" + child.getName() + "!", 9, a.getId());
-            addNews(news, "birth", a.getName() + " 与 " + b.getName() + " 迎来了新生命 " + child.getName() + " 👶");
-            addHighlight(highlights, a, "喜得贵子", child.getName());
-            count++;
+            if (a.getPregnantSince() != null || b.getPregnantSince() != null) continue; // 已有身孕
+            int ageA = ageOf(a.getBirthDate(), date);
+            int ageB = ageOf(b.getBirthDate(), date);
+            boolean fertile = (ageA >= FERTILE_MIN && ageA <= FERTILE_MAX)
+                    || (ageB >= FERTILE_MIN && ageB <= FERTILE_MAX);
+            if (!fertile) continue; // 双方均超出育龄
+            if (rnd(100) >= 8) continue; // 8% 概率今日怀上
+            // 由育龄一方孕育(优先在育龄区间者)
+            AgentEmployee mom = (ageA >= FERTILE_MIN && ageA <= FERTILE_MAX) ? a : b;
+            mom.setPregnantSince(date);
+            mom.setDueDate(date.plusDays(GESTATION_DAYS));
+            employeeRepo.save(mom);
+            memoryService.record(a.getId(), "reflection", "我和" + b.getName() + "有喜了,新生命正在孕育中。", 8, b.getId());
+            memoryService.record(b.getId(), "reflection", "我和" + a.getName() + "有喜了,新生命正在孕育中。", 8, a.getId());
+            addNews(news, "pregnancy", a.getName() + " 与 " + b.getName() + " 有喜了,静待十月怀胎 🤰");
+            addHighlight(highlights, mom, "有喜了", "十月怀胎中");
         }
         return count;
+    }
+
+    /** 生成不与在册居民重名的孩子名:先「父姓+随机词」,撞名则换词,仍撞则追加数字。 */
+    private String uniqueChildName(String parentName) {
+        String surname = parentName == null || parentName.isBlank() ? "小" : parentName.substring(0, 1);
+        String[] words = {"小宝", "囡囡", "小豆", "阿福", "小满", "念念", "小禾", "阿岩", "初一", "拾光"};
+        for (int i = 0; i < words.length; i++) {
+            String cand = surname + words[rnd(words.length)];
+            if (!employeeRepo.existsByName(cand)) return cand;
+        }
+        String base = surname + words[rnd(words.length)];
+        for (int n = 2; n < 1000; n++) {
+            String cand = base + n;
+            if (!employeeRepo.existsByName(cand)) return cand;
+        }
+        return base + "·" + System.currentTimeMillis() % 100000; // 兜底,几乎不会走到
     }
 
     /**

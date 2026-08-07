@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "base": "dc1e3eeebec17f7a1155205f93fec619b5ffa838",
+  "head": "e64771051ba6cb293decec15ca843949139a4686",
+  "report": ".superpowers/sdd/reviews/review-b6.md",
+  "plan_hash": "sha256:50875d216d148692c16fdc3aac7e1f7e2f9186101ed1f0b2b5a26665f04ed6b5",
+  "plan_revision": 2,
+  "recorded_at": "2026-08-06T09:06:40.976Z"
+}

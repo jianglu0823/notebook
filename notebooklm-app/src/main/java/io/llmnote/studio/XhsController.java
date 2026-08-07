@@ -69,6 +69,24 @@ public class XhsController {
         return xhsService.genVideo(id, principal.ownerId());
     }
 
+    /** 短剧:连续剧情多分镜,逐段生成(遇限流等待重试到成功)后合并成片。 */
+    @PostMapping("/{id}/drama")
+    public XhsProject drama(@PathVariable Long id, Principal principal) {
+        return xhsService.genDrama(id, principal.ownerId());
+    }
+
+    /** 短剧独立工作台:直接用剧情主题创建并开始生成短剧。 */
+    @PostMapping("/drama")
+    public XhsProject createDrama(@RequestBody DramaReq req, Principal principal) {
+        return xhsService.createDrama(principal.ownerId(), req == null ? null : req.getTheme());
+    }
+
+    /** 短剧独立工作台:列出该主体的全部短剧项目(最新在前)。 */
+    @GetMapping("/drama")
+    public List<XhsProject> listDrama(Principal principal) {
+        return xhsService.listDrama(principal.ownerId());
+    }
+
     /** 发布管理:切换本地状态(草稿/待发/已发)。 */
     @PutMapping("/{id}/publish")
     public XhsProject publish(@PathVariable Long id, @RequestBody PublishReq req, Principal principal) {
@@ -116,6 +134,20 @@ public class XhsController {
                 .body(res);
     }
 
+    /** 展示/下载短剧成片 mp4。 */
+    @GetMapping("/{id}/drama")
+    public ResponseEntity<Resource> dramaFile(@PathVariable Long id, Principal principal) {
+        XhsProject p = xhsService.get(id, principal.ownerId());
+        if (p.getDramaPath() == null || p.getDramaPath().isBlank()) return ResponseEntity.notFound().build();
+        Path path = Paths.get(p.getDramaPath());
+        Resource res = new FileSystemResource(path);
+        if (!res.exists()) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("video/mp4"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"xhs_drama_" + id + ".mp4\"")
+                .body(res);
+    }
+
     @Data
     public static class CreateReq {
         private String direction;
@@ -134,5 +166,10 @@ public class XhsController {
     @Data
     public static class PublishReq {
         private String publishStatus;
+    }
+
+    @Data
+    public static class DramaReq {
+        private String theme;
     }
 }

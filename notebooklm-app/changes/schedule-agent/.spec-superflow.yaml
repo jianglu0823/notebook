@@ -1,0 +1,45 @@
+# .spec-superflow.yaml — lightweight state machine
+# Derived data. Always rebuildable from artifacts. Lost/corrupt → fall back to content-level detection.
+
+# === Core state ===
+state: closing
+workflow: full
+revision: 2
+
+# === Hashes (fast staleness detection) ===
+artifacts_hash: sha256:7d7ef10818cd8f26d5ebe7de2b2baa5f00806968024d6707a37a6b27629dccf6
+contract_hash: sha256:eac1d3350acd717ccf28fa69ff0e00d699090769b6d909269d68685bda332b60
+
+# === Execution progress ===
+execution_mode: sdd
+execution_plan_hash: sha256:50875d216d148692c16fdc3aac7e1f7e2f9186101ed1f0b2b5a26665f04ed6b5
+execution_plan_revision: 2
+batches_completed: 13
+test_result: pass: mvn -o test BUILD SUCCESS; 257 unit (contract 15 + server 229 + sdk 13) + 10 IT all green
+spec_merged: true
+
+# === Metadata ===
+change_name: schedule-agent
+last_transition: 2026-08-06T09:11:03.875Z
+last_transition_from: executing
+last_transition_to: closing
+
+# === Decision points ===
+dp_0_decisions: schedule-agent: 独立 Spring Boot 微服务,落地 PRD 全量(A2A 协议 + 日程 CRUD + SmartScheduler + LocalCalendarBridge + CompanionClient/ScheduleTool + 集成测试 + 深度思考 + 打卡 + Emoji + iCal + Nacos);沟通=全速推进/完成或阻塞时汇报
+dp_0_result: confirmed
+dp_0_confirmed: true
+dp_0_timestamp: 2026-08-06T05:36:02Z
+dp_1_result: approved: 12 项能力(C1~C12 全部入) + 独立顶级项目 + Maven 3 模块(server/client-sdk/contract) + 6 项显式 non-goals + 7 项关键约束 + 与 companion-chat 解耦(通过 client-sdk 复用) + 默认决策 Nacos=in-memory/Mac=Mock/iCal=biweekly/Emoji=30+ 模板
+dp_1_timestamp: 2026-08-06T05:39:36Z
+dp_2_result: approved: 4 artifacts 全部 validate 通过 — proposal 12 能力 + 6 non-goals + 7 约束;12 个 spec(c1~c12)合计 ~75 个 Requirement / ~150 个 Scenario 全部含 SHALL/MUST + WHEN/THEN;design 15 关键决策(D1~D15) + 8 风险(R1~R8);tasks 13 批次(B0~B12)+ 完整 File Structure + Interfaces(contract/server/client-sdk 三大段)
+dp_2_timestamp: 2026-08-06T05:49:23Z
+dp_3_result: approved: execution-contract.md 14 C-约束 + 102 R-断言(R1~R102,12 spec 全部 Requirement 映射) + 13 wave(B0~B12,SDD serial,带 depends-on)+ DP-3 评审 checklist;用户已选沟通=全速推进,自动批准
+dp_3_timestamp: 2026-08-06T05:51:32Z
+dp_4_result: sdd: plan revision 2; default; tasks.md added 批次完成状态 section after B0-B12 completed; re-plan to refresh artifacts_hash
+dp_4_timestamp: 2026-08-06T09:01:14.533Z
+dp_5_result: null
+dp_5_timestamp: null
+dp_6_result: pass: 13/13 B-wave pass reviews recorded; mvn -o test BUILD SUCCESS (contract 15 + server 229 + client-sdk 13 = 257 unit + 10 IT); 12 spec 全部 R-断言覆盖;decision-point-audit.md 生成
+dp_6_timestamp: 2026-08-06T09:10:00Z
+dp_7_result: confirmed: schedule-agent v1.0.0 收尾 — 13/13 B-wave pass reviews on revision 2; mvn -o test BUILD SUCCESS: contract Tests run: 15 + server Tests run: 229 + client-sdk Tests run: 13 = 257 unit tests, 0 failures, 0 errors, 0 skipped; 12 spec 全部同步到 /specs/; decision-point-audit.md 已生成; 部署就绪(Dockerfile + docker-compose + README 完整); 客户端 SDK schedule-agent-client-sdk 可被 companion-chat maven 引用
+dp_7_timestamp: 2026-08-06T09:11:00Z

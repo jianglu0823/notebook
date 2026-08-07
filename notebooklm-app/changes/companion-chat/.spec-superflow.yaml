@@ -1,0 +1,45 @@
+# .spec-superflow.yaml — lightweight state machine
+# Derived data. Always rebuildable from artifacts. Lost/corrupt → fall back to content-level detection.
+
+# === Core state ===
+state: approved-for-build
+workflow: full
+revision: 1
+
+# === Hashes (fast staleness detection) ===
+artifacts_hash: sha256:computed-by-validate
+contract_hash: sha256:computed-by-validate
+
+# === Execution progress ===
+execution_mode: sdd
+execution_plan_hash: sha256:256450a1928c227f10629661f1f3f7d961286ed006fcfd66735c25328b50232e
+execution_plan_revision: 1
+batches_completed: 0
+test_result: null
+spec_merged: false
+
+# === Metadata ===
+change_name: companion-chat
+last_transition: 2026-08-05T01:00:00Z
+last_transition_from: bridging
+last_transition_to: approved-for-build
+
+# === Decision points ===
+dp_0_decisions: |
+dp_0_result: confirmed
+dp_0_confirmed: true
+dp_0_timestamp: 2026-08-05T00:00:00Z
+dp_1_result: approved: 提案方向确认 — 6 能力(companion-crud/multimodal-chat/model-switch/long-term-memory/intimacy/compliance-ui),范围=4周版,17条范围外明确排除
+dp_1_timestamp: 2026-08-05T01:00:00Z
+dp_2_result: approved: proposal + 6 specs(27 条 SHALL/MUST) + design(13 决策 D1~D13) + tasks(9 批次 B0~B9) 全部评审通过;validate 通过
+dp_2_timestamp: 2026-08-05T01:00:00Z
+dp_3_result: approved: 执行契约 14 约束(C1~C14) + 27 需求→测试映射(R1~R27) + 9 批次执行计划确认;用户已确认执行
+dp_3_timestamp: 2026-08-05T01:00:00Z
+dp_4_result: sdd: plan revision 1; default; full SDD 模式,按 tasks.md 9 批次顺序执行,每批独立可验收
+dp_4_timestamp: 2026-08-05T02:32:25.982Z
+dp_5_result: null
+dp_5_timestamp: null
+dp_6_result: null
+dp_6_timestamp: null
+dp_7_result: null
+dp_7_timestamp: null

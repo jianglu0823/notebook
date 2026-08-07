@@ -208,15 +208,39 @@ public class WorldController {
      * 作品馆按类目取作品(倒序)。category:image(画作,含 image+artwork)/video(短片)/song(歌曲)。
      * 每条附作者名/头像与评论数,供网格卡片展示。
      */
+    /**
+     * 作品馆按类目分页取作品(倒序)。category:image(画作,含 image+artwork)/video(短片)/song(歌曲)。
+     * 短片过滤掉生成失败/无视频文件(content 为空或非相对路径)的占位产物。
+     * 每条附作者名/头像与评论数,供网格卡片展示。
+     */
     @GetMapping("/gallery")
-    public List<ProductCard> gallery(@RequestParam(defaultValue = "image") String category) {
+    public GalleryPage gallery(@RequestParam(defaultValue = "image") String category,
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "24") int size) {
         List<AgentProduct> list = switch (category) {
             case "video" -> productRepo.findByKindOrderByIdDesc("video");
             case "song" -> productRepo.findByKindOrderByIdDesc("song");
             default -> productRepo.findByKindInOrderByIdDesc(List.of("image", "artwork"));
         };
-        List<ProductCard> out = new ArrayList<>();
-        for (AgentProduct p : list) out.add(toCard(p));
+        if ("video".equals(category)) {
+            // 只展示已生成成功(落盘,content 为相对路径)的短片
+            list = list.stream()
+                    .filter(p -> p.getContent() != null && p.getContent().contains("/"))
+                    .toList();
+        }
+        int pageSize = Math.max(1, Math.min(size, 100));
+        int from = Math.max(0, page) * pageSize;
+        int total = list.size();
+        GalleryPage out = new GalleryPage();
+        out.setTotal(total);
+        out.setPage(Math.max(0, page));
+        out.setSize(pageSize);
+        out.setHasMore(from + pageSize < total);
+        List<ProductCard> cards = new ArrayList<>();
+        if (from < total) {
+            for (AgentProduct p : list.subList(from, Math.min(from + pageSize, total))) cards.add(toCard(p));
+        }
+        out.setItems(cards);
         return out;
     }
 
@@ -565,6 +589,16 @@ public class WorldController {
         private String authorName;
         private String authorAvatar;
         private long commentCount;
+    }
+
+    /** 作品馆分页结果:当前页卡片 + 分页信息。 */
+    @Data
+    public static class GalleryPage {
+        private List<ProductCard> items;
+        private int total;
+        private int page;
+        private int size;
+        private boolean hasMore;
     }
 
     /** 连载书籍卡片:作者 + 章节数 + 最新章。 */

@@ -118,6 +118,14 @@ public class AgentEmployee {
     @Column(name = "parent_ids", length = 64)
     private String parentIds;
 
+    /** 怀孕起始日(孕育方有值);为 null 表示未怀孕。 */
+    @Column(name = "pregnant_since")
+    private LocalDate pregnantSince;
+
+    /** 预产期(孕育方有值);到期后由每日结算触发分娩。 */
+    @Column(name = "due_date")
+    private LocalDate dueDate;
+
     /** 死亡日期(死亡即 jailed + lifeSummary)。 */
     @Column(name = "death_date")
     private LocalDate deathDate;

@@ -1,0 +1,116 @@
+{
+  "mode": "sdd",
+  "source": "default",
+  "rationale": "tasks.md added 批次完成状态 section after B0-B12 completed; re-plan to refresh artifacts_hash",
+  "waves": [
+    {
+      "id": "B0-scaffold",
+      "strategy": "serial",
+      "tasks": [
+        "b0-scaffold"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B1-db",
+      "strategy": "serial",
+      "tasks": [
+        "b1-db"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B2-privacy-audit",
+      "strategy": "serial",
+      "tasks": [
+        "b2-privacy-audit"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B3-events-a2a",
+      "strategy": "serial",
+      "tasks": [
+        "b3-events-a2a"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B4-scheduler",
+      "strategy": "serial",
+      "tasks": [
+        "b4-scheduler"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B5-calendar-ical",
+      "strategy": "serial",
+      "tasks": [
+        "b5-calendar-ical"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B6-focus-checkin",
+      "strategy": "serial",
+      "tasks": [
+        "b6-focus-checkin"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B7-emoji-external",
+      "strategy": "serial",
+      "tasks": [
+        "b7-emoji-external"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B8-registry",
+      "strategy": "serial",
+      "tasks": [
+        "b8-registry"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B9-observability",
+      "strategy": "serial",
+      "tasks": [
+        "b9-observability"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B10-it",
+      "strategy": "serial",
+      "tasks": [
+        "b10-it"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B11-sdk-e2e",
+      "strategy": "serial",
+      "tasks": [
+        "b11-sdk-e2e"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B12-docker-docs",
+      "strategy": "serial",
+      "tasks": [
+        "b12-docker-docs"
+      ],
+      "depends_on": []
+    }
+  ],
+  "artifacts_hash": "sha256:aea4af2e92dcdf6074f01137d7dbdc9543df45745ead6542ddc0c4d67cff899a",
+  "contract_hash": "sha256:eac1d3350acd717ccf28fa69ff0e00d699090769b6d909269d68685bda332b60",
+  "workflow": "full",
+  "revision": 2,
+  "hash": "sha256:50875d216d148692c16fdc3aac7e1f7e2f9186101ed1f0b2b5a26665f04ed6b5"
+}

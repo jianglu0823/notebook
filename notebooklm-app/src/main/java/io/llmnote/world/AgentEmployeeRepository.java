@@ -13,6 +13,9 @@ public interface AgentEmployeeRepository extends JpaRepository<AgentEmployee, Lo
 
     long countByOwnerId(String ownerId);
 
+    /** 重名检测:全站是否已有同名居民(含小黑屋,避免与逝者重名)。 */
+    boolean existsByName(String name);
+
     /** parent_ids 是逗号分隔的父母 id 串,粗筛(需调用方按精确 id 二次过滤)。 */
     List<AgentEmployee> findByParentIdsContaining(String parentId);
 }

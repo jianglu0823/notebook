@@ -112,7 +112,7 @@ public class SandboxRunner {
                     SimAgent sp = byId(pop, a.spouseId);
                     if (sp == null || !sp.alive || a.id > sp.id) continue; // 每对只由较小 id 触发
                     if (rnd(100) >= 30) continue; // 每对每年 30% 添丁
-                    SimAgent child = new SimAgent(nextChildId--, childName(a.name), null, 0, 100, 100);
+                    SimAgent child = new SimAgent(nextChildId--, uniqueChildName(a.name, pop, newborns), null, 0, 100, 100);
                     newborns.add(child);
                     totalBirths++;
                     event(runId, seq, yDate, "birth", a.id, sp.id,
@@ -288,10 +288,26 @@ public class SandboxRunner {
         return Math.max(0, a);
     }
 
-    private static String childName(String parent) {
-        String s = parent == null || parent.isBlank() ? "小" : parent.substring(0, 1);
-        return s + pick("小宝", "囡囡", "小豆", "阿福", "小满", "念念", "小禾", "阿岩");
+    /** 沙盒内重名规避:在本次运行的存活群体 + 本年新生儿里去重,撞名换词,仍撞则追加数字。 */
+    private static String uniqueChildName(String parent, List<SimAgent> pop, List<SimAgent> newborns) {
+        String surname = parent == null || parent.isBlank() ? "小" : parent.substring(0, 1);
+        String[] words = {"小宝", "囡囡", "小豆", "阿福", "小满", "念念", "小禾", "阿岩", "初一", "拾光"};
+        java.util.Set<String> used = new java.util.HashSet<>();
+        for (SimAgent a : pop) used.add(a.name);
+        for (SimAgent a : newborns) used.add(a.name);
+        for (int i = 0; i < words.length; i++) {
+            String cand = surname + words[rnd(words.length)];
+            if (!used.contains(cand)) return cand;
+        }
+        String base = surname + words[rnd(words.length)];
+        for (int n = 2; n < 1000; n++) {
+            String cand = base + n;
+            if (!used.contains(cand)) return cand;
+        }
+        return base + "·" + nextChildIdTag();
     }
+
+    private static long nextChildIdTag() { return ThreadLocalRandom.current().nextInt(100000); }
 
     private static String pick(String... opts) { return opts[ThreadLocalRandom.current().nextInt(opts.length)]; }
 

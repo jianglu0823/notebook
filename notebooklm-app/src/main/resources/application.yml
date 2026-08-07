@@ -103,6 +103,28 @@ notebooklm:
     jwt-secret: ${JWT_SECRET:change-me-in-prod-at-least-32-bytes-long-secret}
     jwt-expiry-seconds: ${JWT_EXPIRY_SECONDS:604800}   # 7 天
     guest-cookie-name: ${GUEST_COOKIE_NAME:nblm_guest}
+  companion:
+    default-model: glm-4.7-flash          # 伴侣创建/缺省文本模型(已 normalize)
+    memory-search-k: 5                    # 长期记忆 Milvus 检索 top-K
+    asr-model: paraformer-realtime-v2     # 语音消息转写(DashScope)
+    intimacy-daily-cap: 50                # 亲密度日增量上限
+    reminder-hours: 2                     # 连续使用提醒阈值
+    context-history-limit: 20             # 注入 LLM 的历史消息条数
+    context-history-window-chars: 4000    # 注入 LLM 的历史总字符上限
+    max-upload-bytes: 10485760            # 上传文件字节上限(10MB)
+    max-attachments-per-message: 4        # 单条消息附件数上限
+    vision-models:                        # 视觉识别候选(chat.image 帧按序尝试)
+      - glm-4.6v-flash
+      - glm-4.1v-thinking-flash
+      - qwen-vl-max
+    tts-voice-map:                        # voice_style → DashScope cosyvoice 音色
+      sweet: longwan
+      magnetic: longcheng
+      young: longhua
+      mature: longqing
+      cute: longxian
+      hoarse: longfei
+      calm: longjing
 
 management:
   endpoints:

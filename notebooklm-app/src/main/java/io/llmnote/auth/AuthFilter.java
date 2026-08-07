@@ -1,6 +1,7 @@
 package io.llmnote.auth;
 
 import io.llmnote.config.NotebookLmProperties;
+import io.llmnote.log.AccessLogService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -24,10 +25,12 @@ public class AuthFilter extends OncePerRequestFilter {
     private static final long GUEST_COOKIE_MAX_AGE = 60L * 60 * 24 * 365; // 1 年
 
     private final JwtService jwtService;
+    private final AccessLogService accessLogService;
     private final String guestCookieName;
 
-    public AuthFilter(JwtService jwtService, NotebookLmProperties props) {
+    public AuthFilter(JwtService jwtService, AccessLogService accessLogService, NotebookLmProperties props) {
         this.jwtService = jwtService;
+        this.accessLogService = accessLogService;
         this.guestCookieName = props.getAuth().getGuestCookieName();
     }
 
@@ -79,6 +82,7 @@ public class AuthFilter extends OncePerRequestFilter {
             cookie.setMaxAge((int) GUEST_COOKIE_MAX_AGE);
             cookie.setAttribute("SameSite", "Lax");
             resp.addCookie(cookie);
+            accessLogService.logGuestVisit(req, "g:" + uuid);
         }
         return Principal.ofGuest(uuid);
     }

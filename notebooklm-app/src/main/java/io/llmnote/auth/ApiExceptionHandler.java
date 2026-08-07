@@ -23,6 +23,11 @@ public class ApiExceptionHandler {
         return body(status, msg);
     }
 
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<Map<String, Object>> handleUnsupported(UnsupportedOperationException e) {
+        return body(HttpStatus.NOT_IMPLEMENTED, e.getMessage());
+    }
+
     private ResponseEntity<Map<String, Object>> body(HttpStatus status, String message) {
         return ResponseEntity.status(status).body(Map.of(
                 "status", status.value(),
