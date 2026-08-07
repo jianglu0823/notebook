@@ -137,3 +137,18 @@ management:
   health:
     elasticsearch:
       enabled: false   # 用 Milvus 做向量库,不用 ES
+
+# ---------- AgentScope 2.0.0-RC4 A2A 客户端配置 ----------
+# nblm-app 通过 A2aAgent + NacosAgentCardResolver 调 schedule-agent
+# (B4 接入;B5 替换为 CompanionChatService ReAct 循环里的 @Tool 工具)
+agentscope:
+  a2a:
+    client:
+      enabled: ${AGENTSCOPE_A2A_CLIENT_ENABLED:false}    # 默认关(B4 接入;B5 切到真用时再开)
+      agent-name: schedule-agent-v1                      # Nacos 上 schedule-agent 注册的 card name
+      # Nacos 服务端连接(与 schedule-agent-server 的 agentscope.a2a.nacos.* 镜像)
+      nacos:
+        server-addr: ${SCHEDULE_AGENT_NACOS_ADDR:127.0.0.1:8848}
+        username: ${SCHEDULE_AGENT_NACOS_USERNAME:nacos}
+        password: ${SCHEDULE_AGENT_NACOS_PASSWORD:nacos}
+        namespace: ${SCHEDULE_AGENT_NACOS_NAMESPACE:public}

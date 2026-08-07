@@ -153,6 +153,25 @@
             <version>0.4</version>
         </dependency>
 
+        <!-- A2A: AgentScope 客户端(nblm-app 端通过 A2aAgent + NacosAgentCardResolver 调 schedule-agent) -->
+        <dependency>
+            <groupId>io.agentscope</groupId>
+            <artifactId>agentscope-extensions-a2a-client</artifactId>
+            <version>${agentscope.version}</version>
+        </dependency>
+        <!-- A2A: Nacos 服务发现(从 Nacos 3.x AI Registry 拉 schedule-agent 的 AgentCard) -->
+        <dependency>
+            <groupId>io.agentscope</groupId>
+            <artifactId>agentscope-extensions-nacos-a2a</artifactId>
+            <version>${agentscope.version}</version>
+        </dependency>
+        <!-- 强制覆盖:用 nacos-client 3.x(agentscope-extensions-nacos-a2a 要 AiService 类;Spring Cloud Alibaba 默认 2.4.2 没有) -->
+        <dependency>
+            <groupId>com.alibaba.nacos</groupId>
+            <artifactId>nacos-client</artifactId>
+            <version>3.2.1-2026.03.30</version>
+        </dependency>
+
         <!-- 工具 -->
         <dependency>
             <groupId>org.projectlombok</groupId>
