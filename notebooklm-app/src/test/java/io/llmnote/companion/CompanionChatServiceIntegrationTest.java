@@ -20,7 +20,9 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
 /**
@@ -39,6 +41,7 @@ class CompanionChatServiceIntegrationTest {
     @Mock CompanionIntimacyService intimacyService;
     @Mock ChatModelFactory modelFactory;
     @Mock CompanionVisionService visionService;
+    @Mock io.llmnote.companion.a2a.ScheduleAgentClient scheduleAgentClient;
     CompanionProperties properties;
     ObjectMapper objectMapper;
     CompanionChatService service;
@@ -50,7 +53,7 @@ class CompanionChatServiceIntegrationTest {
         // 用一个"干跑"milvus 客户端避免真的去连 Milvus
         service = new CompanionChatService(companionRepository, messageRepository,
                 memoryService, intimacyService, modelFactory, visionService,
-                properties, objectMapper);
+                properties, objectMapper, scheduleAgentClient);
     }
 
     @Test
@@ -84,8 +87,9 @@ class CompanionChatServiceIntegrationTest {
         });
         when(messageRepository.findVisible(any(), any(), any())).thenReturn(new ArrayList<>());
         when(memoryService.search(anyString(), any(), anyString())).thenReturn(List.of());
-        when(modelFactory.normalize(anyString())).thenReturn("glm-4.7-flash");
-        when(modelFactory.streamTextWithFallback(anyString(), any()))
+        when(modelFactory.isToolsCapable(anyString())).thenReturn(false);
+        when(modelFactory.toolsCapableModel()).thenReturn("qwen-turbo");
+        when(modelFactory.streamTextWithToolsFallback(anyString(), any(), isNull(), anyList()))
                 .thenReturn(List.of(ChatResponse.builder()
                         .content(List.of(TextBlock.builder().text("你好,我是 AI 小米。").build()))
                         .build()));
@@ -97,7 +101,8 @@ class CompanionChatServiceIntegrationTest {
 
         assertThat(aiMsgId).isNotNull();
         assertThat(sink.fullText).isEqualTo("你好,我是 AI 小米。");
-        assertThat(sink.model).isEqualTo("glm-4.7-flash");
+        // 登录态(有 tools)会强制走 tools-capable,companion defaultModel glm-4.7-flash 会被覆盖
+        assertThat(sink.model).isEqualTo("qwen-turbo");
         // user 消息 + assistant 消息 = 2 次 save
         org.mockito.Mockito.verify(messageRepository, org.mockito.Mockito.times(2)).save(any());
     }
@@ -115,8 +120,9 @@ class CompanionChatServiceIntegrationTest {
         });
         when(messageRepository.findVisible(any(), any(), any())).thenReturn(new ArrayList<>());
         when(memoryService.search(anyString(), any(), anyString())).thenReturn(List.of());
-        when(modelFactory.normalize(anyString())).thenReturn("glm-4.7-flash");
-        when(modelFactory.streamTextWithFallback(anyString(), any()))
+        when(modelFactory.isToolsCapable(anyString())).thenReturn(false);
+        when(modelFactory.toolsCapableModel()).thenReturn("qwen-turbo");
+        when(modelFactory.streamTextWithToolsFallback(anyString(), any(), isNull(), anyList()))
                 .thenReturn(List.of(ChatResponse.builder()
                         .content(List.of(TextBlock.builder().text("嗯嗯").build()))
                         .build()));
