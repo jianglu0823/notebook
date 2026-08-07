@@ -3,7 +3,7 @@ name: llm-note
 services:
   # ---------- Nacos: 配置 + 注册中心 ----------
   nacos:
-    image: nacos/nacos-server:v2.4.3
+    image: nacos/nacos-server:v3.1.0
     container_name: nblm-nacos
     environment:
       MODE: standalone
