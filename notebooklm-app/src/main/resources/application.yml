@@ -59,6 +59,9 @@ notebooklm:
     tts-model: cosyvoice-v1
     tts-voice-a: longwan     # 主持人 A 音色
     tts-voice-b: longcheng   # 主持人 B 音色
+    # OpenAI 兼容模式 baseUrl(DashScope 官方提供),chat + function calling 全走这里(AgentScope 原生 DashScope SDK
+    # 解析 qwen function calling 不可靠,丢 tool call input 字段)
+    openai-compatible-base-url: ${DASHSCOPE_OPENAI_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
     # 可选文本模型及商用单价(元 / 1000 token),供会议/写作选用与 token→元 换算;以百炼控制台实际为准
     pricing:
       - { name: qwen-flash, label: "Qwen Flash · 极速便宜", input-per1k: 0.00015, output-per1k: 0.0006 }
@@ -102,6 +105,10 @@ notebooklm:
   auth:
     jwt-secret: ${JWT_SECRET:change-me-in-prod-at-least-32-bytes-long-secret}
     jwt-expiry-seconds: ${JWT_EXPIRY_SECONDS:604800}   # 7 天
+  # schedule-agent 独立微服务(端口 8081),notebooklm-app 通过 /api/schedule/** 反代
+  schedule-agent:
+    base-url: ${SCHEDULE_AGENT_BASE_URL:http://host.docker.internal:8081}
+    internal-token: ${SCHEDULE_AGENT_INTERNAL_TOKEN:dev-internal-token-change-me}
     guest-cookie-name: ${GUEST_COOKIE_NAME:nblm_guest}
   companion:
     default-model: glm-4.7-flash          # 伴侣创建/缺省文本模型(已 normalize)
@@ -126,18 +133,6 @@ notebooklm:
       hoarse: longfei
       calm: longjing
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      show-details: always
-  health:
-    elasticsearch:
-      enabled: false   # 用 Milvus 做向量库,不用 ES
-
 # ---------- AgentScope 2.0.0-RC4 A2A 客户端配置 ----------
 # nblm-app 通过 A2aAgent + NacosAgentCardResolver 调 schedule-agent
 # (B4 接入;B5 替换为 CompanionChatService ReAct 循环里的 @Tool 工具)
@@ -152,3 +147,15 @@ agentscope:
         username: ${SCHEDULE_AGENT_NACOS_USERNAME:nacos}
         password: ${SCHEDULE_AGENT_NACOS_PASSWORD:nacos}
         namespace: ${SCHEDULE_AGENT_NACOS_NAMESPACE:public}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    elasticsearch:
+      enabled: false   # 用 Milvus 做向量库,不用 ES

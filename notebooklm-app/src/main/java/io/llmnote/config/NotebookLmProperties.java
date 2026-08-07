@@ -18,6 +18,7 @@ public class NotebookLmProperties {
     private final Storage storage = new Storage();
     private final Auth auth = new Auth();
     private final World world = new World();
+    private final ScheduleAgent scheduleAgent = new ScheduleAgent();
 
     @Data
     public static class Dashscope {
@@ -28,6 +29,11 @@ public class NotebookLmProperties {
         private String ttsModel = "cosyvoice-v1";
         private String ttsVoiceA = "longwan";
         private String ttsVoiceB = "longcheng";
+        /**
+         * OpenAI 兼容模式 baseUrl(DashScope 官方提供,所有 chat 文本模型 + function calling 走这里)。
+         * 设为空/null 则回退到原生 DashScope SDK(不建议,function calling 解析有问题)。
+         */
+        private String openaiCompatibleBaseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1";
         /** 可选文本模型及其单价(元/千 token),供会议/写作选用与 token→元 换算。 */
         private List<ModelPricing> pricing = new ArrayList<>();
     }
@@ -91,5 +97,12 @@ public class NotebookLmProperties {
         private String autonomousModel = "glm-4.7-flash";
         /** 对话捏人模型:用千问 flash(付费但便宜快),对话补全更稳。 */
         private String builderModel = "qwen-flash";
+    }
+
+    /** schedule-agent 独立微服务配置(端口 8081)。 */
+    @Data
+    public static class ScheduleAgent {
+        private String baseUrl = "http://127.0.0.1:8081";
+        private String internalToken = "dev-internal-token-change-me";
     }
 }

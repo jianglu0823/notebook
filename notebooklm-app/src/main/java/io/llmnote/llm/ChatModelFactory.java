@@ -1,12 +1,14 @@
 package io.llmnote.llm;
 
 import io.agentscope.core.formatter.openai.GLMFormatter;
+import io.agentscope.core.formatter.openai.OpenAIChatFormatter;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.model.ChatModelBase;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.DashScopeChatModel;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.OpenAIChatModel;
+import io.agentscope.core.model.ToolSchema;
 import io.llmnote.config.NotebookLmProperties;
 import io.llmnote.config.NotebookLmProperties.ModelPricing;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +64,22 @@ public class ChatModelFactory {
         return (m == null || m.isBlank()) ? defaultTextModel() : m;
     }
 
+    /**
+     * 工具调用场景默认模型(支持 function calling)。
+     * 智谱免费 GLM 系列(glm-4.7-flash / glm-4-flash-250414 / glm-4.5-flash)对 function calling 不可靠,
+     * 一旦 429 降级会落到不会调工具的 GLM,模型只能编"已加好"的假回复。所以工具调用场景必须固定到 DashScope qwen。
+     */
+    public static final String TOOLS_CAPABLE_DEFAULT = "qwen-turbo";
+
+    /** 已确认支持 function calling 的模型名集合(用于 fallback 链过滤)。 */
+    private static final java.util.Set<String> TOOLS_CAPABLE = java.util.Set.of(
+            "qwen-turbo", "qwen-plus", "qwen-max", "qwen-flash", "qwen-long");
+
+    /** 工具调用场景默认模型:固定走 DashScope qwen-turbo(便宜 + 支持 function calling)。 */
+    public String toolsCapableModel() {
+        return TOOLS_CAPABLE_DEFAULT;
+    }
+
     /** 校验并规范化模型名:不在允许列表则回退默认(GLM Flash)。 */
     public String normalize(String name) {
         if (name == null || name.isBlank()) return defaultTextModel();
@@ -87,9 +105,23 @@ public class ChatModelFactory {
                     .stream(true)
                     .build();
         }
-        return DashScopeChatModel.builder()
+        // DashScope 文本模型走 OpenAI 兼容端点 + OpenAIChatFormatter:
+        // 原生 DashScopeChatModel + DashScopeChatFormatter 解析 qwen function calling 不可靠
+        // (实测 input 字段被丢掉,L0 仅回 tool_use name + 16 个 __fragment__ 噪声)。
+        String oaBase = props.getDashscope().getOpenaiCompatibleBaseUrl();
+        if (oaBase == null || oaBase.isBlank()) {
+            log.warn("dashscope.openai-compatible-base-url 未配置,回退原生 DashScope SDK(不推荐,function calling 解析有问题)");
+            return DashScopeChatModel.builder()
+                    .apiKey(props.getDashscope().getApiKey())
+                    .modelName(modelName)
+                    .stream(true)
+                    .build();
+        }
+        return OpenAIChatModel.builder()
                 .apiKey(props.getDashscope().getApiKey())
+                .baseUrl(oaBase)
                 .modelName(modelName)
+                .formatter(new OpenAIChatFormatter())
                 .stream(true)
                 .build();
     }
@@ -106,7 +138,7 @@ public class ChatModelFactory {
      * 全部重试耗尽仍失败则抛出原异常,由调用方降级处理。
      */
     public List<ChatResponse> streamText(ChatModelBase model, List<Msg> messages) {
-        return streamText(model, messages, null);
+        return streamText(model, messages, null, List.of());
     }
 
     /**
@@ -114,10 +146,18 @@ public class ChatModelFactory {
      * options=null 时行为与无参重载完全一致。
      */
     public List<ChatResponse> streamText(ChatModelBase model, List<Msg> messages, GenerateOptions options) {
+        return streamText(model, messages, options, List.of());
+    }
+
+    /**
+     * 同 {@link #streamText(ChatModelBase, List, GenerateOptions)},并把工具 schema 列表传给模型
+     * (供 ReAct 循环使用:第一轮 stream 时告知模型可用工具,工具结果回灌后再次 stream 可省略 tools)。
+     */
+    public List<ChatResponse> streamText(ChatModelBase model, List<Msg> messages, GenerateOptions options, List<io.agentscope.core.model.ToolSchema> tools) {
         RuntimeException last = null;
         for (int attempt = 0; attempt <= MAX_RETRIES; attempt++) {
             try {
-                return model.stream(messages, List.of(), options).collectList().block();
+                return model.stream(messages, tools == null ? List.of() : tools, options).collectList().block();
             } catch (RuntimeException ex) {
                 last = ex;
                 if (attempt >= MAX_RETRIES || !isTransient(ex)) throw ex;
@@ -137,7 +177,7 @@ public class ChatModelFactory {
      * 全部候选都失败才抛最后一个异常。返回 ChatResponse 列表(与 streamText 一致)。
      */
     public List<ChatResponse> streamTextWithFallback(String primaryModel, List<Msg> messages) {
-        return streamTextWithFallback(primaryModel, messages, null);
+        return streamTextWithFallback(primaryModel, messages, null, List.of());
     }
 
     /**
@@ -145,6 +185,13 @@ public class ChatModelFactory {
      * options=null 时行为与无参重载完全一致。
      */
     public List<ChatResponse> streamTextWithFallback(String primaryModel, List<Msg> messages, GenerateOptions options) {
+        return streamTextWithFallback(primaryModel, messages, options, List.of());
+    }
+
+    /**
+     * 带工具的降级流式调用:第一轮 stream 传入 ToolSchema,工具执行后再调时通常 tools=空。
+     */
+    public List<ChatResponse> streamTextWithFallback(String primaryModel, List<Msg> messages, GenerateOptions options, List<io.agentscope.core.model.ToolSchema> tools) {
         List<String> chain = new ArrayList<>();
         String primary = normalize(primaryModel);
         chain.add(primary);
@@ -156,7 +203,7 @@ public class ChatModelFactory {
         for (int i = 0; i < chain.size(); i++) {
             String m = chain.get(i);
             try {
-                return streamText(forModel(m), messages, options);
+                return streamText(forModel(m), messages, options, tools);
             } catch (RuntimeException ex) {
                 last = ex;
                 if (i + 1 < chain.size()) {
@@ -190,6 +237,45 @@ public class ChatModelFactory {
             }
         }
         return false;
+    }
+
+    /** 已知支持 function calling 的模型名(大小写不敏感)。 */
+    public boolean isToolsCapable(String name) {
+        if (name == null) return false;
+        return TOOLS_CAPABLE.contains(name.trim().toLowerCase());
+    }
+
+    /**
+     * 工具调用场景的流式降级:主模型若非 tools-capable 则强制换成 toolsCapableModel();
+     * 降级链只含已知 tools-capable 模型,绝不落到 GLM(不会调工具,会编结果)。
+     * 全部失败抛原异常。
+     */
+    public List<ChatResponse> streamTextWithToolsFallback(String primaryModel, List<Msg> messages,
+                                                            GenerateOptions options, List<ToolSchema> tools) {
+        String primary = normalize(primaryModel);
+        if (!isToolsCapable(primary)) {
+            log.info("工具调用主模型 {} 不在 tools-capable 名单,强制换成 {}", primary, toolsCapableModel());
+            primary = toolsCapableModel();
+        }
+        // 降级链 = 主(若 tools-capable) + toolsCapableModel 兜底
+        List<String> chain = new ArrayList<>();
+        chain.add(primary);
+        if (!chain.contains(toolsCapableModel())) chain.add(toolsCapableModel());
+        RuntimeException last = null;
+        for (int i = 0; i < chain.size(); i++) {
+            String m = chain.get(i);
+            try {
+                return streamText(forModel(m), messages, options, tools);
+            } catch (RuntimeException ex) {
+                last = ex;
+                if (i + 1 < chain.size()) {
+                    log.warn("tools-capable 模型 {} 调用失败,降级到 {}: {}", m, chain.get(i + 1), ex.getMessage());
+                } else {
+                    log.error("tools-capable 模型链全部失败({}): {}", chain, ex.getMessage());
+                }
+            }
+        }
+        throw last;
     }
 
     /** 按模型单价把 token 数换算成人民币元。免费模型返回 0。 */
