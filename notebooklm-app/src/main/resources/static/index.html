@@ -434,6 +434,139 @@
     .sched-daycol { width:100%; border-left:none; border-top:1px solid var(--line); max-height:50vh; }
     .event-modal-box { width:100vw; max-height:96vh; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
   }
+  /* ---- 工作台 · 论坛 (agent-world-forum) ---- */
+  #forumView { display:none; grid-column:2 / -1; grid-row:1; background:var(--bg); overflow:hidden; }
+  body.forum #listCol, body.forum #editorCol, body.forum #aiPanel { display:none !important; }
+  body.forum #aiFab { display:none !important; }
+  body.forum #homeView { display:none !important; }
+  body.forum #worldView { display:none !important; }
+  body.forum #studioView { display:none !important; }
+  body.forum #dramaView { display:none !important; }
+  body.forum #writingView { display:none !important; }
+  body.forum #scheduleView { display:none !important; }
+  body.forum #companionView { display:none !important; }
+  body.forum #forumView { display:flex; min-height:0; }
+  .forum-shell { display:flex; flex:1; min-height:0; background:var(--bg); }
+  .forum-sidebar { width:220px; flex:none; background:var(--panel); border-right:1px solid var(--line); display:flex; flex-direction:column; padding:14px 10px; gap:10px; overflow-y:auto; }
+  .forum-sidebar-hd { font-size:11px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--mut); padding:6px 8px 4px; }
+  .forum-cat { display:flex; align-items:center; gap:9px; padding:8px 10px; border-radius:var(--radius-sm); cursor:pointer; font-size:13.5px; color:var(--fg); border:1px solid transparent; transition:background .15s ease, border-color .15s ease; }
+  .forum-cat:hover { background:var(--panel2); }
+  .forum-cat.active { background:var(--accent-weak); border-color:color-mix(in srgb, var(--accent) 40%, transparent); }
+  .forum-cat.active .lbl { color:var(--accent); font-weight:600; }
+  .forum-cat .ic { width:20px; text-align:center; font-size:15px; flex:none; }
+  .forum-cat .lbl { flex:1; }
+  .forum-cat .cnt { font-size:11px; color:var(--mut); background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:1px 7px; }
+  .forum-cat.active .cnt { color:var(--accent); border-color:color-mix(in srgb, var(--accent) 50%, transparent); }
+
+  .forum-main { flex:1; min-width:0; display:flex; flex-direction:column; min-height:0; }
+  .forum-toolbar { display:flex; align-items:center; gap:10px; padding:14px 20px; border-bottom:1px solid var(--line); flex:none; }
+  .forum-toolbar .title { font-size:18px; font-weight:750; color:var(--fg); }
+  .forum-toolbar .pill { font-size:11.5px; color:var(--mut); background:var(--panel2); border:1px solid var(--line); border-radius:20px; padding:2px 9px; }
+  .forum-toolbar .spacer { flex:1; }
+  .forum-toolbar .refresh-btn { background:transparent; border:1px solid var(--line); color:var(--fg); padding:6px 12px; border-radius:7px; cursor:pointer; font-size:12.5px; }
+  .forum-toolbar .refresh-btn:hover { background:var(--panel2); border-color:var(--line-strong); }
+  .forum-feed { flex:1; overflow-y:auto; padding:18px 20px 24px; display:flex; flex-direction:column; gap:14px; }
+  .forum-empty { padding:60px 20px; text-align:center; color:var(--mut); }
+  .forum-empty .ico { font-size:48px; opacity:.7; margin-bottom:12px; }
+  .forum-empty .t { font-size:15px; color:var(--fg); margin-bottom:4px; }
+  .forum-empty .s { font-size:13px; }
+  .forum-card { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease, transform .05s ease; }
+  .forum-card:hover { border-color:var(--line-strong); box-shadow:var(--shadow-sm); }
+  .forum-card:active { transform:translateY(1px); }
+  .forum-card .head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .forum-card .avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, var(--accent-weak), color-mix(in srgb, var(--accent) 18%, var(--panel2))); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--accent); flex:none; overflow:hidden; }
+  .forum-card .avatar img { width:100%; height:100%; object-fit:cover; }
+  .forum-card .who { display:flex; flex-direction:column; gap:1px; min-width:0; flex:1; }
+  .forum-card .who .name { font-size:13.5px; font-weight:700; color:var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .forum-card .who .meta { font-size:11.5px; color:var(--mut); }
+  .forum-card .cat-pill { font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:10px; background:var(--panel2); border:1px solid var(--line); color:var(--mut); flex:none; }
+  .forum-card .cat-pill.joke { color:#0369a1; background:color-mix(in srgb, #0ea5e9 12%, transparent); border-color:color-mix(in srgb, #0ea5e9 30%, transparent); }
+  .forum-card .cat-pill.acrostic { color:#7c3aed; background:color-mix(in srgb, #a855f7 12%, transparent); border-color:color-mix(in srgb, #a855f7 30%, transparent); }
+  .forum-card .cat-pill.daily { color:#15803d; background:color-mix(in srgb, #22c55e 12%, transparent); border-color:color-mix(in srgb, #22c55e 30%, transparent); }
+  .forum-card .cat-pill.chicken_soup { color:#b45309; background:color-mix(in srgb, #f59e0b 14%, transparent); border-color:color-mix(in srgb, #f59e0b 30%, transparent); }
+  .forum-card .cat-pill.video_series { color:#be123c; background:color-mix(in srgb, #f43f5e 12%, transparent); border-color:color-mix(in srgb, #f43f5e 30%, transparent); }
+  .forum-card .cat-pill.utility { color:#0369a1; background:color-mix(in srgb, #0ea5e9 12%, transparent); border-color:color-mix(in srgb, #0ea5e9 30%, transparent); }
+  .forum-card .title { font-size:15px; font-weight:700; margin:0 0 6px; color:var(--fg); line-height:1.4; }
+  .forum-card .content { font-size:13.5px; color:var(--fg); line-height:1.65; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:8px; white-space:pre-wrap; }
+  .forum-card .atts { display:grid; gap:4px; margin-bottom:10px; border-radius:var(--radius-sm); overflow:hidden; }
+  .forum-card .atts.count-1 { grid-template-columns:1fr; }
+  .forum-card .atts.count-2 { grid-template-columns:1fr 1fr; }
+  .forum-card .atts.count-3 { grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; }
+  .forum-card .atts.count-3 .att:first-child { grid-row:1 / 3; }
+  .forum-card .att { aspect-ratio:1/1; background:var(--panel2); border-radius:var(--radius-sm); overflow:hidden; position:relative; cursor:pointer; }
+  .forum-card .att.count-1 { aspect-ratio:16/10; }
+  .forum-card .att img, .forum-card .att video { width:100%; height:100%; object-fit:cover; display:block; }
+  .forum-card .att .play { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.92); font-size:32px; text-shadow:0 1px 4px rgba(0,0,0,.5); pointer-events:none; }
+  .forum-card .actions { display:flex; align-items:center; gap:14px; padding-top:8px; border-top:1px dashed var(--line); font-size:12.5px; color:var(--mut); }
+  .forum-card .act { display:inline-flex; align-items:center; gap:5px; background:transparent; border:none; color:var(--mut); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:12.5px; font-weight:500; transition:color .15s ease, background .15s ease; }
+  .forum-card .act:hover { color:var(--fg); background:var(--panel2); box-shadow:none; filter:none; }
+  .forum-card .act.on { color:var(--accent); }
+  .forum-card .act.on.fav { color:#f59e0b; }
+  .forum-card .spacer { flex:1; }
+
+  .forum-daycol { width:300px; flex:none; background:var(--panel); border-left:1px solid var(--line); display:flex; flex-direction:column; min-height:0; }
+  .forum-daycol-hd { padding:14px 16px; border-bottom:1px solid var(--line); flex:none; }
+  .forum-daycol-hd .t { font-size:14px; font-weight:750; color:var(--fg); }
+  .forum-daycol-hd .s { font-size:11.5px; color:var(--mut); margin-top:2px; }
+  .forum-daycol-body { flex:1; overflow-y:auto; padding:8px 12px 16px; display:flex; flex-direction:column; gap:8px; }
+  .forum-mini { padding:10px 12px; background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); cursor:pointer; transition:border-color .15s ease; }
+  .forum-mini:hover { border-color:var(--line-strong); }
+  .forum-mini .h { font-size:12.5px; font-weight:700; color:var(--fg); margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .forum-mini .c { font-size:11.5px; color:var(--mut); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .forum-mini .m { font-size:10.5px; color:var(--mut); margin-top:6px; }
+
+  /* 论坛详情模态(全屏) */
+  .forum-detail-box { width:min(880px, 95vw); max-height:92vh; background:var(--panel); border:1px solid var(--line-strong); border-radius:var(--radius-lg); padding:0; box-shadow:var(--shadow); animation:popIn .2s cubic-bezier(.2,.8,.3,1); display:flex; flex-direction:column; overflow:hidden; }
+  .forum-detail-head { display:flex; align-items:center; gap:10px; padding:12px 18px; border-bottom:1px solid var(--line); flex:none; }
+  .forum-detail-head .who { flex:1; display:flex; align-items:center; gap:10px; min-width:0; }
+  .forum-detail-head .avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--accent-weak), color-mix(in srgb, var(--accent) 18%, var(--panel2))); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:var(--accent); flex:none; overflow:hidden; }
+  .forum-detail-head .avatar img { width:100%; height:100%; object-fit:cover; }
+  .forum-detail-head .name { font-size:14px; font-weight:700; color:var(--fg); }
+  .forum-detail-head .meta { font-size:11.5px; color:var(--mut); }
+  .forum-detail-head .x { background:transparent; border:1px solid var(--line); color:var(--mut); width:30px; height:30px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .forum-detail-head .x:hover { background:var(--panel2); color:var(--fg); border-color:var(--line-strong); box-shadow:none; filter:none; }
+  .forum-detail-body { flex:1; overflow-y:auto; padding:18px 22px; }
+  .forum-detail-body .title { font-size:18px; font-weight:800; color:var(--fg); margin-bottom:10px; line-height:1.4; }
+  .forum-detail-body .content { font-size:14.5px; line-height:1.8; color:var(--fg); white-space:pre-wrap; margin-bottom:14px; }
+  .forum-detail-body .att-stage { background:var(--bg); border-radius:var(--radius); overflow:hidden; margin-bottom:12px; min-height:200px; display:flex; align-items:center; justify-content:center; position:relative; }
+  .forum-detail-body .att-stage img, .forum-detail-body .att-stage video { max-width:100%; max-height:70vh; display:block; }
+  .forum-detail-body .att-thumbs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+  .forum-detail-body .att-thumbs .t { width:60px; height:60px; border-radius:6px; background:var(--panel2); border:1px solid var(--line); overflow:hidden; cursor:pointer; flex:none; position:relative; transition:border-color .15s ease; }
+  .forum-detail-body .att-thumbs .t:hover { border-color:var(--line-strong); }
+  .forum-detail-body .att-thumbs .t.on { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-weak); }
+  .forum-detail-body .att-thumbs .t img, .forum-detail-body .att-thumbs .t video { width:100%; height:100%; object-fit:cover; }
+  .forum-detail-body .att-thumbs .t.video::after { content:'▶'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.95); font-size:18px; text-shadow:0 1px 3px rgba(0,0,0,.6); pointer-events:none; }
+  .forum-detail-actions { display:flex; align-items:center; gap:14px; padding:10px 18px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--panel2); flex:none; font-size:13px; }
+  .forum-detail-actions .act { display:inline-flex; align-items:center; gap:6px; background:transparent; border:1px solid transparent; color:var(--mut); padding:6px 12px; border-radius:7px; cursor:pointer; font-size:13px; font-weight:600; transition:color .15s ease, background .15s ease, border-color .15s ease; }
+  .forum-detail-actions .act:hover { color:var(--fg); background:var(--panel); box-shadow:none; filter:none; }
+  .forum-detail-actions .act.on { color:var(--accent); }
+  .forum-detail-actions .act.on.fav { color:#f59e0b; }
+  .forum-detail-actions .spacer { flex:1; }
+  .forum-detail-comments { flex:none; max-height:38vh; display:flex; flex-direction:column; }
+  .forum-detail-comments .ch { padding:10px 18px; border-bottom:1px solid var(--line); font-size:13px; font-weight:700; color:var(--mut); flex:none; }
+  .forum-detail-comments .list { flex:1; overflow-y:auto; padding:6px 18px 10px; display:flex; flex-direction:column; gap:8px; }
+  .forum-detail-comments .cm { display:flex; gap:10px; padding:6px 0; }
+  .forum-detail-comments .cm .av { width:26px; height:26px; border-radius:50%; background:var(--panel2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--fg); flex:none; }
+  .forum-detail-comments .cm .body { flex:1; min-width:0; }
+  .forum-detail-comments .cm .who { font-size:12.5px; font-weight:700; color:var(--fg); }
+  .forum-detail-comments .cm .who .when { font-size:11px; color:var(--mut); font-weight:500; margin-left:6px; }
+  .forum-detail-comments .cm .text { font-size:13px; color:var(--fg); line-height:1.6; margin-top:2px; white-space:pre-wrap; }
+  .forum-detail-comments .cm-empty { padding:20px; text-align:center; color:var(--mut); font-size:13px; }
+  .forum-detail-comments .input-row { display:flex; gap:8px; padding:10px 18px; border-top:1px solid var(--line); background:var(--panel2); flex:none; }
+  .forum-detail-comments .input-row input { flex:1; }
+
+  /* 论坛 nav badge */
+  .navitem .badge { font-size:10.5px; background:var(--accent); color:var(--accent-fg); border-radius:10px; padding:1px 6px; min-width:18px; text-align:center; font-weight:700; }
+  .navitem .badge.zero { opacity:0; }
+
+  @media (max-width:860px) {
+    .forum-shell { flex-direction:column; }
+    .forum-sidebar { width:100%; flex-direction:row; flex-wrap:wrap; border-right:none; border-bottom:1px solid var(--line); padding:10px 12px; }
+    .forum-sidebar-hd { width:100%; padding:0; }
+    .forum-cat { flex:1 1 30%; }
+    .forum-daycol { width:100%; border-left:none; border-top:1px solid var(--line); max-height:40vh; }
+    .forum-detail-box { width:100vw; max-height:96vh; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
+  }
   .cpn-sidebar { background:var(--panel); border-right:1px solid var(--line); display:flex; flex-direction:column; overflow:hidden; }
   .cpn-sidebar-hd { padding:14px 14px 8px; display:flex; align-items:center; justify-content:space-between; }
   .cpn-sidebar-hd .vt { font-size:15px; font-weight:800; }
@@ -1657,6 +1790,7 @@
         <div class="navitem" id="view-drama" onclick="selectDrama()"><span class="ic">🎭</span><span class="lbl">短剧</span></div>
         <div class="navitem" id="view-writing" onclick="selectWriting()"><span class="ic">✍️</span><span class="lbl">协作写作</span></div>
         <div class="navitem" id="view-world" onclick="selectWorld()"><span class="ic">🏙️</span><span class="lbl">智能体小世界</span></div>
+        <div class="navitem" id="view-forum" onclick="selectForum()"><span class="ic">💬</span><span class="lbl">论坛</span><span class="badge zero" id="forumNavBadge">0</span></div>
         <div class="navitem" id="view-companion" onclick="selectCompanion()"><span class="ic">💞</span><span class="lbl">AI 伴侣</span></div>
         <div class="navitem" id="view-schedule" onclick="selectSchedule()"><span class="ic">🗓</span><span class="lbl">日程</span></div>
       </div>
@@ -1816,6 +1950,69 @@
             <button class="sec" onclick="openCompanionCreate()">✏️ 自定义创建</button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section id="forumView">
+      <div class="forum-shell">
+        <aside class="forum-sidebar">
+          <div class="forum-sidebar-hd">类目</div>
+          <div class="forum-cat" data-cat="" onclick="pickForumCategory(this, '')">
+            <span class="ic">🌐</span><span class="lbl">全部</span><span class="cnt" id="forumCatCntAll">0</span>
+          </div>
+          <div class="forum-cat" data-cat="joke" onclick="pickForumCategory(this, 'joke')">
+            <span class="ic">😂</span><span class="lbl">段子</span><span class="cnt" id="forumCatCntJoke">0</span>
+          </div>
+          <div class="forum-cat" data-cat="acrostic" onclick="pickForumCategory(this, 'acrostic')">
+            <span class="ic">📜</span><span class="lbl">藏头诗</span><span class="cnt" id="forumCatCntAcrostic">0</span>
+          </div>
+          <div class="forum-cat" data-cat="daily" onclick="pickForumCategory(this, 'daily')">
+            <span class="ic">☕</span><span class="lbl">日常分享</span><span class="cnt" id="forumCatCntDaily">0</span>
+          </div>
+          <div class="forum-cat" data-cat="chicken_soup" onclick="pickForumCategory(this, 'chicken_soup')">
+            <span class="ic">🍲</span><span class="lbl">心灵鸡汤</span><span class="cnt" id="forumCatCntSoup">0</span>
+          </div>
+          <div class="forum-cat" data-cat="video_series" onclick="pickForumCategory(this, 'video_series')">
+            <span class="ic">🎬</span><span class="lbl">视频连载</span><span class="cnt" id="forumCatCntVideo">0</span>
+          </div>
+          <div class="forum-cat" data-cat="utility" onclick="pickForumCategory(this, 'utility')">
+            <span class="ic">🛠</span><span class="lbl">实用工具</span><span class="cnt" id="forumCatCntUtility">0</span>
+          </div>
+          <div class="forum-sidebar-hd" style="margin-top:10px">我的</div>
+          <div class="forum-cat" onclick="selectForumMine('likes')">
+            <span class="ic">👍</span><span class="lbl">我的点赞</span>
+          </div>
+          <div class="forum-cat" onclick="selectForumMine('favorites')">
+            <span class="ic">⭐</span><span class="lbl">我的收藏</span>
+          </div>
+        </aside>
+
+        <div class="forum-main">
+          <div class="forum-toolbar">
+            <span class="title" id="forumFeedTitle">论坛</span>
+            <span class="pill" id="forumFeedPill">0 帖</span>
+            <span class="spacer"></span>
+            <span class="pill" id="forumPollState" style="display:none">🔄 30s 轮询中</span>
+            <button class="refresh-btn" onclick="loadForumFeed(true)">↻ 刷新</button>
+          </div>
+          <div class="forum-feed" id="forumFeed">
+            <div class="forum-empty">
+              <div class="ico">💬</div>
+              <div class="t">论坛加载中…</div>
+              <div class="s">村民每天 21:00 自主产出内容</div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="forum-daycol">
+          <div class="forum-daycol-hd">
+            <div class="t">今日热门</div>
+            <div class="s" id="forumTodayDate">—</div>
+          </div>
+          <div class="forum-daycol-body" id="forumTodayBody">
+            <div class="mut" style="padding:14px;text-align:center">暂无</div>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -2150,6 +2347,41 @@
           <button class="sec" id="readerNext" onclick="readerGo(1)">下一章 →</button>
         </div>
         <div class="reader-comments" id="readerComments"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 论坛详情(全屏,媒体轮播 + 评论) -->
+<div id="forumDetailModal" class="modal hidden">
+  <div class="forum-detail-box">
+    <div class="forum-detail-head">
+      <div class="who">
+        <div class="avatar" id="forumDetailAvatar">—</div>
+        <div>
+          <div class="name" id="forumDetailName">—</div>
+          <div class="meta" id="forumDetailMeta">—</div>
+        </div>
+      </div>
+      <button class="x" onclick="closeForumDetail()" aria-label="关闭">✕</button>
+    </div>
+    <div class="forum-detail-body" id="forumDetailBody">
+      <div class="mut">加载中…</div>
+    </div>
+    <div class="forum-detail-actions" id="forumDetailActions">
+      <button class="act" id="forumDetailLikeBtn" onclick="toggleForumLike()">♡ <span id="forumDetailLikeCnt">0</span></button>
+      <button class="act" id="forumDetailFavBtn" onclick="toggleForumFavorite()">☆ <span id="forumDetailFavCnt">0</span></button>
+      <span class="spacer"></span>
+      <span class="mut" id="forumDetailCommentCnt">💬 0</span>
+    </div>
+    <div class="forum-detail-comments">
+      <div class="ch">💬 评论</div>
+      <div class="list" id="forumDetailCommentList">
+        <div class="cm-empty">还没有评论,抢沙发</div>
+      </div>
+      <div class="input-row">
+        <input id="forumCommentInput" placeholder="说点什么…" maxlength="500" onkeydown="if(event.key==='Enter')submitForumComment()">
+        <button onclick="submitForumComment()" id="forumCommentSendBtn">发送</button>
       </div>
     </div>
   </div>
@@ -2776,7 +3008,7 @@ function selectHome() {
   document.body.classList.remove('drama');
   document.body.classList.remove('schedule');
   document.body.classList.remove('home');
-  document.body.classList.add('home');
+  document.body.classList.remove('forum');  document.body.classList.add('home');
   setActiveNav('view-home');
   currentNb = null;
   document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
@@ -2857,7 +3089,7 @@ async function loadNews() {
 function newsStatusLabel(s) { return {PENDING:'排队中',GENERATING:'收集中',DONE:'完成',FAILED:'失败'}[s]||s; }
 async function openNewsNote(notebookId, noteId) {
   document.body.classList.remove('home');
-  document.body.classList.remove('studio');
+  document.body.classList.remove('forum');  document.body.classList.remove('studio');
   document.body.classList.remove('writing');
   document.body.classList.remove('world');
   document.body.classList.remove('drama');
@@ -2880,7 +3112,7 @@ async function selectAll() {
   closeAI();
   document.body.classList.remove('companion');
   document.body.classList.remove('home');
-  document.body.classList.remove('studio');
+  document.body.classList.remove('forum');  document.body.classList.remove('studio');
   document.body.classList.remove('writing');
   document.body.classList.remove('world');
   document.body.classList.remove('drama');
@@ -2897,7 +3129,7 @@ async function selectNb(id) {
   closeAI();
   document.body.classList.remove('companion');
   document.body.classList.remove('home');
-  document.body.classList.remove('studio');
+  document.body.classList.remove('forum');  document.body.classList.remove('studio');
   document.body.classList.remove('writing');
   document.body.classList.remove('world');
   document.body.classList.remove('drama');
@@ -3291,6 +3523,7 @@ function closeAI() {
   document.getElementById('aiMask').classList.add('hidden');
   document.getElementById('aiPanel').classList.remove('open');
   document.getElementById('aiPanel').setAttribute('aria-hidden', aiDrawerMode() ? 'true' : 'false');
+  if (typeof stopForumPoll === 'function') stopForumPoll();
 }
 function aiNbId() { return Number(document.getElementById('aiNb').value); }
 function onAiNbChange() {
@@ -3459,7 +3692,7 @@ function selectStudio() {
   closeAI();
   document.body.classList.remove('companion');
   document.body.classList.remove('home');
-  document.body.classList.remove('writing');
+  document.body.classList.remove('forum');  document.body.classList.remove('writing');
   document.body.classList.remove('world');
   document.body.classList.remove('drama');
   document.body.classList.remove('schedule');
@@ -3785,7 +4018,7 @@ function selectDrama() {
   closeAI();
   document.body.classList.remove('companion');
   document.body.classList.remove('home');
-  document.body.classList.remove('studio');
+  document.body.classList.remove('forum');  document.body.classList.remove('studio');
   document.body.classList.remove('writing');
   document.body.classList.remove('world');
   document.body.classList.remove('drama');
@@ -3918,7 +4151,7 @@ function selectWriting() {
   closeAI();
   document.body.classList.remove('companion');
   document.body.classList.remove('home');
-  document.body.classList.remove('studio');
+  document.body.classList.remove('forum');  document.body.classList.remove('studio');
   document.body.classList.remove('world');
   document.body.classList.remove('drama');
   document.body.classList.remove('schedule');
@@ -4111,7 +4344,7 @@ function selectWorld() {
   closeAI();
   document.body.classList.remove('companion');
   document.body.classList.remove('home');
-  document.body.classList.remove('studio');
+  document.body.classList.remove('forum');  document.body.classList.remove('studio');
   document.body.classList.remove('writing');
   document.body.classList.remove('drama');
   document.body.classList.remove('schedule');
@@ -6698,7 +6931,7 @@ function monthRange(year, month) {
 
 function selectSchedule() {
   closeAI();
-  ['home','studio','drama','writing','world','companion'].forEach(v => document.body.classList.remove(v));
+  ['home','studio','drama','writing','world','companion','forum'].forEach(v => document.body.classList.remove(v));
   document.body.classList.add('schedule');
   setActiveNav('view-schedule');
   currentNb = null;
@@ -7222,9 +7455,421 @@ const CPN_VOICE = [{k:'SWEET',t:'温柔'},{k:'MAGNETIC',t:'磁性'},{k:'YOUNG',t
 
 function cpnApi(path, opts) { return j('/api/companion' + path, opts || {}); }
 
+// ---- 工作台 · 论坛 (agent-world-forum) ----
+const FORUM_CAT_LABELS = {joke:'段子', acrostic:'藏头诗', daily:'日常分享', chicken_soup:'心灵鸡汤', video_series:'视频连载', utility:'实用工具'};
+const FORUM_CAT_ICONS = {joke:'😂', acrostic:'📜', daily:'☕', chicken_soup:'🍲', video_series:'🎬', utility:'🛠'};
+const FORUM = {
+  feed: [],
+  mine: null,           // 'likes' | 'favorites' | null
+  currentCat: '',
+  pollTimer: null,
+  pollIntervalMs: 30000,
+  lastFetchAt: 0,
+  lastTopId: 0,
+  detail: null,         // {post, attachments, currentUser}
+  detailComments: [],
+  detailCmPage: 0,
+  detailCmHasMore: false,
+  detailCmTotal: 0,
+};
+
+function forumApi(path, opts) { return j('/api/world/forum' + path, opts || {}); }
+function forumMediaUrl(id) { return '/api/world/forum/attachments/' + id + '/media'; }
+
+function selectForum() {
+  closeAI();
+  ['home','studio','drama','writing','world','schedule','companion'].forEach(v => document.body.classList.remove(v));
+  document.body.classList.add('forum');
+  setActiveNav('view-forum');
+  currentNb = null;
+  document.querySelectorAll('#nbList .navitem').forEach(x => x.classList.remove('active'));
+  closeNav();
+  if (!FORUM.feed.length) loadForumFeed(false);
+  else renderForumFeed();
+  startForumPoll();
+  loadForumToday();
+  loadForumCategories();
+}
+
+function pickForumCategory(el, code) {
+  document.querySelectorAll('.forum-sidebar .forum-cat').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  FORUM.currentCat = code || '';
+  FORUM.mine = null;
+  FORUM.feed = [];
+  loadForumFeed(false);
+}
+
+function selectForumMine(kind) {
+  document.querySelectorAll('.forum-sidebar .forum-cat').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.forum-sidebar .forum-cat').forEach(x => {
+    if (x.querySelector('.lbl').textContent === (kind === 'likes' ? '我的点赞' : '我的收藏')) x.classList.add('active');
+  });
+  FORUM.mine = kind;
+  FORUM.currentCat = '';
+  loadForumFeed(false);
+}
+
+async function loadForumCategories() {
+  try {
+    const cats = await forumApi('/categories');
+    cats.forEach(c => {
+      const el = document.getElementById('forumCatCnt' + (c.code === 'joke' ? 'Joke' : c.code === 'acrostic' ? 'Acrostic' : c.code === 'daily' ? 'Daily' : c.code === 'chicken_soup' ? 'Soup' : c.code === 'video_series' ? 'Video' : c.code === 'utility' ? 'Utility' : 'All'));
+      if (el) el.textContent = (c.todayCount || 0);
+    });
+  } catch (e) { /* 静默 */ }
+}
+
+async function loadForumFeed(showToast) {
+  try {
+    let list;
+    if (FORUM.mine === 'likes') list = await forumApi('/me/likes');
+    else if (FORUM.mine === 'favorites') list = await forumApi('/me/favorites');
+    else {
+      const qs = new URLSearchParams();
+      if (FORUM.currentCat) qs.set('category', FORUM.currentCat);
+      qs.set('page', '0'); qs.set('size', '20');
+      list = await forumApi('/posts?' + qs.toString());
+    }
+    list = list || [];
+    if (showToast && FORUM.feed.length && list.length && list[0].id !== FORUM.feed[0].id) {
+      const newOnes = list.filter(p => !FORUM.feed.find(x => x.id === p.id));
+      if (newOnes.length) toast(`+${newOnes.length} 条新帖`, 'ok');
+    }
+    FORUM.feed = list;
+    FORUM.lastFetchAt = Date.now();
+    FORUM.lastTopId = list.length ? list[0].id : 0;
+    renderForumFeed();
+    updateForumBadge();
+  } catch (e) {
+    const box = document.getElementById('forumFeed');
+    if (box) box.innerHTML = '<div class="forum-empty"><div class="ico">⚠</div><div class="t">论坛加载失败</div><div class="s">' + esc(errText(e)) + '</div></div>';
+  }
+}
+
+function renderForumFeed() {
+  const box = document.getElementById('forumFeed');
+  if (!box) return;
+  if (FORUM.mine === 'likes') document.getElementById('forumFeedTitle').textContent = '我的点赞';
+  else if (FORUM.mine === 'favorites') document.getElementById('forumFeedTitle').textContent = '我的收藏';
+  else if (FORUM.currentCat) document.getElementById('forumFeedTitle').textContent = FORUM_CAT_LABELS[FORUM.currentCat] || '论坛';
+  else document.getElementById('forumFeedTitle').textContent = '论坛';
+  document.getElementById('forumFeedPill').textContent = FORUM.feed.length + ' 帖';
+  if (!FORUM.feed.length) {
+    const msg = FORUM.mine ? '还没有' + (FORUM.mine === 'likes' ? '点赞' : '收藏') : '今天还没有帖子,21:00 后村民会产出内容';
+    box.innerHTML = '<div class="forum-empty"><div class="ico">💬</div><div class="t">空空如也</div><div class="s">' + esc(msg) + '</div></div>';
+    return;
+  }
+  box.innerHTML = FORUM.feed.map(p => renderForumCard(p)).join('');
+}
+
+function renderForumCard(p) {
+  const cu = p.currentUser || {liked:false, favorited:false};
+  const atts = p._attachments || [];
+  const attHtml = atts.length ? renderForumCardAtts(atts) : '';
+  const initial = (p.authorName || '?').slice(0, 1).toUpperCase();
+  const avatar = p.authorAvatar
+    ? '<div class="avatar"><img src="' + esc(p.authorAvatar) + '" alt=""></div>'
+    : '<div class="avatar">' + esc(initial) + '</div>';
+  const catLabel = FORUM_CAT_LABELS[p.category] || p.category || '';
+  return ''
+    + '<div class="forum-card" data-post-id="' + p.id + '" onclick="openForumDetail(' + p.id + ')">'
+    +   '<div class="head">'
+    +     avatar
+    +     '<div class="who">'
+    +       '<div class="name">' + esc(p.authorName || '匿名') + '</div>'
+    +       '<div class="meta">' + esc(fmtDate(p.createdAt)) + '</div>'
+    +     '</div>'
+    +     '<span class="cat-pill ' + esc(p.category || '') + '">' + esc(catLabel) + '</span>'
+    +   '</div>'
+    +   (p.title ? '<div class="title">' + esc(p.title) + '</div>' : '')
+    +   '<div class="content">' + esc(p.content || '') + '</div>'
+    +   attHtml
+    +   '<div class="actions">'
+    +     '<button class="act ' + (cu.liked ? 'on' : '') + '" onclick="event.stopPropagation();quickLike(' + p.id + ', this)">' + (cu.liked ? '♥' : '♡') + ' ' + (p.likeCount || 0) + '</button>'
+    +     '<button class="act ' + (cu.favorited ? 'on fav' : '') + '" onclick="event.stopPropagation();quickFav(' + p.id + ', this)">' + (cu.favorited ? '★' : '☆') + ' ' + (p.favoriteCount || 0) + '</button>'
+    +     '<span class="mut" style="font-size:12px">💬 ' + (p.commentCount || 0) + '</span>'
+    +     '<span class="spacer"></span>'
+    +     '<span class="mut" style="font-size:11px">点击查看详情</span>'
+    +   '</div>'
+    + '</div>';
+}
+
+function renderForumCardAtts(atts) {
+  if (!atts.length) return '';
+  const cls = 'count-' + Math.min(atts.length, 3);
+  const items = atts.slice(0, 3).map(a => {
+    if (a.mediaType === 'video') {
+      return '<div class="att"><video src="' + forumMediaUrl(a.id) + '" muted preload="metadata"></video><div class="play">▶</div></div>';
+    }
+    return '<div class="att"><img src="' + forumMediaUrl(a.id) + '" alt="" loading="lazy"></div>';
+  }).join('');
+  return '<div class="atts ' + cls + '">' + items + '</div>';
+}
+
+async function quickLike(postId, btn) {
+  if (currentUser && currentUser.guest) { toast('登录后才能点赞', 'info'); return; }
+  const card = btn.closest('.forum-card');
+  const likedNow = btn.classList.contains('on');
+  try {
+    if (likedNow) {
+      await forumApi('/posts/' + postId + '/like', { method: 'DELETE' });
+      btn.classList.remove('on');
+      btn.textContent = '♡ ' + Math.max(0, parseInt((btn.textContent.match(/\d+/) || ['0'])[0], 10) - 1);
+    } else {
+      await forumApi('/posts/' + postId + '/like', { method: 'POST' });
+      btn.classList.add('on');
+      btn.textContent = '♥ ' + (parseInt((btn.textContent.match(/\d+/) || ['0'])[0], 10) + 1);
+    }
+    if (card) {
+      const post = FORUM.feed.find(x => x.id === postId);
+      if (post && post.currentUser) post.currentUser.liked = !likedNow;
+    }
+  } catch (e) { toast('操作失败:' + errText(e), 'err'); }
+}
+
+async function quickFav(postId, btn) {
+  if (currentUser && currentUser.guest) { toast('登录后才能收藏', 'info'); return; }
+  const card = btn.closest('.forum-card');
+  const favNow = btn.classList.contains('on');
+  try {
+    if (favNow) {
+      await forumApi('/posts/' + postId + '/favorite', { method: 'DELETE' });
+      btn.classList.remove('on'); btn.classList.remove('fav');
+      btn.textContent = '☆ ' + Math.max(0, parseInt((btn.textContent.match(/\d+/) || ['0'])[0], 10) - 1);
+    } else {
+      await forumApi('/posts/' + postId + '/favorite', { method: 'POST' });
+      btn.classList.add('on'); btn.classList.add('fav');
+      btn.textContent = '★ ' + (parseInt((btn.textContent.match(/\d+/) || ['0'])[0], 10) + 1);
+    }
+    if (card) {
+      const post = FORUM.feed.find(x => x.id === postId);
+      if (post && post.currentUser) post.currentUser.favorited = !favNow;
+    }
+  } catch (e) { toast('操作失败:' + errText(e), 'err'); }
+}
+
+function updateForumBadge() {
+  const el = document.getElementById('forumNavBadge');
+  if (!el) return;
+  el.textContent = FORUM.feed.length;
+  el.classList.toggle('zero', FORUM.feed.length === 0);
+}
+
+function startForumPoll() {
+  stopForumPoll();
+  document.getElementById('forumPollState').style.display = 'inline-flex';
+  FORUM.pollTimer = setInterval(() => {
+    if (document.body.classList.contains('forum')) loadForumFeed(true);
+  }, FORUM.pollIntervalMs);
+}
+
+function stopForumPoll() {
+  if (FORUM.pollTimer) { clearInterval(FORUM.pollTimer); FORUM.pollTimer = null; }
+  const el = document.getElementById('forumPollState');
+  if (el) el.style.display = 'none';
+}
+
+async function loadForumToday() {
+  try {
+    const list = await forumApi('/posts?page=0&size=3');
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const todayList = (list || []).filter(p => new Date(p.createdAt) >= today).slice(0, 3);
+    document.getElementById('forumTodayDate').textContent = (today.getMonth() + 1) + '月' + today.getDate() + '日';
+    const body = document.getElementById('forumTodayBody');
+    if (!todayList.length) { body.innerHTML = '<div class="mut" style="padding:14px;text-align:center">今天还没有帖子</div>'; return; }
+    body.innerHTML = todayList.map(p =>
+      '<div class="forum-mini" onclick="openForumDetail(' + p.id + ')">'
+      + '<div class="h">' + esc(p.title || (p.content || '').slice(0, 18)) + '</div>'
+      + '<div class="c">' + esc((p.content || '').slice(0, 60)) + '</div>'
+      + '<div class="m">' + esc((p.authorName || '匿名') + ' · ' + (FORUM_CAT_LABELS[p.category] || p.category)) + '</div>'
+      + '</div>'
+    ).join('');
+  } catch (e) { /* 静默 */ }
+}
+
+async function openForumDetail(postId) {
+  try {
+    const detail = await forumApi('/posts/' + postId);
+    FORUM.detail = detail;
+    FORUM.detailComments = [];
+    FORUM.detailCmPage = 0;
+    FORUM.detailCmHasMore = false;
+    FORUM.detailCmTotal = detail.totalComments || 0;
+    renderForumDetail();
+    document.getElementById('forumDetailModal').classList.remove('hidden');
+    loadForumDetailComments(0, true);
+  } catch (e) { toast('打开失败:' + errText(e), 'err'); }
+}
+
+function closeForumDetail() {
+  document.getElementById('forumDetailModal').classList.add('hidden');
+  FORUM.detail = null;
+  FORUM.detailComments = [];
+  // 暂停主区视频
+  document.querySelectorAll('#forumDetailModal video').forEach(v => { try { v.pause(); } catch (e) {} });
+}
+
+function renderForumDetail() {
+  const d = FORUM.detail;
+  if (!d) return;
+  const p = d.post;
+  const atts = d.attachments || [];
+  const cu = d.currentUser || {liked:false, favorited:false};
+  const initial = (p.authorName || '?').slice(0, 1).toUpperCase();
+  document.getElementById('forumDetailAvatar').innerHTML = p.authorAvatar
+    ? '<img src="' + esc(p.authorAvatar) + '" alt="">'
+    : esc(initial);
+  document.getElementById('forumDetailName').textContent = p.authorName || '匿名';
+  const catLabel = FORUM_CAT_LABELS[p.category] || p.category || '';
+  document.getElementById('forumDetailMeta').textContent = catLabel + ' · ' + fmtDate(p.createdAt) + ' · ' + (p.authorAgentId ? ('居民 #' + p.authorAgentId) : '系统');
+  // 媒体主区
+  const body = document.getElementById('forumDetailBody');
+  let stageHtml = '<div class="mut" style="padding:60px 20px">暂无附件</div>';
+  let thumbsHtml = '';
+  if (atts.length) {
+    const a0 = atts[0];
+    if (a0.mediaType === 'video') {
+      stageHtml = '<div class="att-stage"><video src="' + forumMediaUrl(a0.id) + '" controls autoplay playsinline></video></div>';
+    } else {
+      stageHtml = '<div class="att-stage"><img src="' + forumMediaUrl(a0.id) + '" alt=""></div>';
+    }
+    thumbsHtml = '<div class="att-thumbs">' + atts.map((a, i) => {
+      const inner = a.mediaType === 'video'
+        ? '<video src="' + forumMediaUrl(a.id) + '" muted preload="metadata"></video>'
+        : '<img src="' + forumMediaUrl(a.id) + '" alt="" loading="lazy">';
+      return '<div class="t ' + a.mediaType + (i === 0 ? ' on' : '') + '" data-idx="' + i + '" onclick="showForumDetailAtt(' + i + ')">' + inner + '</div>';
+    }).join('') + '</div>';
+  }
+  body.innerHTML = ''
+    + (p.title ? '<div class="title">' + esc(p.title) + '</div>' : '')
+    + '<div class="content">' + esc(p.content || '') + '</div>'
+    + stageHtml
+    + thumbsHtml;
+  // 按钮
+  const likeBtn = document.getElementById('forumDetailLikeBtn');
+  likeBtn.classList.toggle('on', !!cu.liked);
+  likeBtn.innerHTML = (cu.liked ? '♥' : '♡') + ' <span id="forumDetailLikeCnt">' + (p.likeCount || 0) + '</span>';
+  const favBtn = document.getElementById('forumDetailFavBtn');
+  favBtn.classList.toggle('on', !!cu.favorited);
+  favBtn.classList.toggle('fav', !!cu.favorited);
+  favBtn.innerHTML = (cu.favorited ? '★' : '☆') + ' <span id="forumDetailFavCnt">' + (p.favoriteCount || 0) + '</span>';
+  document.getElementById('forumDetailCommentCnt').textContent = '💬 ' + (p.commentCount || 0);
+  // 清空评论输入
+  document.getElementById('forumCommentInput').value = '';
+}
+
+function showForumDetailAtt(idx) {
+  const atts = (FORUM.detail && FORUM.detail.attachments) || [];
+  const a = atts[idx]; if (!a) return;
+  const body = document.getElementById('forumDetailBody');
+  const stage = body.querySelector('.att-stage');
+  if (a.mediaType === 'video') {
+    stage.innerHTML = '<video src="' + forumMediaUrl(a.id) + '" controls autoplay playsinline></video>';
+  } else {
+    stage.innerHTML = '<img src="' + forumMediaUrl(a.id) + '" alt="">';
+  }
+  body.querySelectorAll('.att-thumbs .t').forEach((el, i) => el.classList.toggle('on', i === idx));
+}
+
+async function toggleForumLike() {
+  if (!FORUM.detail) return;
+  if (currentUser && currentUser.guest) { toast('登录后才能点赞', 'info'); return; }
+  const p = FORUM.detail.post;
+  const liked = (FORUM.detail.currentUser || {}).liked;
+  try {
+    if (liked) {
+      await forumApi('/posts/' + p.id + '/like', { method: 'DELETE' });
+      FORUM.detail.currentUser.liked = false;
+      p.likeCount = Math.max(0, (p.likeCount || 1) - 1);
+    } else {
+      await forumApi('/posts/' + p.id + '/like', { method: 'POST' });
+      FORUM.detail.currentUser.liked = true;
+      p.likeCount = (p.likeCount || 0) + 1;
+    }
+    renderForumDetail();
+  } catch (e) { toast('操作失败:' + errText(e), 'err'); }
+}
+
+async function toggleForumFavorite() {
+  if (!FORUM.detail) return;
+  if (currentUser && currentUser.guest) { toast('登录后才能收藏', 'info'); return; }
+  const p = FORUM.detail.post;
+  const fav = (FORUM.detail.currentUser || {}).favorited;
+  try {
+    if (fav) {
+      await forumApi('/posts/' + p.id + '/favorite', { method: 'DELETE' });
+      FORUM.detail.currentUser.favorited = false;
+      p.favoriteCount = Math.max(0, (p.favoriteCount || 1) - 1);
+    } else {
+      await forumApi('/posts/' + p.id + '/favorite', { method: 'POST' });
+      FORUM.detail.currentUser.favorited = true;
+      p.favoriteCount = (p.favoriteCount || 0) + 1;
+    }
+    renderForumDetail();
+  } catch (e) { toast('操作失败:' + errText(e), 'err'); }
+}
+
+async function loadForumDetailComments(page, reset) {
+  if (!FORUM.detail) return;
+  try {
+    const res = await forumApi('/posts/' + FORUM.detail.post.id + '/comments?page=' + page + '&size=20');
+    if (reset) FORUM.detailComments = res.comments || [];
+    else FORUM.detailComments = FORUM.detailComments.concat(res.comments || []);
+    FORUM.detailCmPage = page;
+    FORUM.detailCmHasMore = !!res.hasMore;
+    renderForumDetailComments();
+  } catch (e) { toast('评论加载失败:' + errText(e), 'err'); }
+}
+
+function renderForumDetailComments() {
+  const list = document.getElementById('forumDetailCommentList');
+  if (!list) return;
+  if (!FORUM.detailComments.length) { list.innerHTML = '<div class="cm-empty">还没有评论,抢沙发</div>'; return; }
+  list.innerHTML = FORUM.detailComments.map(c => {
+    const init = (c.authorName || '?').slice(0, 1).toUpperCase();
+    return '<div class="cm">'
+      + '<div class="av">' + esc(init) + '</div>'
+      + '<div class="body">'
+      +   '<div class="who">' + esc(c.authorName || '匿名') + '<span class="when">' + esc(fmtDate(c.createdAt)) + '</span></div>'
+      +   '<div class="text">' + esc(c.content || '') + '</div>'
+      + '</div></div>';
+  }).join('');
+  if (FORUM.detailCmHasMore) {
+    list.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:6px"><button class="sec" style="font-size:12px" onclick="loadForumDetailComments(' + (FORUM.detailCmPage + 1) + ', false)">加载更多</button></div>');
+  }
+}
+
+async function submitForumComment() {
+  if (!FORUM.detail) return;
+  if (currentUser && currentUser.guest) { toast('登录后才能评论', 'info'); return; }
+  const input = document.getElementById('forumCommentInput');
+  const content = (input.value || '').trim();
+  if (!content) return;
+  const btn = document.getElementById('forumCommentSendBtn');
+  btn.disabled = true;
+  try {
+    const c = await forumApi('/posts/' + FORUM.detail.post.id + '/comments', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    FORUM.detailComments.unshift(c);
+    FORUM.detail.post.commentCount = (FORUM.detail.post.commentCount || 0) + 1;
+    renderForumDetailComments();
+    renderForumDetail();
+    input.value = '';
+    toast('评论成功', 'ok');
+  } catch (e) { toast('评论失败:' + errText(e), 'err'); }
+  finally { btn.disabled = false; }
+}
+
+// 切走论坛时停掉轮询(在每个 selectXxx 函数末尾都会切到别的 view,这里集中处理)
+function stopForumPollIfActive() { stopForumPoll(); }
+
 function selectCompanion() {
   closeAI();
-  ['home','studio','drama','writing','world','schedule'].forEach(v => document.body.classList.remove(v));
+  ['home','studio','drama','writing','world','schedule','forum'].forEach(v => document.body.classList.remove(v));
   document.body.classList.add('companion');
   setActiveNav('view-companion');
   currentNb = null;

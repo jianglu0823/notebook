@@ -48,6 +48,22 @@ public class WorldSettings {
     @Column(name = "temperature")
     private Integer temperature;
 
+    /** 短片/画作等老创作调度开关(默认 false,2026-08-12 起暂停,代码保留)。 */
+    @Column(name = "media_enabled", nullable = false)
+    private Boolean mediaEnabled = false;
+
+    /** 论坛总开关(默认 true)。 */
+    @Column(name = "forum_enabled", nullable = false)
+    private Boolean forumEnabled = true;
+
+    /** 论坛每日生成 cron 表达式(默认每天 21:00)。 */
+    @Column(name = "forum_cron", nullable = false, length = 32)
+    private String forumCron = "0 0 21 * * *";
+
+    /** 每个 agent 每天最多生成帖子数(LLM 决定实际 1~N,默认 2)。 */
+    @Column(name = "forum_max_posts_per_agent_per_day", nullable = false)
+    private Integer forumMaxPostsPerAgentPerDay = 2;
+
     @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 }

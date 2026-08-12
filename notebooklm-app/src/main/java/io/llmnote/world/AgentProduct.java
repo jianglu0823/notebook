@@ -52,6 +52,10 @@ public class AgentProduct {
     @Column(name = "cost_rmb", nullable = false)
     private BigDecimal costRmb = BigDecimal.ZERO;
 
+    /** 论坛帖子反向引用(论坛帖子产生的图片/视频回流到作品馆时,挂回帖 id)。 */
+    @Column(name = "ref_post_id")
+    private Long refPostId;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 }

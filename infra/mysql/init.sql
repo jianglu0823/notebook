@@ -315,10 +315,19 @@ CREATE TABLE IF NOT EXISTS agent_world_settings (
     season             VARCHAR(8)  NULL COMMENT '当前季节(春/夏/秋/冬)',
     weather            VARCHAR(16) NULL COMMENT '当前天气',
     temperature        INT         NULL COMMENT '当前温度(℃,可空)',
+    media_enabled      TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '短片/画作等老创作调度开关(默认关,2026-08-12 起暂停,代码保留)',
+    forum_enabled      TINYINT(1)  NOT NULL DEFAULT 1 COMMENT '论坛总开关(默认开)',
+    forum_cron         VARCHAR(32) NOT NULL DEFAULT '0 0 21 * * *' COMMENT '论坛每日生成 cron 表达式',
+    forum_max_posts_per_agent_per_day INT NOT NULL DEFAULT 2 COMMENT '每个 agent 每天最多生成帖子数(LLM 决定实际 1~N)',
     updated_at         DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-INSERT IGNORE INTO agent_world_settings (id, autonomous_enabled, interval_seconds, model)
-VALUES (1, 0, 600, 'qwen-turbo');
+-- 兼容已有库的迁移 ALTER(幂等,新部署无影响)
+ALTER TABLE agent_world_settings ADD COLUMN IF NOT EXISTS media_enabled TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE agent_world_settings ADD COLUMN IF NOT EXISTS forum_enabled TINYINT(1) NOT NULL DEFAULT 1;
+ALTER TABLE agent_world_settings ADD COLUMN IF NOT EXISTS forum_cron VARCHAR(32) NOT NULL DEFAULT '0 0 21 * * *';
+ALTER TABLE agent_world_settings ADD COLUMN IF NOT EXISTS forum_max_posts_per_agent_per_day INT NOT NULL DEFAULT 2;
+INSERT IGNORE INTO agent_world_settings (id, autonomous_enabled, interval_seconds, model, media_enabled, forum_enabled, forum_cron, forum_max_posts_per_agent_per_day)
+VALUES (1, 0, 600, 'qwen-turbo', 0, 1, '0 0 21 * * *', 2);
 
 -- 智能体小世界:职业产物(作家连载章节/歌手新歌/画师画作等)
 CREATE TABLE IF NOT EXISTS agent_product (
@@ -337,6 +346,64 @@ CREATE TABLE IF NOT EXISTS agent_product (
     created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_product_agent (agent_id),
     INDEX idx_product_date (sim_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- agent-world-forum(2026-08-12):为 agent_product 加 forum 反向关联(可空,兼容旧数据)
+ALTER TABLE agent_product ADD COLUMN IF NOT EXISTS ref_post_id BIGINT NULL COMMENT '论坛帖子 id(forum 产出时填,旧产物 NULL)';
+ALTER TABLE agent_product ADD INDEX IF NOT EXISTS idx_product_ref_post (ref_post_id);
+
+-- 智能体小世界:论坛帖子(每天每 agent 1~3 条;6 类目)
+CREATE TABLE IF NOT EXISTS agent_forum_post (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+    author_agent_id BIGINT       NOT NULL COMMENT '发帖居民 id',
+    author_name     VARCHAR(64)  NOT NULL COMMENT '发帖者名(快照,防 agent 改名后失真)',
+    author_avatar   VARCHAR(16)  NULL     COMMENT '发帖者头像快照',
+    category        VARCHAR(16)  NOT NULL COMMENT '类目:joke/acrostic/daily/chicken_soup/video_series/utility',
+    title           VARCHAR(128) NULL     COMMENT '标题(acrostic/video_series/utility 必填,其他可空)',
+    content         TEXT         NOT NULL COMMENT '帖子正文(30~500 字符)',
+    like_count      INT          NOT NULL DEFAULT 0 COMMENT '点赞数(反范式,SQL 原子自增)',
+    favorite_count  INT          NOT NULL DEFAULT 0 COMMENT '收藏数(反范式)',
+    comment_count   INT          NOT NULL DEFAULT 0 COMMENT '评论数(反范式)',
+    status          VARCHAR(16)  NOT NULL DEFAULT 'published' COMMENT '状态:draft/published/hidden',
+    created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_forum_post_status_created (status, created_at DESC),
+    INDEX idx_forum_post_author_created (author_agent_id, created_at DESC),
+    INDEX idx_forum_post_cat_status_created (category, status, created_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 论坛帖子附件(图/视频,1 post → N 个,seq 0-based)
+CREATE TABLE IF NOT EXISTS agent_forum_attachment (
+    id           BIGINT PRIMARY KEY AUTO_INCREMENT,
+    post_id      BIGINT        NOT NULL COMMENT '所属帖子 id',
+    media_type   VARCHAR(8)    NOT NULL COMMENT 'image|video',
+    file_path    VARCHAR(255)  NOT NULL COMMENT '相对 /data/world/ 路径',
+    seq          INT           NOT NULL DEFAULT 0 COMMENT '同 post 内顺序,0-based',
+    prompt       TEXT          NULL     COMMENT '生成时的 prompt(留作审计)',
+    width        INT           NULL     COMMENT '图片专用',
+    height       INT           NULL     COMMENT '图片专用',
+    duration_sec INT           NULL     COMMENT '视频专用',
+    created_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_forum_attach_post_seq (post_id, seq)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 论坛点赞(per-user 唯一)
+CREATE TABLE IF NOT EXISTS agent_forum_like (
+    id         BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id    BIGINT      NOT NULL COMMENT '访问者 user_id(来自 JWT)',
+    post_id    BIGINT      NOT NULL COMMENT '被点赞的帖子 id',
+    created_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_forum_like_user_post (user_id, post_id),
+    INDEX idx_forum_like_post (post_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 论坛收藏(per-user 唯一)
+CREATE TABLE IF NOT EXISTS agent_forum_favorite (
+    id         BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id    BIGINT      NOT NULL COMMENT '访问者 user_id',
+    post_id    BIGINT      NOT NULL COMMENT '被收藏的帖子 id',
+    created_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_forum_fav_user_post (user_id, post_id),
+    INDEX idx_forum_fav_post (post_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 智能体小世界:世界日报(一天一行,含当日全世界 token/花费,仅管理者可见)
