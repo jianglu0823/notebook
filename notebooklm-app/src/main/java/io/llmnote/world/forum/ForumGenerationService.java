@@ -57,6 +57,7 @@ public class ForumGenerationService {
     private final WorldSettingsService settingsService;
     private final AgentForumPostRepository postRepo;
     private final ObjectMapper objectMapper;
+    private final ForumMediaService mediaService;
 
     /** cron 触发:逐个 active agent 调 LLM,生成 1~3 条帖子。 */
     @Scheduled(cron = "${forum.cron:0 0 21 * * *}")
@@ -89,7 +90,13 @@ public class ForumGenerationService {
         }
         List<AgentForumPost> posts = parseResponse(raw, e, LocalDate.now());
         for (AgentForumPost p : posts) {
-            postRepo.save(p);
+            AgentForumPost saved = postRepo.save(p);
+            // 异步触发附件生成(独立 bean,@Async 才会生效;同 bean 自调用失效)
+            try {
+                mediaService.generateAttachments(saved);
+            } catch (Exception ex) {
+                log.warn("[forum] agent={} postId={} media dispatch failed: {}", e.getId(), saved.getId(), ex.getMessage());
+            }
         }
         if (!posts.isEmpty()) {
             log.info("[forum] agent={} generated {} posts", e.getId(), posts.size());

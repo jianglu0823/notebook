@@ -30,6 +30,7 @@ class ForumGenerationServiceTest {
     @Mock AgentEmployeeRepository employeeRepo;
     @Mock WorldSettingsService settingsService;
     @Mock AgentForumPostRepository postRepo;
+    @Mock ForumMediaService mediaService;
     ForumGenerationService service;
 
     private static ChatResponse textResp(String s) {
@@ -40,7 +41,7 @@ class ForumGenerationServiceTest {
     }
 
     private ForumGenerationService freshService() {
-        return new ForumGenerationService(modelFactory, employeeRepo, settingsService, postRepo, new ObjectMapper());
+        return new ForumGenerationService(modelFactory, employeeRepo, settingsService, postRepo, new ObjectMapper(), mediaService);
     }
 
     @Test
