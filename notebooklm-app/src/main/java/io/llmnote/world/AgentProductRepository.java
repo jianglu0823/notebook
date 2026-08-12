@@ -20,4 +20,7 @@ public interface AgentProductRepository extends JpaRepository<AgentProduct, Long
 
     /** 连载书籍:某作者的全部章节,按序正序。 */
     List<AgentProduct> findByAgentIdAndKindOrderBySeqAscIdAsc(Long agentId, String kind);
+
+    /** 论坛帖子回流:某帖产出的图片/视频作品。 */
+    List<AgentProduct> findByRefPostId(Long refPostId);
 }
