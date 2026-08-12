@@ -12,10 +12,17 @@ import java.time.LocalDate;
  * 短片(CogVideoX)异步生成器。独立 bean 让 {@code @Async} 生效(同 bean 内自调用会失效)。
  * 每日结算时先落一条占位的视频产物(kind=video, content 空),再交给本 runner 后台
  * submit→poll→download→回填 content 相对路径。视频分钟级,故必须异步,避免阻塞结算。
+ *
+ * <p><b>2026-08-12 起暂停</b>:用户切换到论坛模式后,本类被 {@link WorldSettings#getMediaEnabled()} 短路。
+ * 当 mediaEnabled=false(默认)时,generateVideo 第一行直接 return,不调 ZhipuMediaClient,不写库。
+ * 原 submit/polling/download/回填逻辑完整保留,改一个 flag 即可复活(论坛 v2 评估后决定)。
+ *
+ * @deprecated since 2026-08-12,原短片生成逻辑暂停,代码保留等待论坛 v2 评估。
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Deprecated(since = "2026-08-12")
 public class WorldMediaRunner {
 
     /** 轮询上限与间隔:最多约 10 分钟(50 次 × 12s)。 */
@@ -24,10 +31,15 @@ public class WorldMediaRunner {
 
     private final ZhipuMediaClient mediaClient;
     private final AgentProductRepository productRepo;
+    private final WorldSettingsService settingsService;
 
     /** 后台生成短片并回填产物 content。失败则保留占位(前端显示「生成失败」)。 */
     @Async
     public void generateVideo(Long productId, Long agentId, LocalDate date, int seq, String prompt) {
+        if (!settingsService.get().getMediaEnabled()) {
+            log.info("[media-paused] skip video productId={} (WorldSettings.mediaEnabled=false)", productId);
+            return;
+        }
         try {
             String taskId = mediaClient.submitVideo(prompt);
             if (taskId == null) { log.warn("短片提交失败 productId={}", productId); return; }

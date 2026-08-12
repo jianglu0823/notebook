@@ -18,13 +18,22 @@ public class WorldSettingsService {
         });
     }
 
-    public WorldSettings update(Boolean autonomousEnabled, Integer intervalSeconds, String model, boolean isAdmin) {
+    public WorldSettings update(Boolean autonomousEnabled, Integer intervalSeconds, String model,
+                                Boolean mediaEnabled, Boolean forumEnabled,
+                                String forumCron, Integer forumMaxPostsPerAgentPerDay,
+                                boolean isAdmin) {
         WorldSettings s = get();
         if (autonomousEnabled != null) s.setAutonomousEnabled(autonomousEnabled);
         if (intervalSeconds != null) s.setIntervalSeconds(Math.max(1, Math.min(3600, intervalSeconds)));
         if (model != null && !model.isBlank()) {
             if (!isAdmin) throw new IllegalArgumentException("仅管理员可切换模型");
             s.setModel(model.trim());
+        }
+        if (mediaEnabled != null) s.setMediaEnabled(mediaEnabled);
+        if (forumEnabled != null) s.setForumEnabled(forumEnabled);
+        if (forumCron != null && !forumCron.isBlank()) s.setForumCron(forumCron.trim());
+        if (forumMaxPostsPerAgentPerDay != null) {
+            s.setForumMaxPostsPerAgentPerDay(Math.max(1, Math.min(10, forumMaxPostsPerAgentPerDay)));
         }
         return repo.save(s);
     }
