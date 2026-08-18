@@ -9,6 +9,11 @@ spring:
     import:
       - optional:nacos:notebooklm-app.yaml
   cloud:
+    # 强制 Nacos 客户端只挑 llm-note_default 网段(172.21.0.x)的 IP 注册
+    # 防止 nblm-app 容器误加入其他 Docker 网络后,把不可达的 IP 报给 Nacos
+    # 导致 nblm-gateway 拉路由后 30s ConnectTimeoutException → 500 Internal Server Error
+    inetutils:
+      preferred-networks: 172.21.0
     nacos:
       server-addr: ${NACOS_ADDR:127.0.0.1:8848}
       discovery:
@@ -133,7 +138,7 @@ notebooklm:
       hoarse: longfei
       calm: longjing
 
-# ---------- AgentScope 2.0.0-RC4 A2A 客户端配置 ----------
+# ---------- AgentScope 2.0.0-RC4 A2A 客户端 + Studio 追踪 ----------
 # nblm-app 通过 A2aAgent + NacosAgentCardResolver 调 schedule-agent
 # (B4 接入;B5 替换为 CompanionChatService ReAct 循环里的 @Tool 工具)
 agentscope:
@@ -147,6 +152,10 @@ agentscope:
         username: ${SCHEDULE_AGENT_NACOS_USERNAME:nacos}
         password: ${SCHEDULE_AGENT_NACOS_PASSWORD:nacos}
         namespace: ${SCHEDULE_AGENT_NACOS_NAMESPACE:public}
+  # 可视化追踪(默认开,Studio server 离线不阻断启动,仅 warn 日志)
+  studio:
+    enabled: true
+    url: ${STUDIO_URL:http://host.docker.internal:3000}
 
 management:
   endpoints:

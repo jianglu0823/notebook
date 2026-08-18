@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker rm -f nblm-app)",
+      "Bash(docker rm -f schedule-agent)",
+      "Bash(docker run -d --name nblm-app*)",
+      "Bash(docker run -d --name schedule-agent*)",
+      "Bash(docker logs nblm-app*)",
+      "Bash(docker logs schedule-agent*)",
+      "Bash(docker ps*)",
+      "Bash(docker inspect*)",
+      "Bash(docker network connect*)",
+      "Bash(curl http://localhost:8080*)",
+      "Bash(curl http://localhost:8081*)",
+      "Bash(curl http://localhost:8848*)",
+      "Bash(curl -sS -u nacos:nacos http://localhost:8848*)"
+    ]
+  }
+}

@@ -25,26 +25,76 @@ class ForumQueryServiceTest {
     @Mock AgentCommentRepository commentRepo;
 
     @Test
-    void listPosts_byCategory_returnsPageInOrder() {
-        when(postRepo.findByStatusAndCategoryOrderByCreatedAtDesc("published", "joke"))
+    void listPosts_byCategory_returnsPageInOrderWithTotal() {
+        when(postRepo.countByStatusAndCategory("published", "joke")).thenReturn(42L);
+        when(postRepo.findByStatusAndCategoryOrderByCreatedAtDesc(
+                org.mockito.ArgumentMatchers.eq("published"),
+                org.mockito.ArgumentMatchers.eq("joke"),
+                any()))
                 .thenReturn(List.of(newPost(2L), newPost(1L)));
 
         ForumQueryService svc = new ForumQueryService(postRepo, attachRepo, likeRepo, favRepo, commentRepo);
-        List<AgentForumPost> out = svc.listPosts("joke", null, 20);
+        ForumQueryService.PostPage out = svc.listPosts("joke", 0, 20);
 
-        assertThat(out).hasSize(2);
-        assertThat(out.get(0).getId()).isEqualTo(2L);
+        assertThat(out.posts()).hasSize(2);
+        assertThat(out.posts().get(0).getId()).isEqualTo(2L);
+        assertThat(out.total()).isEqualTo(42L);
+        assertThat(out.hasMore()).isTrue();
+        assertThat(out.page()).isEqualTo(0);
+        assertThat(out.size()).isEqualTo(20);
     }
 
     @Test
-    void listPosts_nullCategory_returnsAllPublished() {
-        when(postRepo.findByStatusOrderByCreatedAtDesc("published"))
+    void listPosts_nullCategory_returnsAllPublishedWithTotal() {
+        when(postRepo.countByStatus("published")).thenReturn(3L);
+        when(postRepo.findByStatusOrderByCreatedAtDesc(
+                org.mockito.ArgumentMatchers.eq("published"),
+                any()))
                 .thenReturn(List.of(newPost(1L), newPost(2L), newPost(3L)));
 
         ForumQueryService svc = new ForumQueryService(postRepo, attachRepo, likeRepo, favRepo, commentRepo);
-        List<AgentForumPost> out = svc.listPosts(null, null, 20);
+        ForumQueryService.PostPage out = svc.listPosts(null, 0, 20);
 
-        assertThat(out).hasSize(3);
+        assertThat(out.posts()).hasSize(3);
+        assertThat(out.total()).isEqualTo(3L);
+        assertThat(out.hasMore()).isFalse();
+    }
+
+    @Test
+    void listPosts_pageBeyondTotal_returnsEmptyWithCorrectTotal() {
+        when(postRepo.countByStatus("published")).thenReturn(5L);
+        // 不应触发实际查询(PageRequest pageIdx*limit >= total)
+
+        ForumQueryService svc = new ForumQueryService(postRepo, attachRepo, likeRepo, favRepo, commentRepo);
+        ForumQueryService.PostPage out = svc.listPosts(null, 10, 20);
+
+        assertThat(out.posts()).isEmpty();
+        assertThat(out.total()).isEqualTo(5L);
+        assertThat(out.hasMore()).isFalse();
+    }
+
+    @Test
+    void listCategoryStats_returnsAllPlus6Categories() {
+        org.mockito.Mockito.lenient().when(postRepo.countByStatusAndCreatedAtGreaterThanEqual(
+                org.mockito.ArgumentMatchers.eq("published"), any())).thenReturn(7L);
+        for (String cat : java.util.List.of("joke", "acrostic", "daily", "chicken_soup", "video_series", "utility")) {
+            org.mockito.Mockito.lenient().when(postRepo.countByStatusAndCategoryAndCreatedAtGreaterThanEqual(
+                    org.mockito.ArgumentMatchers.eq("published"),
+                    org.mockito.ArgumentMatchers.eq(cat), any())).thenReturn(1L);
+        }
+
+        ForumQueryService svc = new ForumQueryService(postRepo, attachRepo, likeRepo, favRepo, commentRepo);
+        var stats = svc.listCategoryStats();
+
+        assertThat(stats).hasSize(7);
+        // 第一项 = 全部(code=null)
+        assertThat(stats.get(0).code()).isNull();
+        assertThat(stats.get(0).todayCount()).isEqualTo(7L);
+        // 后 6 项 = 6 个具体类目
+        for (int i = 1; i <= 6; i++) {
+            assertThat(stats.get(i).code()).isNotNull();
+            assertThat(stats.get(i).todayCount()).isEqualTo(1L);
+        }
     }
 
     @Test

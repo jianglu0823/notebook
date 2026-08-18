@@ -56,13 +56,12 @@ public class WorldSettings {
     @Column(name = "forum_enabled", nullable = false)
     private Boolean forumEnabled = true;
 
-    /** 论坛每日生成 cron 表达式(默认每天 21:00)。 */
-    @Column(name = "forum_cron", nullable = false, length = 32)
-    private String forumCron = "0 0 21 * * *";
-
-    /** 每个 agent 每天最多生成帖子数(LLM 决定实际 1~N,默认 2)。 */
+    /** 每个 agent 每天最多生成帖子数(LLM 决定实际 1~N,默认 3)。
+     *  帖子<b>不再</b>用 cron 定时批量生成,改由 {@link io.llmnote.world.AutonomousRunner}
+     *  在每次行动落库后调用 {@code ForumGenerationService.generateFromAction} 触发。
+     *  2026-08-17:从 2 提到 3,配合类目硬推荐 + 每 tick 2 agent 把日产量从 ~5 提到 ~135。 */
     @Column(name = "forum_max_posts_per_agent_per_day", nullable = false)
-    private Integer forumMaxPostsPerAgentPerDay = 2;
+    private Integer forumMaxPostsPerAgentPerDay = 3;
 
     @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;

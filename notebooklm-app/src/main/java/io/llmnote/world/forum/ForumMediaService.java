@@ -1,6 +1,7 @@
 package io.llmnote.world.forum;
 
 import io.llmnote.llm.ZhipuMediaClient;
+import io.llmnote.world.AgentEmployeeRepository;
 import io.llmnote.world.AgentProduct;
 import io.llmnote.world.AgentProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class ForumMediaService {
     private final ZhipuMediaClient mediaClient;
     private final AgentForumAttachmentRepository attachRepo;
     private final AgentProductRepository productRepo;
+    private final AgentEmployeeRepository employeeRepo;
 
     /** 异步入口:逐个生成 image / video,落 attachment + product。失败隔离。 */
     @Async
@@ -103,6 +105,15 @@ public class ForumMediaService {
         }
     }
 
+    /** 读 agent 的 visualDescriptor(没有 → 返回 null,prompt 不拼)。 */
+    private String loadVisual(Long agentId) {
+        if (agentId == null) return null;
+        return employeeRepo.findById(agentId)
+                .map(a -> a.getVisualDescriptor())
+                .filter(d -> d != null && !d.isBlank())
+                .orElse(null);
+    }
+
     private void saveAttachmentAndProduct(AgentForumPost post, String mediaType, String relPath,
                                           int seq, String prompt,
                                           Integer width, Integer height, Integer durationSec) {
@@ -130,15 +141,16 @@ public class ForumMediaService {
         log.info("[forum-media] {} done postId={} seq={} path={}", mediaType, post.getId(), seq, relPath);
     }
 
-    /** 图片 prompt:帖子内容 + 风格修饰(让 LLM 出来更美观)。 */
-    private static String buildImagePrompt(AgentForumPost post) {
-        String base = post.getContent() == null ? post.getCategory() : post.getContent();
-        return base.length() > 200 ? base.substring(0, 200) : base;
+    /** 图片 prompt:用 ImagePromptStyle 拼接"主体+镜头+光线+风格+画质"五段式,
+     *  若作者有 visualDescriptor,拼到主体前(角色一致性)。 */
+    private String buildImagePrompt(AgentForumPost post) {
+        return ImagePromptStyle.assemble(post.getCategory(), post.getTitle(), post.getContent(),
+                loadVisual(post.getAuthorAgentId()));
     }
 
-    /** 视频 prompt:帖子内容 + 动态修饰。 */
-    private static String buildVideoPrompt(AgentForumPost post) {
-        String base = post.getContent() == null ? post.getCategory() : post.getContent();
-        return (base.length() > 200 ? base.substring(0, 200) : base) + ", cinematic motion, 24fps";
+    /** 视频 prompt:类目修饰 + cinematic motion 后缀;同样拼 visualDescriptor。 */
+    private String buildVideoPrompt(AgentForumPost post) {
+        return ImagePromptStyle.assembleVideo(post.getCategory(), post.getTitle(), post.getContent(),
+                loadVisual(post.getAuthorAgentId()));
     }
 }

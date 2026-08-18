@@ -4,6 +4,7 @@ import com.alibaba.nacos.api.exception.NacosException;
 import io.agentscope.core.a2a.agent.A2aAgent;
 import io.agentscope.core.a2a.agent.card.AgentCardResolver;
 import io.agentscope.core.nacos.a2a.discovery.NacosAgentCardResolver;
+import io.llmnote.companion.a2a.ScheduleAgentClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,10 @@ import java.util.Properties;
  * <ul>
  *   <li>{@code scheduleAgentCardResolver} — NacosAgentCardResolver,单例
  *   <li>{@code scheduleAgent} — A2aAgent,持有 resolver,name=schedule-agent-v1
+ *   <li>{@code scheduleAgentClient} — ScheduleAgentClient,把 A2aAgent 包成 @Tool,
+ *       供 CompanionChatService ReAct 循环调用。与上面两个 bean 同配置类装配,
+ *       避免此前 ScheduleAgentClient 标 @Component + @ConditionalOnBean 时跨配置类
+ *       评估顺序问题导致永远不创建。
  * </ul>
  */
 @Configuration
@@ -56,5 +61,11 @@ public class ScheduleAgentA2aConfig {
                 .name(agentName)
                 .agentCardResolver(scheduleAgentCardResolver)
                 .build();
+    }
+
+    @Bean(name = "scheduleAgentClient")
+    public ScheduleAgentClient scheduleAgentClient(@org.springframework.beans.factory.annotation.Qualifier("scheduleAgent") A2aAgent scheduleAgent) {
+        log.info("ScheduleAgentA2aConfig: ScheduleAgentClient wired to A2aAgent(name={})", scheduleAgent.getName());
+        return new ScheduleAgentClient(scheduleAgent);
     }
 }

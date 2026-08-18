@@ -47,7 +47,8 @@ public class ZhipuMediaClient {
 
     // ---- 图片(同步,CogView Flash 秒级) ----
 
-    /** 文生图:调 CogView,返回临时图片 URL(带限流重试)。失败返回 null。 */
+    /** 文生图:调 CogView,返回临时图片 URL(带限流重试)。失败返回 null。
+     *  智谱 cogview-3-flash 接口用 watermark_enabled 字段关水印,免费层支持。 */
     public String generateImage(String prompt) {
         try {
             ObjectNode body = objectMapper.createObjectNode();

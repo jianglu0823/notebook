@@ -195,6 +195,7 @@ CREATE TABLE IF NOT EXISTS agent_employee (
     occupation     VARCHAR(32)   NULL COMMENT '职业类型 key(writer/singer/painter...)驱动每日产物',
     skills_json    TEXT          NULL COMMENT '创作技能 JSON {novel/image/video/music:{lv,style}} 每日自学+触发创作',
     schedule_json  TEXT          NULL COMMENT '作息模板 JSON(起床/工作/休闲/睡觉时段)',
+    visual_descriptor TEXT      NULL COMMENT '英文视觉描述(LLM 由 persona 一次性生成,论坛配图/视频拼到 prompt 提升角色一致性)',
     home_place     VARCHAR(32)   NULL COMMENT '家所在建筑 key',
     home_decor_json TEXT         NULL COMMENT '家园装饰 JSON(已购装饰 id + 等级)',
     spouse_id      BIGINT        NULL COMMENT '配偶居民 id',

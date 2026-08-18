@@ -34,6 +34,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -289,21 +292,45 @@ public class XhsService {
                     .toAbsolutePath().normalize();
             Files.createDirectories(dir);
 
-            List<String> paths = new ArrayList<>();
+            // 2026-08-18 B 阶段:从串行改并发。MAX_IMAGES=3,Semaphore(2) 限流避免 wanx 429;
+            // 每张图独立 try,失败不影响其他。用 indexed CompletableFuture 收集,保持 0/1/2.png 顺序稳定。
+            Semaphore gate = new Semaphore(2);
+            List<CompletableFuture<String>> futures = new ArrayList<>();
             for (int i = 0; i < prompts.size(); i++) {
-                String url = synthImage(prompts.get(i));
-                if (url == null) continue;
-                Path out = dir.resolve("img_" + i + ".png");
-                try (var in = URI.create(url).toURL().openStream()) {
-                    Files.copy(in, out, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                }
-                paths.add(out.toString());
+                final int idx = i;
+                final String prompt = prompts.get(i);
+                futures.add(CompletableFuture.supplyAsync(() -> {
+                    try {
+                        gate.acquire();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    }
+                    try {
+                        String url = synthImage(prompt);
+                        if (url == null) return null;
+                        Path out = dir.resolve("img_" + idx + ".png");
+                        try (var in = URI.create(url).toURL().openStream()) {
+                            Files.copy(in, out, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                        }
+                        return out.toString();
+                    } catch (Exception e) {
+                        log.warn("xhs image idx={} failed: {}", idx, e.getMessage());
+                        return null;
+                    } finally {
+                        gate.release();
+                    }
+                }));
             }
+            List<String> paths = futures.stream()
+                    .map(CompletableFuture::join)
+                    .filter(Objects::nonNull)
+                    .toList();
             if (paths.isEmpty()) { fail(p, "配图生成失败,请重试。"); return; }
             p.setImagePaths(objectMapper.writeValueAsString(paths));
             p.setStatus("IMAGES_DONE");
             repo.save(p);
-            log.info("xhs images done: id={} n={}", id, paths.size());
+            log.info("xhs images done: id={} n={} (parallel)", id, paths.size());
         } catch (Exception e) {
             log.error("xhs genImages failed: id={}", id, e);
             fail(p, e.getMessage());

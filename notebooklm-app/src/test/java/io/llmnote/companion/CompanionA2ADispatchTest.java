@@ -10,6 +10,7 @@ import io.llmnote.companion.config.CompanionProperties;
 import io.llmnote.llm.ChatModelFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.ObjectProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -57,9 +58,12 @@ class CompanionA2ADispatchTest {
     void setup() {
         properties = new CompanionProperties();
         objectMapper = new ObjectMapper();
+        org.springframework.beans.factory.ObjectProvider<ScheduleAgentClient> provider =
+                org.mockito.Mockito.mock(org.springframework.beans.factory.ObjectProvider.class);
+        org.mockito.Mockito.when(provider.getIfAvailable()).thenReturn(scheduleAgentClient);
         service = new CompanionChatService(companionRepository, messageRepository,
                 memoryService, intimacyService, modelFactory, visionService,
-                properties, objectMapper, scheduleAgentClient);
+                properties, objectMapper, provider);
     }
 
     @AfterEach

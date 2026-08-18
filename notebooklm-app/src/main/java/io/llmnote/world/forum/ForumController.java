@@ -4,9 +4,13 @@ import io.llmnote.auth.ForbiddenException;
 import io.llmnote.auth.Principal;
 import io.llmnote.auth.User;
 import io.llmnote.auth.UserRepository;
+import io.llmnote.config.NotebookLmProperties;
 import io.llmnote.world.AgentComment;
+import io.llmnote.world.forum.AgentForumAttachment;
+import io.llmnote.world.forum.AgentForumPost;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 论坛 REST 端点(12 个,沿用 c8 spec):
@@ -29,6 +34,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/world/forum")
 @RequiredArgsConstructor
+@Slf4j
 public class ForumController {
 
     private final ForumQueryService queryService;
@@ -38,18 +44,35 @@ public class ForumController {
     private final AgentForumFavoriteRepository favRepo;
     private final AgentForumAttachmentRepository attachRepo;
     private final UserRepository userRepo;
+    private final NotebookLmProperties props;
 
     // ---- 读路径(可匿名) ----
 
     @GetMapping("/posts")
-    public List<Map<String, Object>> listPosts(@RequestParam(required = false) String category,
-                                              @RequestParam(required = false) Integer page,
-                                              @RequestParam(required = false) Integer size,
-                                              Principal principal) {
+    public Map<String, Object> listPosts(@RequestParam(required = false) String category,
+                                         @RequestParam(required = false) Integer page,
+                                         @RequestParam(required = false) Integer size,
+                                         Principal principal) {
         Long currentUserId = principal == null ? null : principal.userId();
-        return queryService.listPosts(category, page, size).stream()
-                .map(p -> toPostMap(p, currentUserId))
-                .toList();
+        var p = queryService.listPosts(category, page, size);
+        // 2026-08-17:列表也返回 attachments,让 feed 卡片能显示缩略图。
+        // 用 findByPostIdIn 一次查所有 post 的 attachments,按 postId 分组,避免 N+1。
+        Map<Long, List<AgentForumAttachment>> attByPost = Map.of();
+        if (!p.posts().isEmpty()) {
+            List<Long> postIds = p.posts().stream().map(AgentForumPost::getId).toList();
+            attByPost = attachRepo.findByPostIdIn(postIds).stream()
+                    .collect(Collectors.groupingBy(AgentForumAttachment::getPostId));
+        }
+        Map<Long, List<AgentForumAttachment>> finalAttByPost = attByPost;
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("posts", p.posts().stream()
+                .map(post -> toPostMap(post, currentUserId, finalAttByPost.getOrDefault(post.getId(), List.of())))
+                .toList());
+        out.put("total", p.total());
+        out.put("hasMore", p.hasMore());
+        out.put("page", p.page());
+        out.put("size", p.size());
+        return out;
     }
 
     @GetMapping("/posts/{id}")
@@ -57,7 +80,7 @@ public class ForumController {
         Long currentUserId = principal == null ? null : principal.userId();
         var detail = queryService.getPost(id, currentUserId);
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("post", toPostMap(detail.post(), currentUserId));
+        out.put("post", toPostMap(detail.post(), currentUserId, detail.attachments()));
         out.put("attachments", detail.attachments().stream().map(this::toAttachmentMap).toList());
         out.put("commentsPreview", detail.commentsPreview().stream().map(this::toCommentMap).toList());
         out.put("totalComments", detail.totalComments());
@@ -80,8 +103,14 @@ public class ForumController {
 
     @GetMapping("/categories")
     public List<Map<String, Object>> listCategories() {
-        return ForumGenerationService.CATEGORIES.stream()
-                .map(c -> Map.<String, Object>of("code", c, "label", labelOf(c), "todayCount", 0))
+        return queryService.listCategoryStats().stream()
+                .map(s -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("code", s.code() == null ? "" : s.code());
+                    m.put("label", s.code() == null ? "全部" : labelOf(s.code()));
+                    m.put("todayCount", s.todayCount());
+                    return m;
+                })
                 .toList();
     }
 
@@ -151,9 +180,18 @@ public class ForumController {
         AgentForumAttachment att = attachRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("attachment " + id + " not found"));
         try {
-            Path resolved = Paths.get(att.getFilePath());
+            // 历史附件 DB 存的是相对 imageDir 的相对路径(如 "world/162/2026-08-12-0.png"),
+            // 早期代码直接 Paths.get + FileSystemResource,容器内 CWD=/app,文件找不到。
+            // 这里:绝对路径 → 直接用;相对路径 → 拼到 imageDir 下。
+            Path stored = Paths.get(att.getFilePath());
+            Path resolved = stored.isAbsolute()
+                    ? stored
+                    : Paths.get(props.getStorage().getImageDir()).toAbsolutePath().normalize()
+                            .resolve(stored).normalize();
             Resource res = new FileSystemResource(resolved);
             if (!res.exists()) {
+                log.warn("forum attachment {} file missing on disk: stored='{}' resolved='{}'",
+                        id, att.getFilePath(), resolved);
                 return ResponseEntity.notFound().build();
             }
             String contentType = "image".equals(att.getMediaType()) ? MediaType.IMAGE_PNG_VALUE : "video/mp4";
@@ -161,6 +199,7 @@ public class ForumController {
                     .header(HttpHeaders.CONTENT_TYPE, contentType)
                     .body(res);
         } catch (Exception e) {
+            log.warn("forum attachment {} media serve failed: {}", id, e.getMessage());
             return ResponseEntity.notFound().build();
         }
     }
@@ -179,6 +218,10 @@ public class ForumController {
     }
 
     private Map<String, Object> toPostMap(AgentForumPost p, Long currentUserId) {
+        return toPostMap(p, currentUserId, List.of());
+    }
+
+    private Map<String, Object> toPostMap(AgentForumPost p, Long currentUserId, List<AgentForumAttachment> atts) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", p.getId());
         m.put("authorAgentId", p.getAuthorAgentId());
@@ -192,6 +235,8 @@ public class ForumController {
         m.put("commentCount", p.getCommentCount());
         m.put("status", p.getStatus());
         m.put("createdAt", p.getCreatedAt());
+        // 2026-08-17:列表也带 attachments,feed 卡片显示缩略图
+        m.put("attachments", atts.stream().map(this::toAttachmentMap).toList());
         boolean liked = currentUserId != null && queryService.hasLiked(currentUserId, p.getId());
         boolean fav = currentUserId != null && queryService.hasFavorited(currentUserId, p.getId());
         m.put("currentUser", Map.of("liked", liked, "favorited", fav));

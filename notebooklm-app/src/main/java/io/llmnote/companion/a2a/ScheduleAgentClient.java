@@ -9,11 +9,10 @@ import io.agentscope.core.tool.Tool;
 import io.agentscope.core.tool.ToolParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 伴偶 → schedule-agent 的"单 @Tool 透传"桥接(c6 R-c6.1):
@@ -21,9 +20,10 @@ import java.util.List;
  * userText 透传给 schedule-agent 的 ReAct Agent,后者自主用 12 个 @Tool 完成
  * 日程/专注/同步等操作,把结构化结果回给伴偶。
  * <p>
- * 由 {@code @ConditionalOnBean(A2aAgent.class)} 守护:本机无 Nacos 3.x 不可达时
- * (A2aAgent bean 未装配)→ 本类不装配 → CompanionChatService 走"无工具"分支,
- * 伴偶照常聊天,但不能调日程功能。
+ * Bean 装配:在 {@code ScheduleAgentA2aConfig} 里以 @Bean 方式装配(本类不再
+ * 标 {@code @Component}),与 A2aAgent 同配置类,避免 @ConditionalOnBean 跨配置类
+ * 评估顺序问题 — 此前本类标 @Component + @ConditionalOnBean 永远 false,导致
+ * CompanionChatService 拿不到桥接,ReAct 循环空工具,模型吐"已成功"幻觉。
  * <p>
  * userId 通过 {@link #setUserId} 在每次 LLM 调用前由伴偶服务 set,@Tool 内部读后
  * 以 query 前缀 {@code "[userId=N] "} 透传;schedule-agent 端 system prompt 解析
@@ -33,15 +33,13 @@ import java.util.List;
  * 并 break 卡死防御。
  */
 @Slf4j
-@Component
-@ConditionalOnBean(A2aAgent.class)
 public class ScheduleAgentClient {
 
     /** schedule-agent 端的 system prompt 让它解析出 [userId=N] 并用它做 ownerId。 */
     static final String USER_ID_PREFIX_FMT = "[userId=%d] ";
 
-    /** 单次 A2A 调用的硬超时(R-c6.2 Scenario 同步调用:30s 内必须返回)。 */
-    static final Duration A2A_TIMEOUT = Duration.ofSeconds(30);
+    /** 单次 A2A 调用的硬超时(B4 实测:schedule-agent ReAct agent 一次 create_event 任务 ~38s,30s 不够)。 */
+    static final Duration A2A_TIMEOUT = Duration.ofSeconds(90);
 
     /**
      * 伴偶 CompanionChatService 每次 handleUserMessage 前 setUserId(parsedUserId),
@@ -95,13 +93,26 @@ public class ScheduleAgentClient {
         if (context != null && !context.isBlank()) {
             finalQuery.append("\n[context: ").append(context).append("]");
         }
-        log.info("delegate_to_schedule_agent userId={} userTextLen={} hasContext={}",
-                userId, userText.length(), context != null && !context.isBlank());
+        log.info("delegate_to_schedule_agent userId={} userTextLen={} hasContext={} userText=\"{}\"",
+                userId, userText.length(), context != null && !context.isBlank(), userText);
+
+        // 清空 A2aAgent 累积的 memory(只发本次 userText 出去),避免:
+        // 1) 重复发历史的 AGENT 回复(本客户端无状态,不需要保留多轮)
+        // 2) 历史 Msg 里若混有 ToolUseBlock/DataPart,服务端 convertFromMessageToMsgs
+        //    会强转 MsgRole.USER → validateRoleContent 抛 IAE("USER message may only
+        //    contain text/data/image/audio/video blocks, got ToolUseBlock")。
+        // Memory 在 A2aAgent 内是单例,跨请求持有,所以每次清。
+        int beforeClear = scheduleAgent.getMemory().getMessages().size();
+        scheduleAgent.getMemory().clear();
+        if (beforeClear > 0) {
+            log.debug("delegate_to_schedule_agent: cleared {} prior msgs from A2aAgent memory userId={}", beforeClear, userId);
+        }
 
         Msg request = Msg.builder()
                 .role(MsgRole.USER)
                 .content(TextBlock.builder().text(finalQuery.toString()).build())
                 .name("user-" + userId)
+                .metadata(Map.of("userId", userId))
                 .build();
         Msg response = scheduleAgent.call(List.of(request)).block(A2A_TIMEOUT);
         if (response == null) {

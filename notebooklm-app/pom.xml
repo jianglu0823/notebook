@@ -165,6 +165,12 @@
             <artifactId>agentscope-extensions-nacos-a2a</artifactId>
             <version>${agentscope.version}</version>
         </dependency>
+        <!-- AgentScope: Studio(可视化追踪/调试,推到 http://localhost:3000) -->
+        <dependency>
+            <groupId>io.agentscope</groupId>
+            <artifactId>agentscope-extensions-studio</artifactId>
+            <version>${agentscope.version}</version>
+        </dependency>
         <!-- 强制覆盖:用 nacos-client 3.x(agentscope-extensions-nacos-a2a 要 AiService 类;Spring Cloud Alibaba 默认 2.4.2 没有) -->
         <dependency>
             <groupId>com.alibaba.nacos</groupId>

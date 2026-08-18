@@ -2,8 +2,10 @@ package io.llmnote.studio;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.llmnote.auth.Principal;
+import io.llmnote.config.NotebookLmProperties;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -22,10 +24,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/studio/xhs")
 @RequiredArgsConstructor
+@Slf4j
 public class XhsController {
 
     private final XhsService xhsService;
     private final ObjectMapper objectMapper;
+    private final NotebookLmProperties props;
 
     /** Step1:提交方向,异步联网扩写候选标题。 */
     @PostMapping
@@ -111,9 +115,17 @@ public class XhsController {
             return ResponseEntity.notFound().build();
         }
         if (idx < 0 || idx >= paths.size()) return ResponseEntity.notFound().build();
-        Path path = Paths.get(paths.get(idx));
+        // 绝对路径直接用;相对路径拼到 imageDir 下(早期 imageDir 变化或历史项目可能存的是相对路径)
+        Path stored = Paths.get(paths.get(idx));
+        Path path = stored.isAbsolute()
+                ? stored
+                : Paths.get(props.getStorage().getImageDir()).toAbsolutePath().normalize()
+                        .resolve(stored).normalize();
         Resource res = new FileSystemResource(path);
-        if (!res.exists()) return ResponseEntity.notFound().build();
+        if (!res.exists()) {
+            log.warn("xhs image missing: id={} idx={} stored='{}' resolved='{}'", id, idx, paths.get(idx), path);
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"xhs_" + id + "_" + idx + ".png\"")
@@ -125,9 +137,16 @@ public class XhsController {
     public ResponseEntity<Resource> videoFile(@PathVariable Long id, Principal principal) {
         XhsProject p = xhsService.get(id, principal.ownerId());
         if (p.getVideoPath() == null || p.getVideoPath().isBlank()) return ResponseEntity.notFound().build();
-        Path path = Paths.get(p.getVideoPath());
+        Path stored = Paths.get(p.getVideoPath());
+        Path path = stored.isAbsolute()
+                ? stored
+                : Paths.get(props.getStorage().getImageDir()).toAbsolutePath().normalize()
+                        .resolve(stored).normalize();
         Resource res = new FileSystemResource(path);
-        if (!res.exists()) return ResponseEntity.notFound().build();
+        if (!res.exists()) {
+            log.warn("xhs video missing: id={} stored='{}' resolved='{}'", id, p.getVideoPath(), path);
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("video/mp4"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"xhs_" + id + ".mp4\"")
@@ -139,9 +158,16 @@ public class XhsController {
     public ResponseEntity<Resource> dramaFile(@PathVariable Long id, Principal principal) {
         XhsProject p = xhsService.get(id, principal.ownerId());
         if (p.getDramaPath() == null || p.getDramaPath().isBlank()) return ResponseEntity.notFound().build();
-        Path path = Paths.get(p.getDramaPath());
+        Path stored = Paths.get(p.getDramaPath());
+        Path path = stored.isAbsolute()
+                ? stored
+                : Paths.get(props.getStorage().getImageDir()).toAbsolutePath().normalize()
+                        .resolve(stored).normalize();
         Resource res = new FileSystemResource(path);
-        if (!res.exists()) return ResponseEntity.notFound().build();
+        if (!res.exists()) {
+            log.warn("xhs drama missing: id={} stored='{}' resolved='{}'", id, p.getDramaPath(), path);
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("video/mp4"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"xhs_drama_" + id + ".mp4\"")

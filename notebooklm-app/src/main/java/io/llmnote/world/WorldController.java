@@ -362,7 +362,6 @@ public class WorldController {
                 req == null ? null : req.getModel(),
                 req == null ? null : req.getMediaEnabled(),
                 req == null ? null : req.getForumEnabled(),
-                req == null ? null : req.getForumCron(),
                 req == null ? null : req.getForumMaxPostsPerAgentPerDay(),
                 employeeService.isAdmin(principal));
     }
@@ -554,7 +553,6 @@ public class WorldController {
         private String model;
         private Boolean mediaEnabled;
         private Boolean forumEnabled;
-        private String forumCron;
         private Integer forumMaxPostsPerAgentPerDay;
     }
 

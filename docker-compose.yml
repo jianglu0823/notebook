@@ -8,16 +8,24 @@ services:
     environment:
       MODE: standalone
       NACOS_AUTH_ENABLE: "false"
+      # Nacos 3.x 启动脚本强制要求(即使 NACOS_AUTH_ENABLE=false)
+      NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN:?must be a Base64 string, see .env}
+      NACOS_AUTH_IDENTITY_KEY: ${NACOS_AUTH_IDENTITY_KEY:-secretKey}
+      NACOS_AUTH_IDENTITY_VALUE: ${NACOS_AUTH_IDENTITY_VALUE:-secretValue}
     ports:
       - "8848:8848"
       - "9848:9848"
     volumes:
       - nacos_data:/home/nacos/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos/v1/console/health/readiness"]
+      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos/v1/ns/operator/metrics"]
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      llm-note-net:
+        aliases:
+          - nacos
     restart: unless-stopped
 
   # ---------- MySQL: 元数据 ----------
@@ -198,4 +206,9 @@ volumes:
   minio_data:
   milvus_data:
   app_data:
+
+networks:
+  llm-note-net:
+    name: llm-note_default
+    external: true
 

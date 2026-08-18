@@ -1,6 +1,7 @@
 package io.llmnote.companion.a2a;
 
 import io.agentscope.core.a2a.agent.A2aAgent;
+import io.agentscope.core.memory.Memory;
 import io.agentscope.core.message.ContentBlock;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
@@ -14,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +27,10 @@ import static org.mockito.Mockito.when;
 
 /**
  * ScheduleAgentClient 单元测试(c6 R-c6.1 / R-c6.2 / R-c6.4):
- * 验证 userText 透传 + userId 前缀格式 + 30s 超时 + 异常透传(R-c6.2 Scenario 阻塞异常)。
+ * 验证 userText 透传 + userId 前缀格式 + 30s 超时 + 异常透传(R-c6.2 Scenario 阻塞异常)
+ * + 每次调用前清 A2aAgent memory(R-defensive:防止跨请求累积 ToolUseBlock
+ * → 服务端 convertFromMessageToMsgs 抛 IAE "USER message may only contain
+ * text/data/image/audio/video blocks, got ToolUseBlock")。
  * <p>
  * 不依赖真实 schedule-agent / 真实 Nacos;A2aAgent 是 mock,Mono 由 Mockito stub。
  */
@@ -33,11 +38,16 @@ import static org.mockito.Mockito.when;
 class ScheduleAgentClientTest {
 
     @Mock A2aAgent scheduleAgent;
+    @Mock Memory memory;
 
     ScheduleAgentClient client;
 
     @BeforeEach
     void setup() {
+        // A2aAgent.getMemory() 默认返回空 InMemoryMemory;测试里用 mock 替代以便 spy clear() 调用
+        // 用 lenient 避免"未使用"报错:并非所有 case 都走到 call() 路径(空 userText/null userId 早返回)
+        org.mockito.Mockito.lenient().when(scheduleAgent.getMemory()).thenReturn(memory);
+        org.mockito.Mockito.lenient().when(memory.getMessages()).thenReturn(Collections.emptyList());
         client = new ScheduleAgentClient(scheduleAgent);
     }
 
@@ -146,4 +156,27 @@ class ScheduleAgentClientTest {
         String result = client.delegateToScheduleAgent("加会议", null);
         assertThat(result).isEqualTo("✓ 已创建\n14:00 P1");
     }
+
+    /**
+     * R-defensive(规避 A2aAgent 累积):每次 delegate 调用前必须
+     * {@code memory.clear()},否则历史 Msg(含可能的 ToolUseBlock)
+     * 会被重新打包到下一次 A2A request → 服务端 convertFromMessageToMsgs
+     * 强转 MsgRole.USER 抛 IAE。
+     */
+    @Test
+    void delegateToScheduleAgent_clearsMemoryBeforeCall() {
+        ScheduleAgentClient.setUserId(9L);
+        Msg respMsg = Msg.builder()
+                .role(MsgRole.ASSISTANT)
+                .content(List.of((ContentBlock) TextBlock.builder().text("ok").build()))
+                .build();
+        when(scheduleAgent.call(anyList())).thenReturn(Mono.just(respMsg));
+
+        client.delegateToScheduleAgent("查日程", null);
+
+        // 必须调 clear() — order 不强制(Memory stub 返回的 getMessages() 默认空 list)
+        verify(memory).clear();
+        verify(scheduleAgent).call(anyList());
+    }
 }
+

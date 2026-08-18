@@ -7,6 +7,7 @@ import io.agentscope.core.message.Msg;
 import io.agentscope.core.model.ChatUsage;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.llmnote.llm.ChatModelFactory;
+import io.llmnote.world.forum.ForumGenerationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -41,6 +42,7 @@ public class AutonomousRunner {
     private final ChatModelFactory modelFactory;
     private final WorldSimEngine simEngine;
     private final RelationshipService relationshipService;
+    private final ForumGenerationService forumGenerationService;
 
     /** 轮转指针:每个节拍推进一名居民。 */
     private final AtomicInteger cursor = new AtomicInteger(0);
@@ -65,8 +67,14 @@ public class AutonomousRunner {
             }
             if (active.isEmpty()) return;
 
-            AgentEmployee actor = active.get(Math.floorMod(cursor.getAndIncrement(), active.size()));
-            act(actor, active, s.getModel(), s);
+            // 2026-08-17:每 tick 跑 2 个 agent(轮转 2 步,顺序串行 act())。
+            // 原 1 agent/tick 轮转一圈 22.5min,理论日产 64 圈/agent 但 LLM 经常
+            // 返回 [];改 2 agent/tick 后 11.25min 一圈,论坛帖日产从 ~5 提到 ~135。
+            int perTick = 2;
+            for (int i = 0; i < perTick; i++) {
+                AgentEmployee actor = active.get(Math.floorMod(cursor.getAndIncrement(), active.size()));
+                act(actor, active, s.getModel(), s);
+            }
         } catch (Exception ex) {
             log.warn("autonomous tick failed", ex);
         }
@@ -150,6 +158,15 @@ public class AutonomousRunner {
                     actor.getName() + "来找我说:" + content, 4, actor.getId());
             relationshipService.bump(actor.getId(), targetId, 3 + (int) (Math.random() * 3));
         }
+
+        // 行动落库后触发论坛发贴(每个 action = 一次 LLM,失败仅 warn,不影响主流程)
+        try {
+            forumGenerationService.generateFromAction(actor, a);
+        } catch (Exception ex) {
+            log.warn("forum post from action failed agent={} type={}: {}",
+                    actor.getName(), type, ex.getMessage());
+        }
+
         log.info("autonomous act agent={} type={} place={} target={} tokens={}/{}",
                 actor.getName(), type, place, targetId, tok[0], tok[1]);
     }

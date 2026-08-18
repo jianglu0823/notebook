@@ -10,6 +10,10 @@ spring:
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:redis123456}
   cloud:
+    # 强制 Nacos 客户端只挑 llm-note_default 网段(172.21.0.x)的 IP 注册
+    # 防止容器误加入其他 Docker 网络后,把不可达的 IP 报给 Nacos
+    inetutils:
+      preferred-networks: 172.21.0
     nacos:
       discovery:
         server-addr: ${NACOS_ADDR:127.0.0.1:8848}

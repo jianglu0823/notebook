@@ -66,16 +66,18 @@ public class ChatModelFactory {
 
     /**
      * 工具调用场景默认模型(支持 function calling)。
-     * 智谱免费 GLM 系列(glm-4.7-flash / glm-4-flash-250414 / glm-4.5-flash)对 function calling 不可靠,
-     * 一旦 429 降级会落到不会调工具的 GLM,模型只能编"已加好"的假回复。所以工具调用场景必须固定到 DashScope qwen。
+     * 历史用过 qwen-turbo(便宜),但实测在 GLM 429 降级链后 qwen-turbo 的 tool-call 稳定性骤降
+     * (8 次中 7 次 toolUses=0,模型直接吐"成功啦"幻觉),qwen-plus 同样支持 function calling
+     * 且指令遵循稳定一档。智谱免费 GLM 系列(glm-4.7-flash / glm-4-flash-250414 / glm-4.5-flash)
+     * 对 function calling 不可靠,降级链必须固定在 tools-capable 名单内,绝不能落到 GLM。
      */
-    public static final String TOOLS_CAPABLE_DEFAULT = "qwen-turbo";
+    public static final String TOOLS_CAPABLE_DEFAULT = "qwen-plus";
 
     /** 已确认支持 function calling 的模型名集合(用于 fallback 链过滤)。 */
     private static final java.util.Set<String> TOOLS_CAPABLE = java.util.Set.of(
             "qwen-turbo", "qwen-plus", "qwen-max", "qwen-flash", "qwen-long");
 
-    /** 工具调用场景默认模型:固定走 DashScope qwen-turbo(便宜 + 支持 function calling)。 */
+    /** 工具调用场景默认模型:固定走 DashScope qwen-plus(支持 function calling,稳定性高于 turbo)。 */
     public String toolsCapableModel() {
         return TOOLS_CAPABLE_DEFAULT;
     }

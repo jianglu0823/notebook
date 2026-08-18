@@ -35,6 +35,12 @@ public class AgentEmployee {
     @Column(columnDefinition = "TEXT")
     private String persona;
 
+    // 2026-08-18 C 阶段:英文视觉描述(LLM 由 persona 一次性生成),
+    // 论坛配图/视频都拼到 prompt 里,保证同一个 agent 多次出图脸/服装/风格一致。
+    // 缺省时由 AgentEmployeeService.ensureVisualDescriptor() 兜底生成。
+    @Column(name = "visual_descriptor", columnDefinition = "TEXT")
+    private String visualDescriptor;
+
     @Column(length = 16)
     private String color;
 

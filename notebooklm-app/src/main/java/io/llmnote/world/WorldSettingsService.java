@@ -20,7 +20,7 @@ public class WorldSettingsService {
 
     public WorldSettings update(Boolean autonomousEnabled, Integer intervalSeconds, String model,
                                 Boolean mediaEnabled, Boolean forumEnabled,
-                                String forumCron, Integer forumMaxPostsPerAgentPerDay,
+                                Integer forumMaxPostsPerAgentPerDay,
                                 boolean isAdmin) {
         WorldSettings s = get();
         if (autonomousEnabled != null) s.setAutonomousEnabled(autonomousEnabled);
@@ -31,7 +31,6 @@ public class WorldSettingsService {
         }
         if (mediaEnabled != null) s.setMediaEnabled(mediaEnabled);
         if (forumEnabled != null) s.setForumEnabled(forumEnabled);
-        if (forumCron != null && !forumCron.isBlank()) s.setForumCron(forumCron.trim());
         if (forumMaxPostsPerAgentPerDay != null) {
             s.setForumMaxPostsPerAgentPerDay(Math.max(1, Math.min(10, forumMaxPostsPerAgentPerDay)));
         }

@@ -51,9 +51,12 @@ class CompanionChatServiceIntegrationTest {
         properties = new CompanionProperties();
         objectMapper = new ObjectMapper();
         // 用一个"干跑"milvus 客户端避免真的去连 Milvus
+        org.springframework.beans.factory.ObjectProvider<io.llmnote.companion.a2a.ScheduleAgentClient> provider =
+                org.mockito.Mockito.mock(org.springframework.beans.factory.ObjectProvider.class);
+        org.mockito.Mockito.when(provider.getIfAvailable()).thenReturn(scheduleAgentClient);
         service = new CompanionChatService(companionRepository, messageRepository,
                 memoryService, intimacyService, modelFactory, visionService,
-                properties, objectMapper, scheduleAgentClient);
+                properties, objectMapper, provider);
     }
 
     @Test

@@ -48,8 +48,12 @@ public class CompanionChatService {
     private final CompanionVisionService visionService;
     private final CompanionProperties properties;
     private final ObjectMapper objectMapper;
-    /** 可选:A2aAgent 未启用(本机无 Nacos 3.x)时不装配,本字段为 null,跳过工具注册 */
-    private final ScheduleAgentClient scheduleAgentClient;
+    /** 可选:A2aAgent 未启用(本机无 Nacos 3.x)时不装配,本字段为 null,跳过工具注册。
+     *  用 {@code @Lazy} + {@code ObjectProvider} 避免 CompanionChatService 在 ScheduleAgentClient
+     *  装配之前被实例化(此前因 bean 顺序问题,即使 A2a 已开启,本字段也总是 null,
+     *  导致 ReAct 循环拿不到 tool schemas,模型只能吐"已添加"幻觉)。
+     */
+    private final org.springframework.beans.factory.ObjectProvider<ScheduleAgentClient> scheduleAgentClientProvider;
 
     public CompanionChatService(CompanionRepository companionRepository,
                                 CompanionMessageRepository messageRepository,
@@ -59,8 +63,8 @@ public class CompanionChatService {
                                 CompanionVisionService visionService,
                                 CompanionProperties properties,
                                 ObjectMapper objectMapper,
-                                @org.springframework.beans.factory.annotation.Autowired(required = false)
-                                ScheduleAgentClient scheduleAgentClient) {
+                                @org.springframework.context.annotation.Lazy
+                                org.springframework.beans.factory.ObjectProvider<ScheduleAgentClient> scheduleAgentClientProvider) {
         this.companionRepository = companionRepository;
         this.messageRepository = messageRepository;
         this.memoryService = memoryService;
@@ -69,9 +73,13 @@ public class CompanionChatService {
         this.visionService = visionService;
         this.properties = properties;
         this.objectMapper = objectMapper;
-        this.scheduleAgentClient = scheduleAgentClient;
-        if (scheduleAgentClient == null) {
-            log.warn("CompanionChatService: ScheduleAgentClient 未注入(可能 A2aAgent 未启用),日程工具不可用");
+        this.scheduleAgentClientProvider = scheduleAgentClientProvider;
+        ScheduleAgentClient probe = scheduleAgentClientProvider.getIfAvailable();
+        if (probe == null) {
+            log.warn("CompanionChatService: ScheduleAgentClient 暂不可用(A2aAgent 未启用或仍在装配中),"
+                    + "首次调用时再确认;模型将无法调用 delegate_to_schedule_agent");
+        } else {
+            log.info("CompanionChatService: ScheduleAgentClient 已就绪,delegate_to_schedule_agent 可用");
         }
     }
 
@@ -139,7 +147,11 @@ public class CompanionChatService {
         // 5. 流式调用 + 推 delta(带 ReAct 工具循环)
         StringBuilder fullTextBuilder = new StringBuilder();
         long inTok = 0, outTok = 0;
+        ScheduleAgentClient scheduleAgentClient = scheduleAgentClientProvider.getIfAvailable();
         boolean a2aEnabled = (parsedUserId != null && scheduleAgentClient != null);
+        if (!a2aEnabled && parsedUserId != null) {
+            log.warn("chat 登录态但 ScheduleAgentClient 不可用,跳过 delegate_to_schedule_agent 工具注册");
+        }
         List<ToolSchema> toolSchemas = List.of();
         if (a2aEnabled) {
             Toolkit toolkit = new Toolkit();
@@ -150,6 +162,10 @@ public class CompanionChatService {
         if (a2aEnabled) {
             ScheduleAgentClient.setUserId(parsedUserId);
         }
+        // 兜底:即便 tools-capable 模型在第一轮也吐出"已成功"幻觉(8 次 qwen-turbo 中 7 次 toolUses=0),
+        // 也必须把假话拦在 UI 之外,不让用户被骗。触发条件:登录态 + 第一轮 + 没调工具 + 用户说"加/改/删/查日程"
+        // + 模型输出含"已加/成功/✅"成功话术。
+        boolean hallucinationBlocked = false;
         try {
             // ReAct 循环:首次传工具 schema,看到 ToolUseBlock 就执行,回灌后再次调用
             for (int iter = 0; iter < MAX_TOOL_ITERS; iter++) {
@@ -177,6 +193,19 @@ public class CompanionChatService {
                 if (toolUses.isEmpty()) {
                     log.info("chat LLM iter={} responded: textChars={} toolUses=0 contentBlockTypes={}",
                             iter, iterText.length(), contentBlockTypeSummary(chunks));
+                    // 兜底拦截:登录态 + 第一轮 + 用户日程意图 + 模型"成功"话术,但工具没真调
+                    if (iter == 0 && a2aEnabled
+                            && looksLikeScheduleIntent(content)
+                            && claimsSuccessWithoutTool(iterText.toString())) {
+                        hallucinationBlocked = true;
+                        String warn = "\n\n⚠️ 上一段回复是模型幻觉,工具并未实际执行。"
+                                + "请重试一次(明确时间,如『加个明天 10:00 的产品评审』),"
+                                + "或到『日程』页手动添加。";
+                        fullTextBuilder.append(warn);
+                        sink.onDelta(warn);
+                        log.warn("chat HALLUCINATION blocked: userText='{}', llmTextLen={}",
+                                content, iterText.length());
+                    }
                     break;
                 }
                 log.info("chat LLM iter={} responded: textChars={} toolUses={} names={}",
@@ -230,6 +259,14 @@ public class CompanionChatService {
         }
 
         String fullText = ChatModelFactory.stripThink(fullTextBuilder.toString());
+        if (hallucinationBlocked) {
+            // 整段重写为拦截消息,避免模型假回复落库 / 推 done
+            String intercepted = "⚠️ 上一段回复是模型幻觉(『已成功/已添加』类话术),工具并未实际执行。"
+                    + "本次对话已拦截,未写入任何数据。请重试或到『日程』页手动操作。";
+            fullText = intercepted;
+            log.warn("chat final message replaced by hallucination intercept, dropped llmTextChars={}",
+                    fullTextBuilder.length());
+        }
 
         // 5. 落库 assistant 消息 + 更新 last_message_at
         Map<String, Object> meta = new HashMap<>();
@@ -356,6 +393,7 @@ public class CompanionChatService {
      * userId 通过 ScheduleAgentClient 的 ThreadLocal 传递(本方法不显式传)。
      */
     private ToolDispatchResult dispatchCompanionTool(ToolUseBlock tub, String originalUserContent) {
+        ScheduleAgentClient scheduleAgentClient = scheduleAgentClientProvider.getIfAvailable();
         if (scheduleAgentClient == null) {
             return ToolDispatchResult.silent("✗ 日程工具未启用(A2aAgent 未装配,ScheduleAgentClient bean 缺失)");
         }
@@ -398,5 +436,41 @@ public class CompanionChatService {
             }
         }
         return counts.toString();
+    }
+
+    /** 用户消息是否含『日程域』意图(只要有一处命中就触发幻觉拦截)。 */
+    private static boolean looksLikeScheduleIntent(String userText) {
+        if (userText == null || userText.isBlank()) return false;
+        String[] keywords = {
+                "加个", "加一", "加一下", "添加", "新建", "创建", "记一下", "帮我记",
+                "提醒", "日程", "会议", "开会", "约个", "安排",
+                "改到", "改一下", "改个", "挪到", "调整", "修改",
+                "删除", "删掉", "取消", "移除",
+                "查", "看看", "有什么", "列一下", "有哪些", "查询",
+                "打卡", "专注", "完成", "开始"
+        };
+        String lower = userText.toLowerCase();
+        for (String k : keywords) {
+            if (lower.contains(k.toLowerCase())) return true;
+        }
+        return false;
+    }
+
+    /** 模型第一轮文本里是否在没调工具的情况下宣称『已成功』,即典型幻觉模式。 */
+    private static boolean claimsSuccessWithoutTool(String llmText) {
+        if (llmText == null || llmText.isBlank()) return false;
+        String[] successPhrases = {
+                "已添加", "已加上", "已加上呢", "加上了", "加上啦", "加好啦", "加好咯", "已加好",
+                "已创建", "创建成功", "已记下", "已记录", "记下了", "记录好了",
+                "已修改", "修改成功", "已改", "已调整", "调整好了",
+                "已删除", "删除成功", "已取消", "取消成功",
+                "已查询", "查询成功", "查到了",
+                "办好了", "搞定了", "完成啦", "已为您", "已帮你", "已帮您",
+                "成功啦", "成功！", "成功!", "✅", "✓ 已"
+        };
+        for (String p : successPhrases) {
+            if (llmText.contains(p)) return true;
+        }
+        return false;
     }
 }

@@ -8,25 +8,32 @@ import io.agentscope.core.message.TextBlock;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.GenerateOptions;
 import io.llmnote.llm.ChatModelFactory;
+import io.llmnote.world.AgentAction;
 import io.llmnote.world.AgentEmployee;
 import io.llmnote.world.AgentEmployeeRepository;
+import io.llmnote.world.TownMap;
 import io.llmnote.world.WorldSettings;
 import io.llmnote.world.WorldSettingsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/** 论坛每日定时生成:逐 agent 一次 LLM,返回 1~3 条帖子 JSON 数组,落 agent_forum_post。 */
+/**
+ * 论坛帖子生成:由 {@link io.llmnote.world.AutonomousRunner} 在每次
+ * 智能体行动落库后触发,而<b>不再</b>用 @Scheduled cron 定时批量生成。
+ * 每次行动 → 一次 LLM 调用 → 0~N 条帖子(0 即这次没发)。Daily cap 由
+ * {@link WorldSettings#getForumMaxPostsPerAgentPerDay()} 强制。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -59,48 +66,71 @@ public class ForumGenerationService {
     private final ObjectMapper objectMapper;
     private final ForumMediaService mediaService;
 
-    /** cron 触发:逐个 active agent 调 LLM,生成 1~3 条帖子。 */
-    @Scheduled(cron = "${forum.cron:0 0 21 * * *}")
-    public void generateDailyPosts() {
-        WorldSettings s = settingsService.get();
-        if (!s.getForumEnabled()) {
-            log.info("[forum-paused] skip daily generation (WorldSettings.forumEnabled=false)");
-            return;
-        }
-        int maxPerAgent = s.getForumMaxPostsPerAgentPerDay() == null ? 2 : s.getForumMaxPostsPerAgentPerDay();
-        List<AgentEmployee> agents = employeeRepo.findByStatusOrderByIdAsc("active");
-        log.info("[forum] daily generation start agents={} maxPerAgent={}", agents.size(), maxPerAgent);
-        for (AgentEmployee e : agents) {
-            try {
-                generateForAgent(e, maxPerAgent);
-            } catch (Exception ex) {
-                log.warn("[forum] agent={} generation failed: {}", e.getId(), ex.getMessage());
+    /**
+     * 由 AutonomousRunner 在每次行动落库后调用。基于该次行动(action type/place/
+     * content/mood/scene/target)生成 0~maxPerAction 条帖子,并触发附件异步生成。
+     *
+     * <p>跳过条件(均仅 warn,不影响主流程):
+     * <ol>
+     *   <li>论坛总开关关(WorldSettings.forumEnabled=false)。</li>
+     *   <li>今日已发帖数 ≥ WorldSettings.forumMaxPostsPerAgentPerDay(daily cap)。</li>
+     * </ol>
+     */
+    public void generateFromAction(AgentEmployee actor, AgentAction action) {
+        if (actor == null || action == null) return;
+        try {
+            WorldSettings s = settingsService.get();
+            if (s.getForumEnabled() == null || !s.getForumEnabled()) {
+                return; // 论坛关 → 静默跳过
             }
+            int maxPerDay = s.getForumMaxPostsPerAgentPerDay() == null
+                    ? 2 : Math.max(1, s.getForumMaxPostsPerAgentPerDay());
+            int postedToday = countPostsToday(actor.getId());
+            if (postedToday >= maxPerDay) {
+                log.debug("[forum] agent={} daily cap hit ({}/{}), skip post from action",
+                        actor.getId(), postedToday, maxPerDay);
+                return;
+            }
+            // 本次最多 1 条:行动粒度很细(每 30s 一次),LLM 也只生成 1 条最自然
+            int maxThisAction = 1;
+            // 也要用 maxPerDay 限:今天还能发几条
+            maxThisAction = Math.min(maxThisAction, maxPerDay - postedToday);
+            if (maxThisAction <= 0) return;
+
+            Map<String, Long> recent7d = recentCategoryStats(actor.getId());
+            var prompt = buildActionPrompt(actor, action, recent7d, maxThisAction);
+            String raw = callLlm(prompt.system(), prompt.user(), s);
+            if (raw == null || raw.isBlank()) {
+                log.warn("[forum] agent={} action={} LLM empty response",
+                        actor.getId(), action.getType());
+                return;
+            }
+            List<AgentForumPost> posts = parseResponse(raw, actor, LocalDate.now());
+            for (AgentForumPost p : posts) {
+                AgentForumPost saved = postRepo.save(p);
+                try {
+                    mediaService.generateAttachments(saved);
+                } catch (Exception ex) {
+                    log.warn("[forum] agent={} postId={} media dispatch failed: {}",
+                            actor.getId(), saved.getId(), ex.getMessage());
+                }
+            }
+            if (!posts.isEmpty()) {
+                log.info("[forum] agent={} action={} generated {} post(s)",
+                        actor.getId(), action.getType(), posts.size());
+            }
+        } catch (Exception ex) {
+            log.warn("[forum] agent={} action-triggered generation failed: {}",
+                    actor == null ? "?" : actor.getId(), ex.getMessage());
         }
     }
 
-    /** 单 agent:取近 7 天类目分布 → prompt → LLM → parse → save。 */
-    void generateForAgent(AgentEmployee e, int maxPerAgent) {
-        Map<String, Long> recent7d = recentCategoryStats(e.getId());
-        var prompt = buildPrompt(e, recent7d, maxPerAgent);
-        String raw = callLlm(prompt.system(), prompt.user());
-        if (raw == null || raw.isBlank()) {
-            log.warn("[forum] agent={} LLM empty response", e.getId());
-            return;
-        }
-        List<AgentForumPost> posts = parseResponse(raw, e, LocalDate.now());
-        for (AgentForumPost p : posts) {
-            AgentForumPost saved = postRepo.save(p);
-            // 异步触发附件生成(独立 bean,@Async 才会生效;同 bean 自调用失效)
-            try {
-                mediaService.generateAttachments(saved);
-            } catch (Exception ex) {
-                log.warn("[forum] agent={} postId={} media dispatch failed: {}", e.getId(), saved.getId(), ex.getMessage());
-            }
-        }
-        if (!posts.isEmpty()) {
-            log.info("[forum] agent={} generated {} posts", e.getId(), posts.size());
-        }
+    /** 今日(since 00:00)已发帖数。 */
+    int countPostsToday(Long agentId) {
+        LocalDateTime since = LocalDate.now().atStartOfDay();
+        return (int) postRepo.findByAuthorAgentIdOrderByCreatedAtDesc(agentId).stream()
+                .filter(p -> p.getCreatedAt() != null && !p.getCreatedAt().isBefore(since))
+                .count();
     }
 
     /** 取 agent 近 7 天类目统计,避免单一类目刷屏。 */
@@ -112,20 +142,46 @@ public class ForumGenerationService {
     }
 
     /**
-     * 构建 system + user prompt(system 强约束 c5 三段 + 6 类目 + 套话黑名单;user 携带 agent 上下文)。
-     * 返回 record 让 caller 用 (system, user) 调 LLM。
+     * 行动驱动的 prompt:不再问『今天想说点啥』,而是基于该次 action 上下文
+     * (type/place/content/mood/scene/target)让 LLM 决定要不要发、怎么发。
+     * <p>system 强约束 c5 三段 + 6 类目 + 套话黑名单;user 携带行动上下文。
      */
-    PromptPair buildPrompt(AgentEmployee e, Map<String, Long> recent7d, int maxPerAgent) {
+    PromptPair buildActionPrompt(AgentEmployee e, AgentAction a, Map<String, Long> recent7d, int maxThisAction) {
         String persona = e.getPersona() == null ? "" : e.getPersona();
+        String placeKey = a.getPlace() == null ? "" : a.getPlace();
+        String placeName = TownMap.byKey(placeKey).name();
+        String actionType = a.getType() == null ? "think" : a.getType();
+        String content = a.getContent() == null ? "" : a.getContent();
+        String mood = e.getMood() == null ? "" : e.getMood();
+        String scene = a.getScene() == null ? "" : a.getScene();
+        String targetName = "";
+        if (a.getTargetAgentId() != null) {
+            targetName = employeeRepo.findById(a.getTargetAgentId())
+                    .map(t -> t.getName())
+                    .orElse("");
+        }
+        String actionVerb = switch (actionType) {
+            case "goto"   -> "走到了「" + placeName + "」";
+            case "talk"   -> "在「" + placeName + "」跟「" + (targetName.isBlank() ? "某位居民" : targetName) + "」聊天";
+            case "reflect"-> "在「" + placeName + "」坐下反思了一会儿";
+            case "think"  -> "在「" + placeName + "」想了想事情";
+            default       -> "在「" + placeName + "」做了点事";
+        };
+
+        // 2026-08-17 类目硬推荐:6 个类目按近 7 天 inverse frequency 排序,
+        // 从未发的排最前 → 灌给 LLM 显式列表,降低空响应率 + 提升类目均匀度。
+        String recommendedBlock = buildRecommendedBlock(recent7d);
+
         String system = """
                 你是 %s,你的职业和性格设定见「人设」。
                 人设:%s
 
-                【个性】你不是一个无情的输出机器。你发这条帖子,基于你作为 %s 的真实生活/想法/情绪,不是流水账。
+                【个性】你不是一个无情的输出机器。你发这条帖子,基于你刚刚在小镇里<b>实际做了的那件事</b>,不是流水账、不是今日总结。
                 【内涵】段子/藏头诗/鸡汤要让人会心一笑或若有所思 —— 可以用双关、典故、反差、自嘲、谐音梗、藏头诗(每行首字组成关键词)。"内涵"不是堆砌辞藻,而是"看完想点赞"或"看完想截图"。
                 【自主性】不要每次都"今天天气真好/工作辛苦/加油"。你要有自己的观点、自己的小确幸或小牢骚。"鸡汤"也可以是你作为过来人的反鸡汤。
+                【行动一致性】帖子内容必须紧扣你刚刚那件具体的事;不要把它升华成"人生感悟大会",也不要因这次行动平平就硬抒情。
 
-                类目清单(必须从中选,1~%d 条):joke / acrostic / daily / chicken_soup / video_series / utility
+                类目清单(必须从中选,0~%d 条):joke / acrostic / daily / chicken_soup / video_series / utility
                 - joke:段子,正文 30~300 字符
                 - acrostic:藏头诗,4 行,每行首字组成关键词(关键词由你定),标题必填
                 - daily:日常分享,正文 30~300 字符
@@ -135,16 +191,60 @@ public class ForumGenerationService {
 
                 套话黑名单(以下开头 MUST 重新生成,直到不含为止):%s
 
-                你近 7 天发过的类目:%s —— 今天请优先选你没发过或发得少的类目。
+                %s
+
+                【发帖倾向】小镇管理员希望帖数更丰富、类目更均衡。
+                - 默认<b>倾向发帖</b>(你今天还有配额,小镇需要内容);除非这次行动<b>完全没灵感</b>,否则请尽量发一条。
+                - 优先从上面推荐顺序 top-3 选类目(top-1 强烈推荐);即使 top-3 不完全契合行动主题,也请从中找最贴近的,不要为了"完全契合"而跳回 acrostic/daily 等你已发烂的类目。
+                - 返回 [] 必须是"完全没灵感"才用 —— 不是"类目不太合适"或"今天已经发过"。
 
                 严格返回 JSON 数组(无前后说明文字):
-                [{"category":"joke","title":null,"content":"..."},{"category":"acrostic","title":"代码人生","content":"代...\\n码...\\n人...\\n生..."}]
+                - 完全没灵感:返回 []
+                - 要发:[{"category":"joke","title":null,"content":"..."},{"category":"acrostic","title":"代码人生","content":"代...\\n码...\\n人...\\n生..."}]
                 """.formatted(
-                e.getName(), persona, e.getName(), maxPerAgent,
+                e.getName(), persona, maxThisAction,
                 String.join(" / ", CLICHE_PREFIXES),
-                recent7d.isEmpty() ? "(无)" : recent7d.toString());
-        String user = "今天 %s 想说点啥?请生成 JSON 数组(1~%d 条)。".formatted(e.getName(), maxPerAgent);
+                recommendedBlock);
+
+        String user = """
+                你刚%s。
+                具体内容:%s
+                当时心境:%s
+                场景:%s
+                要发条帖子吗?返回 JSON 数组(0~%d 条)。
+                """.formatted(
+                actionVerb,
+                content.isBlank() ? "(无细节)" : content,
+                mood.isBlank() ? "(无)" : mood,
+                scene.isBlank() ? "(无)" : scene,
+                maxThisAction).trim();
+
         return new PromptPair(system, user);
+    }
+
+    /**
+     * 6 个类目按近 7 天 inverse frequency 排序(从未发的排最前,发得最多的排最后),
+     * 生成 LLM 显式看到的"类目推荐顺序"段。空响应时,会引导 LLM 发未发过的类目。
+     */
+    String buildRecommendedBlock(Map<String, Long> recent7d) {
+        // 7 天每类目已发数(未发 = 0)
+        Map<String, Long> counts = new LinkedHashMap<>();
+        for (String c : CATEGORIES) {
+            counts.put(c, recent7d.getOrDefault(c, 0L));
+        }
+        // 按 count 升序(0 在前,多的在后);同 count 保持 CATEGORIES 原顺序
+        List<Map.Entry<String, Long>> sorted = counts.entrySet().stream()
+                .sorted(Comparator.<Map.Entry<String, Long>>comparingLong(Map.Entry::getValue)
+                        .thenComparing(Map.Entry::getKey))
+                .toList();
+        StringBuilder sb = new StringBuilder();
+        sb.append("【类目推荐顺序】(按你近 7 天 inverse frequency 排序 —— 从未发的最靠前,发得最多的最靠后):\n");
+        for (int i = 0; i < sorted.size(); i++) {
+            Map.Entry<String, Long> e = sorted.get(i);
+            String tag = i == 0 ? " ← 强烈推荐" : "";
+            sb.append(i + 1).append(". ").append(e.getKey()).append("(近 7 天 ").append(e.getValue()).append(" 帖)").append(tag).append('\n');
+        }
+        return sb.toString().stripTrailing();
     }
 
     /** 解析 LLM 响应 → 帖子列表;每条走类目 + 长度 + 套话 + 标题校验。失败抛 IllegalArgumentException。 */
@@ -158,6 +258,9 @@ public class ForumGenerationService {
                 cleaned = cleaned.substring(firstNewline + 1, lastFence).trim();
             }
         }
+        // LLM 觉得没必要发 → 返回 []
+        if (cleaned.equals("[]") || cleaned.isEmpty()) return List.of();
+
         JsonNode arr;
         try {
             arr = objectMapper.readTree(cleaned);
@@ -224,12 +327,14 @@ public class ForumGenerationService {
     }
 
     /** LLM 直调(对齐 WorldSimEngine.call 的失败容忍模式)。 */
-    String callLlm(String system, String user) {
+    String callLlm(String system, String user, WorldSettings s) {
         try {
+            String model = s != null && s.getModel() != null && !s.getModel().isBlank()
+                    ? s.getModel() : modelFactory.defaultTextModel();
             List<Msg> messages = List.of(
                     Msg.builder().role(MsgRole.SYSTEM).content(TextBlock.builder().text(system).build()).build(),
                     Msg.builder().role(MsgRole.USER).content(TextBlock.builder().text(user).build()).build());
-            List<ChatResponse> responses = modelFactory.streamTextWithFallback(modelFactory.defaultTextModel(), messages, (GenerateOptions) null);
+            List<ChatResponse> responses = modelFactory.streamTextWithFallback(model, messages, (GenerateOptions) null);
             StringBuilder sb = new StringBuilder();
             if (responses != null) {
                 for (ChatResponse r : responses) {

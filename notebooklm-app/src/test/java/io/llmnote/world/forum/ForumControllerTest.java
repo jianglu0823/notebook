@@ -4,6 +4,7 @@ import io.llmnote.auth.ForbiddenException;
 import io.llmnote.auth.Principal;
 import io.llmnote.auth.User;
 import io.llmnote.auth.UserRepository;
+import io.llmnote.config.NotebookLmProperties;
 import io.llmnote.world.AgentComment;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,17 +38,24 @@ class ForumControllerTest {
     @Mock UserRepository userRepo;
 
     @Test
-    void listPosts_anonymous_returns200WithCurrentUserFalse() {
+    void listPosts_anonymous_returnsPaginationEnvelope() {
         AgentForumPost p = newPost(1L);
-        when(queryService.listPosts(any(), any(), any())).thenReturn(List.of(p));
+        ForumQueryService.PostPage page = new ForumQueryService.PostPage(List.of(p), 25L, true, 0, 20);
+        when(queryService.listPosts(any(), any(), any())).thenReturn(page);
 
         ForumController ctrl = newController();
-        List<Map<String, Object>> out = ctrl.listPosts(null, null, null, null);
+        Map<String, Object> out = ctrl.listPosts(null, null, null, null);
 
-        assertThat(out).hasSize(1);
-        assertThat(out.get(0).get("id")).isEqualTo(1L);
         @SuppressWarnings("unchecked")
-        Map<String, Object> cu = (Map<String, Object>) out.get(0).get("currentUser");
+        List<Map<String, Object>> posts = (List<Map<String, Object>>) out.get("posts");
+        assertThat(posts).hasSize(1);
+        assertThat(posts.get(0).get("id")).isEqualTo(1L);
+        assertThat(out.get("total")).isEqualTo(25L);
+        assertThat(out.get("hasMore")).isEqualTo(true);
+        assertThat(out.get("page")).isEqualTo(0);
+        assertThat(out.get("size")).isEqualTo(20);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> cu = (Map<String, Object>) posts.get(0).get("currentUser");
         assertThat(cu.get("liked")).isEqualTo(false);
         assertThat(cu.get("favorited")).isEqualTo(false);
     }
@@ -90,11 +98,31 @@ class ForumControllerTest {
     }
 
     @Test
-    void categories_returns6Items() {
+    void categories_returns7ItemsIncludingAllWithRealTodayCount() {
         ForumController ctrl = newController();
+        when(queryService.listCategoryStats()).thenReturn(List.of(
+                new ForumQueryService.CategoryStat(null, "all", 5L),
+                new ForumQueryService.CategoryStat("joke", "joke", 1L),
+                new ForumQueryService.CategoryStat("acrostic", "acrostic", 0L),
+                new ForumQueryService.CategoryStat("daily", "daily", 2L),
+                new ForumQueryService.CategoryStat("chicken_soup", "chicken_soup", 0L),
+                new ForumQueryService.CategoryStat("video_series", "video_series", 1L),
+                new ForumQueryService.CategoryStat("utility", "utility", 1L)
+        ));
+
         List<Map<String, Object>> cats = ctrl.listCategories();
-        assertThat(cats).hasSize(6);
-        assertThat(cats.get(0).get("code")).isEqualTo("joke");
+        assertThat(cats).hasSize(7);
+        // 第一项 = "全部"
+        assertThat(cats.get(0).get("code")).isEqualTo("");
+        assertThat(cats.get(0).get("label")).isEqualTo("全部");
+        assertThat(cats.get(0).get("todayCount")).isEqualTo(5L);
+        // 6 个具体类目
+        assertThat(cats.get(1).get("code")).isEqualTo("joke");
+        assertThat(cats.get(1).get("label")).isEqualTo("段子");
+        assertThat(cats.get(1).get("todayCount")).isEqualTo(1L);
+        // 验证 todayCount 不再恒为 0
+        long totalToday = cats.stream().mapToLong(c -> ((Number) c.get("todayCount")).longValue()).sum();
+        assertThat(totalToday).isGreaterThan(0L);
     }
 
     @Test
@@ -141,7 +169,9 @@ class ForumControllerTest {
     }
 
     private ForumController newController() {
-        return new ForumController(queryService, interactionService, postRepo, likeRepo, favRepo, attachRepo, userRepo);
+        NotebookLmProperties props = new NotebookLmProperties();
+        props.getStorage().setImageDir("/tmp/notebooklm-test-images");
+        return new ForumController(queryService, interactionService, postRepo, likeRepo, favRepo, attachRepo, userRepo, props);
     }
 
     private static AgentForumPost newPost(Long id) {

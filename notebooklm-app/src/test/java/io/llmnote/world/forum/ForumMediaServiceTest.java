@@ -1,6 +1,8 @@
 package io.llmnote.world.forum;
 
 import io.llmnote.llm.ZhipuMediaClient;
+import io.llmnote.world.AgentEmployee;
+import io.llmnote.world.AgentEmployeeRepository;
 import io.llmnote.world.AgentProduct;
 import io.llmnote.world.AgentProductRepository;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,7 @@ class ForumMediaServiceTest {
     @Mock ZhipuMediaClient mediaClient;
     @Mock AgentForumAttachmentRepository attachRepo;
     @Mock AgentProductRepository productRepo;
+    @Mock AgentEmployeeRepository employeeRepo;
 
     @Test
     void joke_post_generates2Images_attachmentsAndProductsPersisted() {
@@ -37,7 +40,7 @@ class ForumMediaServiceTest {
         when(attachRepo.save(any(AgentForumAttachment.class))).thenAnswer(inv -> inv.getArgument(0));
         when(productRepo.save(any(AgentProduct.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        ForumMediaService svc = new ForumMediaService(mediaClient, attachRepo, productRepo);
+        ForumMediaService svc = new ForumMediaService(mediaClient, attachRepo, productRepo, employeeRepo);
         AgentForumPost post = post(100L, 1L, "alice", "joke", "哈哈哈哈今天天气真好啊");
 
         svc.generateAttachments(post);
@@ -64,7 +67,7 @@ class ForumMediaServiceTest {
         when(attachRepo.save(any(AgentForumAttachment.class))).thenAnswer(inv -> inv.getArgument(0));
         when(productRepo.save(any(AgentProduct.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        ForumMediaService svc = new ForumMediaService(mediaClient, attachRepo, productRepo);
+        ForumMediaService svc = new ForumMediaService(mediaClient, attachRepo, productRepo, employeeRepo);
         AgentForumPost post = post(101L, 1L, "alice", "joke", "内容内容内容内容内容内容内容内容内容内容内容内容");
 
         svc.generateAttachments(post);
@@ -81,7 +84,7 @@ class ForumMediaServiceTest {
         when(attachRepo.save(any(AgentForumAttachment.class))).thenAnswer(inv -> inv.getArgument(0));
         when(productRepo.save(any(AgentProduct.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        ForumMediaService svc = new ForumMediaService(mediaClient, attachRepo, productRepo);
+        ForumMediaService svc = new ForumMediaService(mediaClient, attachRepo, productRepo, employeeRepo);
         AgentForumPost post = post(102L, 1L, "alice", "chicken_soup", "今天的鸡汤送给你");
 
         svc.generateAttachments(post);
@@ -99,7 +102,7 @@ class ForumMediaServiceTest {
         when(attachRepo.save(any(AgentForumAttachment.class))).thenAnswer(inv -> inv.getArgument(0));
         when(productRepo.save(any(AgentProduct.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        ForumMediaService svc = new ForumMediaService(mediaClient, attachRepo, productRepo);
+        ForumMediaService svc = new ForumMediaService(mediaClient, attachRepo, productRepo, employeeRepo);
         AgentForumPost post = post(103L, 1L, "alice", "video_series", "第一集剧情简介");
 
         svc.generateAttachments(post);
