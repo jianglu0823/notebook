@@ -18,4 +18,10 @@ public interface AgentEmployeeRepository extends JpaRepository<AgentEmployee, Lo
 
     /** parent_ids 是逗号分隔的父母 id 串,粗筛(需调用方按精确 id 二次过滤)。 */
     List<AgentEmployee> findByParentIdsContaining(String parentId);
+
+    /**
+     * town-children-rules:列出所有有父母记录的孩子(parent_ids 非空)。
+     * 启动时迁移 runner 用它一次拉出全部 child 行,再按 parent_ids 聚合判 cap。
+     */
+    List<AgentEmployee> findByParentIdsIsNotNull();
 }

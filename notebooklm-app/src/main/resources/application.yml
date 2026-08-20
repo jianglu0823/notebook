@@ -113,6 +113,10 @@ notebooklm:
     workspace-root: ${WORLD_WORKSPACE_ROOT:./data/agents}   # HarnessAgent 每位居民的独立工作区(长期记忆落盘)
     text-model: ${WORLD_TEXT_MODEL:glm-4.7-flash}           # 小镇统一默认文本模型(智谱免费)
     autonomous-model: ${WORLD_AUTONOMOUS_MODEL:glm-4.7-flash}   # 自主行动/1:1对话默认模型(智谱免费)
+    # town-children-rules:孩子出生规则外部化。缺省值见 WorldChildrenProperties。
+    children:
+      # avatar-pool: ["👶","👧","👦","🧒","🧒🏻","🧒🏼","🧒🏽","🧒🏾","🧒🏿"]
+      # max-per-couple: 3
   auth:
     jwt-secret: ${JWT_SECRET:change-me-in-prod-at-least-32-bytes-long-secret}
     jwt-expiry-seconds: ${JWT_EXPIRY_SECONDS:604800}   # 7 天
