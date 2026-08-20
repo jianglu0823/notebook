@@ -2,11 +2,15 @@ package io.llmnote.world.forum;
 
 import io.llmnote.world.AgentComment;
 import io.llmnote.world.AgentCommentRepository;
+import io.llmnote.world.forum.event.CommentAddedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 
@@ -26,6 +30,7 @@ public class ForumInteractionService {
     private final AgentForumFavoriteRepository favRepo;
     private final AgentCommentRepository commentRepo;
     private final AgentForumPostAtomicUpdater atomic;
+    private final ApplicationEventPublisher events;
 
     @Transactional
     public boolean like(Long userId, Long postId) {
@@ -91,8 +96,27 @@ public class ForumInteractionService {
         AgentComment saved = commentRepo.save(c);
         atomic.incrementCommentCount(postId);
         log.info("[forum] comment added postId={} authorId={} id={}", postId, authorId, saved.getId());
+        Long commentId = saved.getId();
+        Long authorAgentId = parseAgentId(authorId);
+        publishAfterCommit(new CommentAddedEvent(postId, commentId, authorAgentId));
         return saved;
     }
+
+    private static Long parseAgentId(String authorId) {
+        if (authorId == null) return null;
+        try { return Long.parseLong(authorId.trim()); } catch (NumberFormatException e) { return null; }
+    }
+
+    private void publishAfterCommit(CommentAddedEvent event) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override public void afterCommit() { events.publishEvent(event); }
+            });
+        } else {
+            events.publishEvent(event);
+        }
+    }
+
 
     public boolean hasLiked(Long userId, Long postId) {
         return likeRepo.findByUserIdAndPostId(userId, postId).isPresent();

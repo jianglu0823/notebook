@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Optional;
@@ -28,12 +29,13 @@ class ForumInteractionServiceTest {
     @Mock AgentForumFavoriteRepository favRepo;
     @Mock AgentCommentRepository commentRepo;
     @Mock AgentForumPostAtomicUpdater atomic;
+    @Mock ApplicationEventPublisher events;
 
     @Test
     void like_firstTime_insertsAndIncrementsCount() {
         when(likeRepo.findByUserIdAndPostId(16L, 100L)).thenReturn(Optional.empty());
 
-        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic);
+        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic, events);
         boolean result = svc.like(16L, 100L);
 
         assertThat(result).isTrue();
@@ -45,7 +47,7 @@ class ForumInteractionServiceTest {
     void like_duplicate_isIdempotentNoOp() {
         when(likeRepo.findByUserIdAndPostId(16L, 100L)).thenReturn(Optional.of(new AgentForumLike()));
 
-        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic);
+        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic, events);
         boolean result = svc.like(16L, 100L);
 
         assertThat(result).isTrue();
@@ -58,7 +60,7 @@ class ForumInteractionServiceTest {
         when(likeRepo.findByUserIdAndPostId(16L, 100L)).thenReturn(Optional.empty());
         when(likeRepo.save(any(AgentForumLike.class))).thenThrow(new DataIntegrityViolationException("uk_like_user_post"));
 
-        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic);
+        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic, events);
         boolean result = svc.like(16L, 100L);
 
         assertThat(result).isTrue();
@@ -71,7 +73,7 @@ class ForumInteractionServiceTest {
         existing.setId(1L);
         when(likeRepo.findByUserIdAndPostId(16L, 100L)).thenReturn(Optional.of(existing));
 
-        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic);
+        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic, events);
         boolean result = svc.unlike(16L, 100L);
 
         assertThat(result).isTrue();
@@ -83,7 +85,7 @@ class ForumInteractionServiceTest {
     void unlike_notLiked_returnsTrueNoOp() {
         when(likeRepo.findByUserIdAndPostId(16L, 100L)).thenReturn(Optional.empty());
 
-        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic);
+        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic, events);
         boolean result = svc.unlike(16L, 100L);
 
         assertThat(result).isTrue();
@@ -95,7 +97,7 @@ class ForumInteractionServiceTest {
     void favorite_firstTime_insertsAndIncrements() {
         when(favRepo.findByUserIdAndPostId(16L, 100L)).thenReturn(Optional.empty());
 
-        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic);
+        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic, events);
         boolean result = svc.favorite(16L, 100L);
 
         assertThat(result).isTrue();
@@ -111,7 +113,7 @@ class ForumInteractionServiceTest {
             return c;
         });
 
-        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic);
+        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic, events);
         AgentComment out = svc.addComment(100L, "u:16", "alice", "好看");
 
         assertThat(out.getId()).isEqualTo(99L);
@@ -123,14 +125,14 @@ class ForumInteractionServiceTest {
     @Test
     void hasLiked_returnsTrueWhenExists() {
         when(likeRepo.findByUserIdAndPostId(16L, 100L)).thenReturn(Optional.of(new AgentForumLike()));
-        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic);
+        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic, events);
         assertThat(svc.hasLiked(16L, 100L)).isTrue();
     }
 
     @Test
     void hasLiked_returnsFalseWhenMissing() {
         when(likeRepo.findByUserIdAndPostId(16L, 100L)).thenReturn(Optional.empty());
-        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic);
+        ForumInteractionService svc = new ForumInteractionService(postRepo, likeRepo, favRepo, commentRepo, atomic, events);
         assertThat(svc.hasLiked(16L, 100L)).isFalse();
     }
 }

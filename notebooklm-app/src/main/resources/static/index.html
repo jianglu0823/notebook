@@ -580,6 +580,54 @@
   .mc-cat.video_series { color:#be123c; background:color-mix(in srgb, #f43f5e 12%, transparent); border-color:color-mix(in srgb, #f43f5e 30%, transparent); }
   .mc-cat.utility { color:#0369a1; background:color-mix(in srgb, #0ea5e9 12%, transparent); border-color:color-mix(in srgb, #0ea5e9 30%, transparent); }
 
+  /* 头像 / 名字 hover 可点提示 */
+  .mc-avatar, .mc-name { cursor:pointer; }
+  .mc-avatar:hover { box-shadow:0 0 0 2px var(--accent-weak); }
+  .mc-name:hover { color:var(--accent); }
+  .forum-detail-head .avatar, .forum-detail-head .name { cursor:pointer; }
+  .forum-detail-head .avatar:hover { box-shadow:0 0 0 2px var(--accent-weak); }
+  .forum-detail-head .name:hover { color:var(--accent); }
+
+  /* 论坛 → 居民个人主页 */
+  .profile-head {
+    padding:16px 20px 14px; border-bottom:1px solid var(--line);
+    background:var(--panel); display:flex; flex-direction:column; gap:12px; flex:none;
+  }
+  .profile-head .back-btn {
+    align-self:flex-start; background:transparent;
+    border:1px solid var(--line); color:var(--fg);
+    padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12.5px;
+  }
+  .profile-head .back-btn:hover { background:var(--panel2); border-color:var(--line-strong); }
+  .profile-id-card { display:flex; align-items:center; gap:14px; }
+  .profile-avatar {
+    width:64px; height:64px; border-radius:8px;
+    background:var(--panel2); border:1px solid var(--line);
+    font-size:36px; line-height:64px; text-align:center;
+    display:flex; align-items:center; justify-content:center; flex:none; overflow:hidden;
+  }
+  .profile-avatar img { width:100%; height:100%; object-fit:cover; }
+  .profile-id { min-width:0; }
+  .profile-name { font-size:18px; font-weight:750; color:var(--fg); }
+  .profile-meta { font-size:12px; color:var(--mut); margin-top:2px; }
+  .profile-stats {
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;
+  }
+  .profile-stats .stat {
+    background:var(--panel2); border:1px solid var(--line);
+    border-radius:8px; padding:8px 10px; text-align:center;
+  }
+  .profile-stats .stat .n { font-size:18px; font-weight:750; color:var(--fg); }
+  .profile-stats .stat .l { font-size:11.5px; color:var(--mut); margin-top:2px; }
+  .profile-feed {
+    flex:1; overflow-y:auto; padding:18px 20px 24px;
+    display:flex; flex-direction:column; gap:14px;
+    background:var(--moment-bg);
+  }
+  .profile-loading, .profile-empty {
+    padding:48px 20px; text-align:center; color:var(--mut); font-size:13px;
+  }
+
   /* 朋友圈九宫格图片墙 */
   .image-grid { display:grid; gap:4px; margin-top:8px; max-width:100%; }
   .image-grid .ig-tile {
@@ -1211,6 +1259,36 @@
   .tcard:disabled:hover { transform:none; }
   .title-cards.locked .tcard.on { border-color:color-mix(in srgb,#ff2e63 55%,transparent); }
   .tspin { flex:none; width:14px; height:14px; border-radius:50%; border:2px solid color-mix(in srgb,#ff2e63 30%,transparent); border-top-color:#ff2e63; animation:xspin .7s linear infinite; }
+  /* ---- 短剧 3 版候选卡 ---- */
+  .dcard-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; }
+  .dcard { display:flex; flex-direction:column; gap:8px; padding:14px; border-radius:var(--radius); border:1px solid var(--line); background:var(--panel2); transition:all .15s ease; }
+  .dcard.on { border-color:color-mix(in srgb,#ff2e63 55%,transparent); background:color-mix(in srgb,#ff2e63 8%,transparent); }
+  .dcard.failed { opacity:.5; }
+  .dcard.locked textarea, .dcard.locked input { background:var(--panel); pointer-events:none; }
+  .dcard .dh { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .dcard .dh .dl { font-size:15px; font-weight:800; color:var(--fg); }
+  .dcard .dh .ds { font-size:12px; padding:3px 10px; border-radius:11px; background:color-mix(in srgb,#ff2e63 18%,transparent); color:#ff2e63; font-weight:700; }
+  .dcard .dh .ds.off { background:var(--panel); color:var(--mut); border:1px solid var(--line); }
+  .dcard .de { font-size:12px; color:#dc2626; background:color-mix(in srgb,#dc2626 10%,transparent); padding:6px 9px; border-radius:6px; }
+  .dcard label { font-size:11.5px; color:var(--mut); font-weight:600; letter-spacing:.3px; margin-top:2px; }
+  .dcard .row-input { padding:7px 10px; border-radius:7px; border:1px solid var(--line); background:var(--panel); color:var(--fg); font-size:12.5px; font-family:inherit; }
+  .dcard textarea { width:100%; box-sizing:border-box; padding:7px 10px; border-radius:7px; border:1px solid var(--line); background:var(--panel); color:var(--fg); font-size:12.5px; font-family:inherit; resize:vertical; min-height:42px; line-height:1.5; }
+  .dcard textarea.scene { min-height:54px; }
+  .dcard textarea.narration { min-height:80px; }
+  .dcard .df { display:flex; gap:8px; align-items:center; margin-top:4px; }
+  /* ---- 短剧渲染进度条 + 段位预览 ---- */
+  .prog-bar { padding:10px 14px; border-radius:8px; background:var(--panel2); border:1px solid var(--line); margin:8px 0 12px; font-family:ui-monospace,monospace; font-size:14px; }
+  .prog-text { color:var(--fg); letter-spacing:2px; }
+  .seg-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; }
+  .seg-cell { padding:10px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); display:flex; flex-direction:column; gap:6px; }
+  .seg-cell.done { border-color:color-mix(in srgb,#10b981 45%,transparent); }
+  .seg-cell.cur  { border-color:color-mix(in srgb,#ff2e63 45%,transparent); }
+  .seg-cell.pend { opacity:.55; }
+  .seg-cell .seg-h { display:flex; align-items:center; justify-content:space-between; font-size:12.5px; font-weight:700; }
+  .seg-cell .seg-h .ok { color:#10b981; font-size:11px; }
+  .seg-cell .seg-h .mut { color:var(--mut); font-size:11px; font-weight:400; }
+  .seg-skel { height:120px; border-radius:8px; background:linear-gradient(90deg,var(--panel) 0%,var(--panel2) 50%,var(--panel) 100%); background-size:200% 100%; animation:segShine 1.4s linear infinite; }
+  @keyframes segShine { from { background-position:200% 0; } to { background-position:-200% 0; } }
   @keyframes xspin { to { transform:rotate(360deg); } }
   .style-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }
   .scard { text-align:left; padding:16px; border-radius:var(--radius); border:1px solid var(--line); background:var(--panel2); color:var(--fg); cursor:pointer; transition:all .15s ease; }
@@ -1699,11 +1777,29 @@
         <!-- 提交表单 -->
         <div class="widget" id="dramaForm">
           <div class="wt">🎭 新建短剧</div>
-          <div class="wd">输入剧情主题或一句话梗概,AI 会自动扩写成一部连续短剧。</div>
+          <div class="wd">输入剧情主题(必填);类型/主角/弧线/基调 4 个可选项填得越细,3 版脚本差异越大、越贴主题,留空 AI 自动补。</div>
           <div class="news-run">
             <input id="dramaTheme" placeholder="剧情主题,如「一个加班到深夜的程序员遇见了会说话的猫」「雨夜便利店里的重逢」…" onkeydown="if(event.key==='Enter')submitDrama()">
           </div>
-          <div class="img-actions"><button id="dramaSubmitBtn" onclick="submitDrama()">🎬 开始生成短剧</button></div>
+          <div class="news-run" style="margin-top:6px">
+            <input id="dramaGenre" placeholder="类型(可选),如 都市 / 悬疑 / 治愈 / 古风 / 科幻" style="flex:1">
+            <input id="dramaMainCharacter" placeholder="主角(可选),如 加班程序员阿杰" style="flex:1">
+            <input id="dramaStoryArc" placeholder="弧线(可选),如 偶然相遇 → 共同秘密 → 告别" style="flex:1">
+            <input id="dramaTone" placeholder="基调(可选),如 温暖治愈 / 黑色幽默 / 紧张悬疑" style="flex:1">
+          </div>
+          <div class="img-actions"><button id="dramaSubmitBtn" onclick="submitDrama()">🎬 生成 3 版候选</button></div>
+        </div>
+
+        <!-- 短剧脚本:1 版,可在线编辑后再渲染 -->
+        <div id="dramaDraftsStage" class="hidden">
+          <div class="widget">
+            <div class="wt">🎞️ 短剧脚本 <span class="mut">可在线编辑下方 4 个字段(主角/风格/旁白/6 段分镜),补满 6 段后点「开始生成短剧」启动渲染</span></div>
+            <div class="dcard-grid" id="dramaDraftsGrid"></div>
+            <div class="img-actions" style="margin-top:10px">
+              <button id="dramaRenderBtn" onclick="renderChosenDrama()" disabled>🎬 开始生成短剧</button>
+              <span class="mut" id="dramaRenderHint" style="margin-left:8px"></span>
+            </div>
+          </div>
         </div>
 
         <!-- 生成过程 + 成片 -->
@@ -2157,6 +2253,20 @@
               <div class="t">论坛加载中…</div>
               <div class="s">村民每天 21:00 自主产出内容</div>
             </div>
+          </div>
+          <div id="forumProfileView" style="display:none; flex:1; min-height:0; flex-direction:column;">
+            <div class="profile-head" id="forumProfileHead">
+              <button class="back-btn" onclick="closeForumProfile()">← 返回论坛</button>
+              <div class="profile-id-card">
+                <div class="profile-avatar" id="forumProfileAvatar"></div>
+                <div class="profile-id">
+                  <div class="profile-name" id="forumProfileName"></div>
+                  <div class="profile-meta" id="forumProfileMeta"></div>
+                </div>
+              </div>
+              <div class="profile-stats" id="forumProfileStats"></div>
+            </div>
+            <div class="profile-feed" id="forumProfileFeed"></div>
           </div>
         </div>
 
@@ -2669,6 +2779,7 @@ const XHS_STEP_STATUS = {NEW:0, TITLES_DONE:1, RESEARCH_DONE:2, COPY_DONE:3, IMA
 const PUB_LABEL = {DRAFT:'草稿', READY:'待发', PUBLISHED:'已发'};
 // ---- 短剧(独立工作台)----
 let drama = null;              // 当前短剧项目
+let dramaDrafts = [];          // 当前短剧的 3 版候选脚本
 let dramaPoll = null;          // 短剧轮询定时器
 // ---- 多智能体协作写作 ----
 let writing = null;            // 当前协作写作项目
@@ -4183,20 +4294,31 @@ function selectDrama() {
 function newDrama() {
   if (dramaPoll) { clearTimeout(dramaPoll); dramaPoll = null; }
   drama = null;
-  const input = document.getElementById('dramaTheme'); if (input) input.value = '';
+  dramaDrafts = [];
+  ['dramaTheme','dramaGenre','dramaMainCharacter','dramaStoryArc','dramaTone']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('dramaRun').classList.add('hidden');
   document.getElementById('dramaRunStage').innerHTML = '';
+  document.getElementById('dramaDraftsStage').classList.add('hidden');
+  document.getElementById('dramaDraftsGrid').innerHTML = '';
   document.getElementById('dramaForm').classList.remove('hidden');
   document.getElementById('dramaWorksPanel').classList.add('hidden');
 }
 async function submitDrama() {
   const theme = document.getElementById('dramaTheme').value.trim();
   if (!theme) { toast('请先输入剧情主题', 'err'); return; }
+  const genre = document.getElementById('dramaGenre').value.trim();
+  const mainCharacter = document.getElementById('dramaMainCharacter').value.trim();
+  const storyArc = document.getElementById('dramaStoryArc').value.trim();
+  const tone = document.getElementById('dramaTone').value.trim();
   const btn = document.getElementById('dramaSubmitBtn'); btn.disabled = true;
   try {
-    drama = await j(`${API}/studio/xhs/drama`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({theme})});
+    drama = await j(`${API}/studio/xhs/drama`, {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({theme, genre, mainCharacter, storyArc, tone})});
+    dramaDrafts = [];
     document.getElementById('dramaForm').classList.add('hidden');
-    document.getElementById('dramaRun').classList.remove('hidden');
+    document.getElementById('dramaDraftsStage').classList.remove('hidden');
+    document.getElementById('dramaRun').classList.add('hidden');
     renderDrama();
     pollDrama();
   } catch (e) { toast('提交失败:' + errText(e), 'err'); }
@@ -4209,43 +4331,252 @@ function pollDrama() {
     if (!document.body.classList.contains('drama') || !drama) return;
     try {
       drama = await j(`${API}/studio/xhs/${drama.id}`);
+      // PENDING 阶段额外拉 drafts 让前端尽早看到先到的一版
+      if (drama.dramaStatus === 'PENDING') {
+        try { dramaDrafts = await j(`${API}/studio/xhs/${drama.id}/drafts`) || []; } catch { /* ignore */ }
+      }
       renderDrama();
-      if (drama.dramaStatus === 'DONE' || drama.dramaStatus === 'FAILED') return;
-      dramaPoll = setTimeout(tick, 4000);
-    } catch (e) { dramaPoll = setTimeout(tick, 4000); }
+      if (drama.dramaStatus === 'DONE' || drama.dramaStatus === 'FAILED' || drama.dramaStatus === 'DRAFTS_READY') return;
+      dramaPoll = setTimeout(tick, 3000);
+    } catch (e) { dramaPoll = setTimeout(tick, 3000); }
   };
-  dramaPoll = setTimeout(tick, 2000);
+  dramaPoll = setTimeout(tick, 1500);
 }
 function renderDrama() {
   if (!drama) return;
   document.getElementById('dramaForm').classList.add('hidden');
-  document.getElementById('dramaRun').classList.remove('hidden');
   const hint = document.getElementById('dramaStatusHint');
   const stage = document.getElementById('dramaRunStage');
-  if (drama.dramaStatus === 'DONE' && drama.dramaPath) {
+  const draftsStage = document.getElementById('dramaDraftsStage');
+  const renderBtn = document.getElementById('dramaRenderBtn');
+  const renderHint = document.getElementById('dramaRenderHint');
+
+  const s = drama.dramaStatus;
+  if (s === 'DRAFTS_READY') {
+    draftsStage.classList.remove('hidden');
+    document.getElementById('dramaRun').classList.add('hidden');
+    if (hint) hint.textContent = '✎ 脚本就绪';
+    // 拉一次最新 drafts(可能刚翻页 / 跨设备)
+    loadDramaDrafts().then(() => {
+      const chosen = (dramaDrafts || []).find(d => d.id === drama.chosenDraftId);
+      const chosenFilled = chosen ? (() => { try { return JSON.parse(chosen.scenes || '[]').filter(s => s && s.trim()).length; } catch { return 0; } })() : 0;
+      const canRender = !!drama.chosenDraftId && chosenFilled === 6;
+      if (renderBtn) renderBtn.disabled = !canRender;
+      if (renderHint) renderHint.textContent = canRender
+        ? '脚本就绪,可点上方按钮开始渲染(可继续编辑)'
+        : (!drama.chosenDraftId
+            ? '等待脚本生成完成'
+            : (chosenFilled < 6
+                ? `分镜 ${chosenFilled}/6 段,补满 6 段后再渲染`
+                : '脚本生成失败,可手动补全后重试'));
+    });
+  } else if (s === 'PENDING') {
+    draftsStage.classList.remove('hidden');
+    document.getElementById('dramaRun').classList.add('hidden');
+    if (hint) hint.textContent = '⏳ 创作中…';
+    // 已到的先渲染(占位)
+    if (dramaDrafts && dramaDrafts.length) renderDramaDraftsGrid();
+    else document.getElementById('dramaDraftsGrid').innerHTML =
+      '<div class="xnotice" style="grid-column:1/-1">AI 正在创作短剧脚本(主角/风格/旁白/6 段分镜)…</div>' + skeletonCards(1);
+    if (renderBtn) renderBtn.disabled = true;
+    if (renderHint) renderHint.textContent = '等脚本生成完成后即可编辑 + 渲染';
+  } else if (s === 'RENDERING') {
+    draftsStage.classList.add('hidden');
+    document.getElementById('dramaRun').classList.remove('hidden');
+    if (hint) hint.textContent = '🎬 渲染中…';
+    stage.innerHTML = renderDramaProgress(drama);
+  } else if (s === 'DONE' && drama.dramaPath) {
+    draftsStage.classList.add('hidden');
+    document.getElementById('dramaRun').classList.remove('hidden');
     if (hint) hint.textContent = '✓ 已完成';
     const url = `${API}/studio/xhs/${drama.id}/drama${audioTokenQs()}`;
     stage.innerHTML =
       `<div class="video-cell"><video controls playsinline preload="metadata" src="${url}" style="max-width:270px;width:100%;border-radius:12px;background:#000"></video>
          <div class="ic-bar"><a href="${url}" download="xhs_drama_${drama.id}.mp4">⬇ 下载短剧</a></div></div>
        <div class="img-actions"><button class="sec" onclick="newDrama()">＋ 再拍一部</button></div>`;
-  } else if (drama.dramaStatus === 'FAILED') {
+  } else if (s === 'FAILED') {
+    draftsStage.classList.add('hidden');
+    document.getElementById('dramaRun').classList.remove('hidden');
     if (hint) hint.textContent = '✗ 失败';
+    const canReRender = !!drama.chosenDraftId;
+    const segsDone = drama.dramaSegmentsDone || 0;
+    const progressPart = segsDone > 0 && canReRender
+      ? `<div class="mut" style="margin:6px 0 10px">渲染到第 ${segsDone} 段时失败,已生成的段位可继续预览</div>` + renderDramaProgress({...drama, dramaStatus: 'FAILED'})
+      : '';
     stage.innerHTML =
-      `<div class="xnotice xerr">✗ 短剧生成失败${drama.errorMsg ? ':' + esc(drama.errorMsg) : ''}</div>
-       <div class="img-actions"><button onclick="retryDrama()">🔄 重试</button><button class="sec" onclick="newDrama()">＋ 换个主题</button></div>`;
+      `<div class="xnotice xerr">✗ 短剧${canReRender ? '渲染' : '创作'}失败${drama.errorMsg ? ':' + esc(drama.errorMsg) : ''}</div>
+       ${progressPart}
+       <div class="img-actions">${canReRender
+         ? '<button onclick="renderChosenDrama()">🔄 用选中版重渲染</button>'
+         : '<button onclick="retryDrama()">🔄 重新生成脚本</button>'}
+         <button class="sec" onclick="newDrama()">＋ 换个主题</button></div>`;
   } else {
-    if (hint) hint.textContent = '⏳ 生成中…';
-    stage.innerHTML = '<div class="xnotice">AI 正在编写连续剧情分镜,逐段渲染竖屏短剧(遇限流会自动等待重试,不缺段),耗时较长请耐心等待…</div>' + skeletonCards(1);
+    draftsStage.classList.add('hidden');
+    document.getElementById('dramaRun').classList.remove('hidden');
+    if (hint) hint.textContent = '⏳ ' + (s || '…');
+    stage.innerHTML = '<div class="xnotice">状态:' + esc(s || '未知') + '</div>';
   }
 }
-async function retryDrama() {
+
+async function loadDramaDrafts() {
+  if (!drama) return;
+  try { dramaDrafts = await j(`${API}/studio/xhs/${drama.id}/drafts`) || []; }
+  catch { dramaDrafts = []; }
+  renderDramaDraftsGrid();
+}
+
+/**
+ * 短剧渲染中状态:顶部进度条(▰▰▰▱▱▱ 3/6) + 6 个段位卡,
+ * 已完成的段位内嵌 <video> 预览,正在生成的段位显示 spinner,未开始灰。
+ */
+function renderDramaProgress(p) {
+  const done = Math.max(0, Math.min(6, p.dramaSegmentsDone || 0));
+  const cur = done < 6 ? done : -1; // -1 表示全部完成(前端实际只走 RENDERING 状态,不会到 6)
+  const bar = [0,1,2,3,4,5].map(i => i < done ? '▰' : (i === cur ? '▰' : '▱')).join('');
+  const cells = [0,1,2,3,4,5].map(i => {
+    const segUrl = `${API}/studio/xhs/${p.id}/drama/seg/${i}${audioTokenQs()}`;
+    if (i < done) {
+      return `<div class="seg-cell done">
+        <div class="seg-h">镜头 ${i+1} <span class="ok">✓ 已完成</span></div>
+        <video controls playsinline preload="metadata" src="${segUrl}" muted style="width:100%;border-radius:8px;background:#000;max-height:180px"></video>
+      </div>`;
+    } else if (i === cur) {
+      return `<div class="seg-cell cur">
+        <div class="seg-h">镜头 ${i+1} <span class="tspin"></span> 生成中</div>
+        <div class="seg-skel"></div>
+      </div>`;
+    } else {
+      return `<div class="seg-cell pend">
+        <div class="seg-h">镜头 ${i+1} <span class="mut">等待中</span></div>
+        <div class="seg-skel"></div>
+      </div>`;
+    }
+  }).join('');
+  return `<div class="xnotice">逐段渲染竖屏短剧,遇限流自动等待重试(一段约 1-3 分钟,6 段共 6-18 分钟)</div>
+    <div class="prog-bar"><span class="prog-text">${bar} ${done}/6 段</span></div>
+    <div class="seg-grid">${cells}</div>`;
+}
+
+function renderDramaDraftsGrid() {
+  const grid = document.getElementById('dramaDraftsGrid');
+  if (!grid) return;
+  if (!dramaDrafts || !dramaDrafts.length) {
+    grid.innerHTML = '<div class="mut" style="grid-column:1/-1">候选脚本生成中…</div>';
+    return;
+  }
+  const locked = drama.dramaStatus === 'RENDERING' || drama.dramaStatus === 'DONE';
+  // 1 版模式:dramaDrafts 只有 1 行;老项目(id ≤ 11)有 3 行,但 chooseDraft 已被放开,
+  // 多版时仍可手动选 — 这里只在 1 行时不显示「选这个版本」按钮(自动选中,无需操作)
+  const singleMode = dramaDrafts.length === 1;
+  grid.innerHTML = dramaDrafts.map(d => {
+    const on = drama.chosenDraftId === d.id;
+    const failed = !!d.errorMsg;
+    let scenes = [];
+    try { scenes = d.scenes ? JSON.parse(d.scenes) : []; } catch { scenes = []; }
+    const filledScenes = scenes.filter(s => s && s.trim()).length;
+    const sceneHint = filledScenes < 6 ? `当前 ${filledScenes}/6 段,补满才能渲染` : '6/6 段完整';
+    const title = singleMode ? '短剧脚本' : `版本 ${d.versionNo}`;
+    const badge = singleMode
+      ? (on ? '<span class="ds">已生成</span>' : '<span class="ds off">生成中</span>')
+      : `<span class="ds ${on?'':'off'}">${on?'✓ 已选':'可选'}</span>`;
+    return `<div class="dcard ${on?'on':''} ${failed?'failed':''} ${locked?'locked':''}" data-id="${d.id}">
+      <div class="dh">
+        <span class="dl">${title}</span>
+        ${badge}
+      </div>
+      ${failed ? `<div class="de">⚠ ${esc(d.errorMsg)}<br><span class="mut" style="font-weight:400">可手动补全 6 段分镜后保存再渲染</span></div>` : ''}
+      <label>主角设定(必填,逐字注入每段画面)</label>
+      <input class="row-input" data-f="characterProfile" data-did="${d.id}" value="${esc(d.characterProfile||'')}" placeholder="如 短发白衬衫的年轻女子,清瘦,眼神清亮" ${locked?'disabled':''}>
+      <label>画面风格锁定(色调/光线/镜头/画风)</label>
+      <input class="row-input" data-f="styleLock" data-did="${d.id}" value="${esc(d.styleLock||'')}" placeholder="如 cinematic, warm rim light, 9:16, film grain" ${locked?'disabled':''}>
+      <label>旁白口播稿(简体中文)</label>
+      <textarea class="narration" data-f="narration" data-did="${d.id}" ${locked?'disabled':''}>${esc(d.narration||'')}</textarea>
+      <label>6 段分镜画面 prompt(可逐条编辑;注入主角+风格后送文生视频) <span class="mut" style="font-weight:400">${sceneHint}</span></label>
+      ${[0,1,2,3,4,5].map(i => `<textarea class="scene" data-f="scene_${i}" data-did="${d.id}" placeholder="镜头 ${i+1}" ${locked?'disabled':''}>${esc(scenes[i]||'')}</textarea>`).join('')}
+      ${singleMode ? '' : `<div class="df">
+        <button class="sec" onclick="chooseDramaDraft(${d.id})" ${locked?'disabled':''}>${on?'已选':'选这个版本'}</button>
+      </div>`}
+    </div>`;
+  }).join('');
+  // 绑 blur → debounce save
+  grid.querySelectorAll('input[data-f],textarea[data-f]').forEach(el => {
+    el.addEventListener('blur', () => scheduleDraftSave(parseInt(el.dataset.did,10), el.dataset.f, el.value));
+  });
+}
+
+const _draftSaveTimers = new Map();
+function scheduleDraftSave(draftId, field, value) {
+  const key = draftId + ':' + field;
+  const old = _draftSaveTimers.get(key);
+  if (old) clearTimeout(old);
+  const t = setTimeout(() => saveDraftField(draftId, field, value), 600);
+  _draftSaveTimers.set(key, t);
+}
+async function saveDraftField(draftId, field, value) {
+  const d = (dramaDrafts || []).find(x => x.id === draftId);
+  if (!d) return;
+  // 构造 payload
+  const payload = {};
+  if (field === 'narration') payload.narration = value;
+  else if (field === 'characterProfile') payload.characterProfile = value;
+  else if (field === 'styleLock') payload.styleLock = value;
+  else if (field.startsWith('scene_')) {
+    const idx = parseInt(field.slice(6), 10);
+    let scenes = [];
+    try { scenes = d.scenes ? JSON.parse(d.scenes) : []; } catch { scenes = []; }
+    while (scenes.length < 6) scenes.push('');
+    scenes[idx] = value;
+    payload.scenes = scenes;
+    // 本地缓存立即更新
+    d.scenes = JSON.stringify(scenes);
+  }
+  // 同步本地其它字段
+  payload.characterProfile = d.characterProfile;
+  payload.styleLock = d.styleLock;
+  payload.narration = d.narration;
+  try {
+    const updated = await j(`${API}/studio/xhs/drafts/${draftId}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    // 把服务端版本合并回来
+    Object.assign(d, updated);
+  } catch (e) {
+    toast('保存失败:' + errText(e), 'err');
+  }
+}
+
+async function chooseDramaDraft(draftId) {
   if (!drama) return;
   try {
-    drama = await j(`${API}/studio/xhs/${drama.id}/drama`, {method:'POST', headers:{'Content-Type':'application/json'}});
+    drama = await j(`${API}/studio/xhs/${drama.id}/drafts/${draftId}/choose`, {method:'POST'});
+    toast('已选版本', 'ok');
+    renderDrama();
+  } catch (e) { toast('选版失败:' + errText(e), 'err'); }
+}
+
+async function renderChosenDrama() {
+  if (!drama || !drama.chosenDraftId) { toast('请先挑 1 个版本', 'err'); return; }
+  const btn = document.getElementById('dramaRenderBtn'); btn.disabled = true;
+  try {
+    drama = await j(`${API}/studio/xhs/${drama.id}/drama/render`, {method:'POST'});
+    renderDrama();
+    pollDrama();
+  } catch (e) { toast('启动失败:' + errText(e), 'err'); btn.disabled = false; }
+}
+
+async function retryDrama() {
+  // FAILED 后重跑脚本:保留主题 + 4 输入,不必重提表单(1 版模式下)
+  if (!drama) return;
+  if (drama.chosenDraftId) return renderChosenDrama();
+  const btn = event && event.target;
+  if (btn) btn.disabled = true;
+  try {
+    drama = await j(`${API}/studio/xhs/${drama.id}/drama/regenerate`, {method:'POST'});
+    dramaDrafts = [];
+    document.getElementById('dramaDraftsStage').classList.remove('hidden');
+    document.getElementById('dramaRun').classList.add('hidden');
     renderDrama();
     pollDrama();
   } catch (e) { toast('重试失败:' + errText(e), 'err'); }
+  finally { if (btn) btn.disabled = false; }
 }
 async function toggleDramaWorks() {
   const panel = document.getElementById('dramaWorksPanel');
@@ -4256,7 +4587,7 @@ async function toggleDramaWorks() {
     const list = await j(`${API}/studio/xhs/drama`);
     if (!list.length) { document.getElementById('dramaWorksList').innerHTML = '<div class="mut">还没有短剧作品</div>'; return; }
     document.getElementById('dramaWorksList').innerHTML = list.map(p => {
-      const label = {DONE:'已完成', FAILED:'失败', RENDERING:'生成中', PENDING:'排队中'}[p.dramaStatus] || p.dramaStatus;
+      const label = {DONE:'已完成', FAILED:'失败', RENDERING:'渲染中', PENDING:'创作中', DRAFTS_READY:'待选版'}[p.dramaStatus] || p.dramaStatus;
       return `<div class="w-work-item" onclick="openDrama(${p.id})">
         <span class="wtopic">${esc(p.chosenTitle || p.direction || ('短剧#'+p.id))}</span>
         <span class="xbadge">${label}</span>
@@ -4267,6 +4598,10 @@ async function toggleDramaWorks() {
 async function openDrama(id) {
   if (dramaPoll) { clearTimeout(dramaPoll); dramaPoll = null; }
   try { drama = await j(`${API}/studio/xhs/${id}`); } catch (e) { toast('打开失败:' + errText(e), 'err'); return; }
+  dramaDrafts = [];
+  if (drama.dramaStatus === 'DRAFTS_READY') {
+    try { dramaDrafts = await j(`${API}/studio/xhs/${drama.id}/drafts`) || []; } catch { dramaDrafts = []; }
+  }
   document.getElementById('dramaWorksPanel').classList.add('hidden');
   renderDrama();
   if (drama.dramaStatus === 'PENDING' || drama.dramaStatus === 'RENDERING') pollDrama();
@@ -7668,6 +8003,7 @@ const FORUM = {
   detailCmPage: 0,
   detailCmHasMore: false,
   detailCmTotal: 0,
+  profile: null,        // {id, info:{...}, posts:[], page, hasMore, loading}
 };
 
 function forumApi(path, opts) { return j('/api/world/forum' + path, opts || {}); }
@@ -7684,6 +8020,96 @@ function selectForum() {
   if (!FORUM.feed.length) loadForumFeed(false);
   else renderForumFeed();
   startForumPoll();
+}
+
+// 2026-08-19:个人主页 — 点击 feed 头像 / 名字 / 详情头部进入,展示该居民所有帖。
+async function openForumProfile(authorAgentId) {
+  if (!authorAgentId) return;
+  FORUM.profile = { id: authorAgentId, info: null, posts: [], page: 0, hasMore: false, loading: false };
+  document.getElementById('forumFeed').style.display = 'none';
+  const pv = document.getElementById('forumProfileView');
+  pv.style.display = 'flex';
+  document.getElementById('forumProfileFeed').innerHTML = '<div class="profile-loading">加载中…</div>';
+  try {
+    const info = await forumApi('/users/' + authorAgentId);
+    FORUM.profile.info = info;
+  } catch (e) {
+    FORUM.profile.info = { authorAgentId, authorName: '居民 #' + authorAgentId, authorAvatar: '' };
+  }
+  await loadForumProfilePage(true);
+  renderForumProfile();
+}
+
+function closeForumProfile() {
+  document.getElementById('forumProfileView').style.display = 'none';
+  document.getElementById('forumFeed').style.display = '';
+  FORUM.profile = null;
+  if (document.body.classList.contains('forum')) renderForumFeed();
+}
+
+async function loadForumProfilePage(reset) {
+  if (!FORUM.profile) return;
+  if (FORUM.profile.loading) return;
+  FORUM.profile.loading = true;
+  try {
+    const page = reset ? 0 : FORUM.profile.page + 1;
+    const resp = await forumApi('/users/' + FORUM.profile.id + '/posts?page=' + page + '&size=20');
+    const list = (resp && resp.posts) || [];
+    if (reset) FORUM.profile.posts = list;
+    else FORUM.profile.posts = FORUM.profile.posts.concat(list);
+    FORUM.profile.page = page;
+    FORUM.profile.hasMore = !!resp.hasMore;
+    FORUM.profile.total = resp.total || FORUM.profile.posts.length;
+  } catch (e) { toast('加载失败:' + errText(e), 'err'); }
+  finally { FORUM.profile.loading = false; }
+}
+
+function renderForumProfile() {
+  if (!FORUM.profile) return;
+  const p = FORUM.profile;
+  const info = p.info || {};
+  const initial = (info.authorName || '?').slice(0, 1).toUpperCase();
+  const av = document.getElementById('forumProfileAvatar');
+  av.textContent = '';
+  if (info.authorAvatar) {
+    av.innerHTML = '<img src="' + esc(info.authorAvatar) + '" alt="" onerror="this.onerror=null;this.outerHTML=\'<span>' + esc(initial) + '</span>\'">';
+  } else {
+    av.innerHTML = '<span>' + esc(initial) + '</span>';
+  }
+  document.getElementById('forumProfileName').textContent = info.authorName || '匿名';
+  document.getElementById('forumProfileMeta').textContent = '居民 #' + p.id;
+  const totalLikes = info.totalLikes || 0;
+  const totalFavs = info.totalFavorites || 0;
+  const totalCm = info.totalComments || 0;
+  const stats = document.getElementById('forumProfileStats');
+  stats.innerHTML = ''
+    + statCell(info.postCount || 0, '总帖数')
+    + statCell(totalLikes, '累计被赞')
+    + statCell(totalFavs, '累计被藏')
+    + statCell(totalCm, '累计被评');
+  const list = document.getElementById('forumProfileFeed');
+  if (!p.posts.length) {
+    list.innerHTML = '<div class="profile-empty">这位居民还没有发过帖</div>';
+    return;
+  }
+  let html = p.posts.map(x => renderForumCard(x)).join('');
+  if (p.hasMore) {
+    const remain = (p.total || 0) - p.posts.length;
+    html += '<div style="text-align:center;padding:18px 0 8px"><button class="refresh-btn" onclick="loadMoreForumProfile()">加载更多(' + (remain > 0 ? remain : '?') + ')</button></div>';
+  } else {
+    html += '<div style="text-align:center;padding:18px 0 8px;color:var(--mut);font-size:12px">— 共 ' + p.posts.length + ' 帖 —</div>';
+  }
+  list.innerHTML = html;
+}
+
+function statCell(n, lbl) {
+  return '<div class="stat"><div class="n">' + (n || 0) + '</div><div class="l">' + esc(lbl) + '</div></div>';
+}
+
+async function loadMoreForumProfile() {
+  if (!FORUM.profile || FORUM.profile.loading || !FORUM.profile.hasMore) return;
+  await loadForumProfilePage(false);
+  renderForumProfile();
 }
 
 // 2026-08-18:删了顶排 7 个类目按钮,合并成 toolbar 里 4 个 filter pill。
@@ -8723,6 +9149,37 @@ function closeModal() { const bg = document.getElementById('cpnModalBg'); if (bg
       openLightbox(Number(tile.dataset.pid), Number(tile.dataset.idx));
       return;
     }
+  });
+
+  // 卡片头像 / 名字 → 打开个人主页
+  document.addEventListener('click', (e) => {
+    const av = e.target.closest('.mc-avatar');
+    const nm = e.target.closest('.mc-name');
+    if (!av && !nm) return;
+    e.stopPropagation();
+    e.preventDefault();
+    const card = (av || nm).closest('.moment-card');
+    if (!card) return;
+    const pid = Number(card.dataset.pid);
+    let post = FORUM.feed.find(x => x.id === pid);
+    if (!post && FORUM.profile && FORUM.profile.posts) {
+      post = FORUM.profile.posts.find(x => x.id === pid);
+    }
+    const aid = post ? post.authorAgentId : null;
+    if (!aid) { toast('该帖无作者信息', 'info'); return; }
+    openForumProfile(aid);
+  });
+
+  // 详情头部头像 / 名字 → 关闭详情后进入个人主页
+  document.addEventListener('click', (e) => {
+    const av = e.target.closest('.forum-detail-head .avatar');
+    const nm = e.target.closest('.forum-detail-head .name');
+    if (!av && !nm) return;
+    e.stopPropagation();
+    if (!FORUM.detail) return;
+    const aid = FORUM.detail.post.authorAgentId;
+    closeForumDetail();
+    if (aid) openForumProfile(aid);
   });
 
   // 卡片自身点击 → 打开详情(瓦片/按钮/toggle/act 已经被更具体的委托拦截,不会到这里)

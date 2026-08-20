@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -73,6 +74,7 @@ public class XhsService {
     private final NotebookLmProperties props;
     private final ObjectMapper objectMapper;
     private final XhsProjectRepository repo;
+    private final XhsDramaDraftRepository draftRepo;
     private final ZhipuMediaClient mediaClient;
     /** 自身代理:用于触发本类的 @Async 方法(同类自调用会绕过代理退化成同步,故经此拿到代理 bean)。 */
     private final ObjectProvider<XhsService> selfProvider;
@@ -129,6 +131,7 @@ public class XhsService {
         XhsProject p = owned(id, ownerId);
         p.setDramaStatus("PENDING");
         p.setDramaPath(null);
+        p.setDramaSegmentsDone(0);
         p.setErrorMsg(null);
         repo.save(p);
         selfProvider.getObject().genDramaAsync(id);
@@ -136,10 +139,12 @@ public class XhsService {
     }
 
     /**
-     * 短剧独立入口:直接用一句剧情主题创建项目并开始生成短剧,不走小红书标题→素材→文案流程。
-     * theme 同时作为 direction 与 chosenTitle,copyText 留空(dramaScript 会据主题创作剧情)。
+     * 短剧独立入口:用主题(+ 4 个可选结构化输入)创建项目,清掉旧 drafts,异步生成 1 版候选脚本。
+     * 4 个可选输入对应 imported prompt {@code ai-comic-drama-skill.md} 的 genre/character/arc/tone,
+     * 留空时 LLM 根据 theme 自行补一个合理设定。
+     * 生成成功会自动选为 chosenDraftId;失败用户可手动补全后再渲染。
      */
-    public XhsProject createDrama(String ownerId, String theme) {
+    public XhsProject createDrama(String ownerId, String theme, String genre, String mainCharacter, String storyArc, String tone) {
         String t = (theme == null || theme.isBlank()) ? "一个温暖的小故事" : theme.trim();
         XhsProject p = new XhsProject();
         p.setOwnerId(ownerId);
@@ -147,14 +152,142 @@ public class XhsService {
         p.setChosenTitle(t.length() > 512 ? t.substring(0, 512) : t);
         p.setStatus("DRAMA");
         p.setDramaStatus("PENDING");
+        p.setErrorMsg(null);
+        p.setGenre(emptyToNull(genre));
+        p.setMainCharacter(emptyToNull(mainCharacter));
+        p.setStoryArc(emptyToNull(storyArc));
+        p.setTone(emptyToNull(tone));
+        p.setChosenDraftId(null);
         p = repo.save(p);
+        // 清掉旧 drafts(retry 场景),然后异步生成 1 版
+        draftRepo.deleteByProjectId(p.getId());
+        selfProvider.getObject().genDraftsAsync(p.getId());
+        return p;
+    }
+
+    /**
+     * 对已存在的短剧项目重跑脚本生成:保留主题 + 4 个输入,清掉旧 draft,状态置 PENDING 重新跑。
+     * 用于 FAILED 后的快速 retry(不必走 newDrama 重提表单)。
+     */
+    public XhsProject regenerateDrama(Long id, String ownerId) {
+        XhsProject p = owned(id, ownerId);
+        if ("RENDERING".equals(p.getDramaStatus())) {
+            throw new IllegalStateException("正在渲染中,不能重新生成");
+        }
+        draftRepo.deleteByProjectId(p.getId());
+        p.setDramaStatus("PENDING");
+        p.setErrorMsg(null);
+        p.setChosenDraftId(null);
+        p.setDramaPath(null);
+        p.setDramaSegmentsDone(0);
+        p = repo.save(p);
+        selfProvider.getObject().genDraftsAsync(p.getId());
+        return p;
+    }
+
+    /** 短剧独立工作台:列出该主体的全部短剧项目(最新在前)。 */
+    public List<XhsProject> listDrama(String ownerId) {
+        return repo.findByOwnerIdAndDramaStatusIsNotNullOrderByIdDesc(ownerId);
+    }
+
+    /** 列出该短剧项目的 3 版候选脚本(版本号升序)。 */
+    public List<XhsDramaDraft> listDrafts(Long projectId, String ownerId) {
+        XhsProject p = owned(projectId, ownerId);
+        return draftRepo.findByProjectIdOrderByVersionNoAsc(p.getId());
+    }
+
+    /**
+     * 用户在线编辑某版候选:部分更新 narration/scenes/characterProfile/styleLock。
+     * 校验所属 project 的 ownerId;非本主体的 draft 一律 403。
+     */
+    public XhsDramaDraft updateDraft(Long draftId, String ownerId, String characterProfile,
+                                     String styleLock, String narration, List<String> scenes) {
+        XhsDramaDraft d = draftRepo.findById(draftId)
+                .orElseThrow(() -> new IllegalArgumentException("draft 不存在: " + draftId));
+        XhsProject p = repo.findById(d.getProjectId())
+                .orElseThrow(() -> new IllegalStateException("draft 所属项目不存在"));
+        if (!p.getOwnerId().equals(ownerId)) {
+            throw new io.llmnote.auth.ForbiddenException("无权编辑此候选");
+        }
+        if (characterProfile != null) d.setCharacterProfile(characterProfile.trim());
+        if (styleLock != null) d.setStyleLock(styleLock.trim());
+        if (narration != null) d.setNarration(cleanNarration(narration));
+        if (scenes != null) {
+            try {
+                d.setScenes(objectMapper.writeValueAsString(scenes));
+            } catch (Exception e) {
+                throw new IllegalArgumentException("scenes 序列化失败: " + e.getMessage());
+            }
+        }
+        return draftRepo.save(d);
+    }
+
+    /**
+     * 标记用户选定的候选版。仅在 DRAFTS_READY/PENDING/FAILED 时允许;RENDERING 中拒绝。
+     * 选完后不会自动启动渲染,等用户点「开始生成短剧」。
+     * 放开 PENDING:用户可以提前锁定一版(比如 LLM 限流 v2/v3 一直卡时,先把 v1 选上编辑)
+     * — 后续 v2/v3 写库是 upsert by version_no,选中的 v1 内容不会被覆盖。
+     */
+    public XhsProject chooseDraft(Long projectId, String ownerId, Long draftId) {
+        XhsProject p = owned(projectId, ownerId);
+        String s = p.getDramaStatus();
+        if ("RENDERING".equals(s) || "DONE".equals(s)) {
+            throw new IllegalStateException("当前状态(" + s + ")不允许选版");
+        }
+        if (draftId == null) {
+            throw new IllegalArgumentException("draftId 不能为空");
+        }
+        XhsDramaDraft d = draftRepo.findById(draftId)
+                .orElseThrow(() -> new IllegalArgumentException("draft 不存在: " + draftId));
+        if (!d.getProjectId().equals(p.getId())) {
+            throw new io.llmnote.auth.ForbiddenException("draft 不属于本项目");
+        }
+        p.setChosenDraftId(draftId);
+        return repo.save(p);
+    }
+
+    /**
+     * 启动短剧渲染:从已选中的 draft 读 narration + scenes,拼上 characterProfile/styleLock 前缀,
+     * 调 {@link #genDramaAsync} 逐段 CogVideoX 渲染。必须先 {@link #chooseDraft};RENDERING 中拒绝。
+     */
+    public XhsProject renderDrama(Long id, String ownerId) {
+        XhsProject p = owned(id, ownerId);
+        if (p.getChosenDraftId() == null) {
+            throw new IllegalStateException("未选择候选版本,请先挑 1 版再生成");
+        }
+        if ("RENDERING".equals(p.getDramaStatus())) {
+            throw new IllegalStateException("正在渲染中,不能再次启动");
+        }
+        // 校验选中的 draft 至少有 6 段非空分镜(用户可手动补全失败版,补不够时拒绝)
+        XhsDramaDraft d = draftRepo.findById(p.getChosenDraftId()).orElse(null);
+        if (d == null) {
+            throw new IllegalStateException("选中的候选版不存在,请重选");
+        }
+        int filled = 0;
+        try {
+            List<String> raw = (d.getScenes() == null || d.getScenes().isBlank()) ? List.of()
+                    : objectMapper.readValue(d.getScenes(),
+                            objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
+            for (String s : raw) {
+                if (s != null && !s.trim().isEmpty()) filled++;
+            }
+        } catch (Exception ignore) { /* 解析失败时视为 0 段 */ }
+        if (filled < DRAMA_SCENES) {
+            throw new IllegalStateException("选中的版本分镜不足 " + DRAMA_SCENES + " 段(当前 " + filled + " 段),请补全后再渲染");
+        }
+        p.setDramaStatus("RENDERING");
+        p.setDramaPath(null);
+        p.setDramaSegmentsDone(0);
+        p.setErrorMsg(null);
+        repo.save(p);
         selfProvider.getObject().genDramaAsync(p.getId());
         return p;
     }
 
-    /** 该主体的全部短剧项目(最新在前)。 */
-    public List<XhsProject> listDrama(String ownerId) {
-        return repo.findByOwnerIdAndDramaStatusIsNotNullOrderByIdDesc(ownerId);
+    private static String emptyToNull(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : (t.length() > 255 ? t.substring(0, 255) : t);
     }
 
     /**
@@ -407,9 +540,19 @@ public class XhsService {
         Path dir = null;
         try {
             p.setDramaStatus("RENDERING");
+            p.setDramaSegmentsDone(0);
             repo.save(p);
 
-            VideoScript vs = dramaScript(p.getCopyText(), p.getChosenTitle());
+            // 渲染脚本来源:有 chosenDraftId → 从选中的候选版读(注入 characterProfile/styleLock 前缀
+            // 强制跨镜头角色/风格一致);无 → 兼容老项目,直接调旧 dramaScript 兜底。
+            VideoScript vs;
+            if (p.getChosenDraftId() != null) {
+                XhsDramaDraft d = draftRepo.findById(p.getChosenDraftId()).orElse(null);
+                if (d == null) { failDrama(p, "选中的候选版不存在,请重选。"); return; }
+                vs = loadVideoScriptFromDraft(d);
+            } else {
+                vs = dramaScript(p.getCopyText(), p.getChosenTitle());
+            }
             if (vs == null || vs.scenes.isEmpty()) { failDrama(p, "未能生成短剧分镜,请重试。"); return; }
 
             dir = Paths.get(props.getStorage().getImageDir(), safe(p.getOwnerId()), String.valueOf(id))
@@ -417,6 +560,7 @@ public class XhsService {
             Files.createDirectories(dir);
 
             // 1) 逐段生成 5s 竖屏无声片段:每段等待重试到成功,任一段最终失败则整部短剧失败(不缺段)
+            //    每段成功后自增 dramaSegmentsDone,前端进度条 + 段位列表用
             List<Path> segs = new ArrayList<>();
             for (int i = 0; i < vs.scenes.size(); i++) {
                 Path seg = dir.resolve("drama_seg_" + i + ".mp4");
@@ -426,6 +570,8 @@ public class XhsService {
                     return;
                 }
                 segs.add(seg);
+                p.setDramaSegmentsDone(i + 1);
+                repo.save(p);
             }
 
             // 2) 旁白 TTS
@@ -480,6 +626,166 @@ public class XhsService {
             }
         }
         return false;
+    }
+
+    /**
+     * 生成 1 版候选脚本(短剧「3 版候选」改造为 1 版后):
+     * LLM 调一次,落 1 行到 xhs_drama_draft,生成成功自动设为 chosenDraftId。
+     * 失败也落行(error_msg 写明原因),用户可手动补全 6 段后渲染。
+     */
+    @Async
+    public void genDraftsAsync(Long id) {
+        XhsProject p = repo.findById(id).orElse(null);
+        if (p == null) return;
+        try {
+            // 同 project 重试场景:用已存在的 v1 行 upsert
+            XhsDramaDraft row = draftRepo.findByProjectIdOrderByVersionNoAsc(id).stream()
+                    .filter(x -> x.getVersionNo() != null && x.getVersionNo() == 1)
+                    .findFirst().orElse(null);
+            XhsDramaDraft fresh;
+            try {
+                fresh = draftScript(id, p, 1);
+            } catch (Exception e) {
+                log.warn("xhs draftScript id={} 失败: {}", id, e.getMessage());
+                fresh = new XhsDramaDraft();
+                fresh.setProjectId(id);
+                fresh.setVersionNo(1);
+                String msg = e.getMessage() == null ? "生成失败" : e.getMessage();
+                fresh.setErrorMsg(msg.length() > 2000 ? msg.substring(0, 2000) : msg);
+            }
+            if (row == null) { row = fresh; row.setProjectId(id); }
+            else {
+                row.setCharacterProfile(fresh.getCharacterProfile());
+                row.setStyleLock(fresh.getStyleLock());
+                row.setNarration(fresh.getNarration());
+                row.setScenes(fresh.getScenes());
+                row.setErrorMsg(fresh.getErrorMsg());
+            }
+            try { row = draftRepo.save(row); } catch (Exception e) {
+                log.warn("xhs genDrafts 落库失败 id={}: {}", id, e.getMessage());
+            }
+            boolean ok = row.getErrorMsg() == null;
+            log.info("xhs genDrafts id={} done ok={}", id, ok);
+            if (ok) {
+                // 1 版模式下:生成成功自动选为 chosen,前端无需「选这个版本」步骤
+                p.setChosenDraftId(row.getId());
+                p.setDramaStatus("DRAFTS_READY");
+                p.setErrorMsg(null);
+            } else {
+                p.setDramaStatus("FAILED");
+                p.setErrorMsg(row.getErrorMsg());
+            }
+            repo.save(p);
+        } catch (Exception e) {
+            log.error("xhs genDrafts failed: id={}", id, e);
+            failDrama(p, e.getMessage());
+        }
+    }
+
+    /**
+     * 单版候选脚本生成:用 imported prompt 模板的 4 入参(genre/character/arc/tone 都可选),
+     * 配同主角+同风格的硬性要求,产出 characterProfile/styleLock/narration/6 段 scenes。
+     * 不足 6 段不算成功(标 error_msg,前端会展示灰卡);不静默兜底。
+     */
+    private XhsDramaDraft draftScript(Long projectId, XhsProject p, int versionNo) {
+        XhsDramaDraft d = new XhsDramaDraft();
+        d.setProjectId(projectId);
+        d.setVersionNo(versionNo);
+        String system = "你是短剧导演兼编剧。请把用户的剧情想法变成一部竖屏(9:16)微短剧的制作脚本。"
+                + "严格只输出一个 JSON 对象,不要 markdown、不要多余文字,schema 如下:"
+                + "{\"characterProfile\":\"主角固定外貌/身份/穿着的一句话描述,会被逐字注入每段画面 prompt 保持角色一致\","
+                + "\"styleLock\":\"全片统一的画面风格关键词(色调/光线/镜头质感/画风)\","
+                + "\"narration\":\"简体中文旁白口播稿,96~144 字,起承转合,口语连贯,禁 emoji/#/markdown/括号备注\","
+                + "\"scenes\":[\"镜头1\",\"镜头2\",\"镜头3\",\"镜头4\",\"镜头5\",\"镜头6\"]}。"
+                + "硬性要求:1) scenes 恰好 " + DRAMA_SCENES + " 条,起(开场)/承(推进)/转(冲突)/合(结局),"
+                + "时间与情节连续,不要跳变;2) characterProfile 必须具体且可复用,每条 scene 开头都要复述同样的主角外貌特征,"
+                + "并在画面描述里加入 styleLock 的关键词,最大化跨镜头角色/风格一致性;"
+                + "3) 每条 scene 约 5 秒画面,含主体/动作/场景/光线/镜头语言/竖屏构图,可直接用于文生视频;"
+                + "4) genre/mainCharacter/storyArc/tone 任一为空时由你根据 theme 自行补一个合理设定;"
+                + "5) 旁白与每个分镜都必须紧扣用户给的 theme,不得绕开或替换主题。";
+        String user = "剧情主题:「" + nullToDash(p.getDirection()) + "」\n"
+                + "类型: " + nullToDash(p.getGenre()) + "\n"
+                + "主角: " + nullToDash(p.getMainCharacter()) + "\n"
+                + "故事弧线: " + nullToDash(p.getStoryArc()) + "\n"
+                + "基调: " + nullToDash(p.getTone());
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                String raw = chat.complete(system, user);
+                String json = extractJsonObject(raw);
+                if (json != null) {
+                    JsonNode node = objectMapper.readTree(json);
+                    d.setCharacterProfile(safeStr(node.path("characterProfile").asText("")));
+                    d.setStyleLock(safeStr(node.path("styleLock").asText("")));
+                    d.setNarration(cleanNarration(node.path("narration").asText("")));
+                    List<String> scenes = new ArrayList<>();
+                    JsonNode arr = node.path("scenes");
+                    if (arr.isArray()) {
+                        for (JsonNode s : arr) {
+                            String t = s.asText("").trim();
+                            if (!t.isBlank()) scenes.add(t);
+                            if (scenes.size() >= DRAMA_SCENES) break;
+                        }
+                    }
+                    if (scenes.size() == DRAMA_SCENES) {
+                        d.setScenes(objectMapper.writeValueAsString(scenes));
+                        d.setErrorMsg(null);
+                        return d;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("xhs draftScript v{} 第 {} 次失败: {}", versionNo, attempt + 1, e.getMessage());
+            }
+            try { Thread.sleep(2000L * (attempt + 1)); } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt(); break;
+            }
+        }
+        // 兜底:已写入的部分字段保留,只标 error_msg,前端按灰卡展示
+        if (d.getScenes() == null) {
+            try { d.setScenes(objectMapper.writeValueAsString(new ArrayList<String>())); }
+            catch (Exception ignored) { d.setScenes("[]"); }
+        }
+        if (d.getNarration() == null) d.setNarration("");
+        d.setErrorMsg("分镜不足 6 段,可手动补全后再次保存");
+        return d;
+    }
+
+    private static String safeStr(String s) {
+        if (s == null) return "";
+        return s.length() > 1024 ? s.substring(0, 1024) : s;
+    }
+
+    private static String nullToDash(String s) {
+        return (s == null || s.isBlank()) ? "由你决定" : s;
+    }
+
+    /**
+     * 把选中的 draft 转成渲染用 VideoScript:把 characterProfile + styleLock 拼成统一前缀,
+     * 逐字注入每段 scene,这是跨镜头角色/风格一致性的关键修复点。draft 不存在或 scenes 解析失败
+     * 返回空 scenes(由 genDramaAsync 判定失败)。
+     */
+    private VideoScript loadVideoScriptFromDraft(XhsDramaDraft d) {
+        VideoScript vs = new VideoScript();
+        vs.narration = d.getNarration() == null ? "" : d.getNarration();
+        String profile = d.getCharacterProfile() == null ? "" : d.getCharacterProfile().trim();
+        String style = d.getStyleLock() == null ? "" : d.getStyleLock().trim();
+        StringBuilder pfx = new StringBuilder();
+        if (!profile.isEmpty()) pfx.append(profile).append(", ");
+        if (!style.isEmpty()) pfx.append(style).append(", ");
+        String prefix = pfx.toString();
+        try {
+            List<String> raw = (d.getScenes() == null || d.getScenes().isBlank()) ? List.of()
+                    : objectMapper.readValue(d.getScenes(),
+                            objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
+            for (String s : raw) {
+                if (s == null) continue;
+                String t = s.trim();
+                if (t.isEmpty()) continue;
+                vs.scenes.add(prefix.isEmpty() ? t : prefix + t);
+            }
+        } catch (Exception e) {
+            log.warn("xhs loadVideoScriptFromDraft 解析 scenes 失败 draftId={}: {}", d.getId(), e.getMessage());
+        }
+        return vs;
     }
 
     /**

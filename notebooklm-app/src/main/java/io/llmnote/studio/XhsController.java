@@ -79,10 +79,45 @@ public class XhsController {
         return xhsService.genDrama(id, principal.ownerId());
     }
 
-    /** 短剧独立工作台:直接用剧情主题创建并开始生成短剧。 */
+    /** 短剧独立工作台:用主题(+ 4 个可选结构化输入)创建项目,异步生成 1 版候选脚本(成功自动选中)。 */
     @PostMapping("/drama")
     public XhsProject createDrama(@RequestBody DramaReq req, Principal principal) {
-        return xhsService.createDrama(principal.ownerId(), req == null ? null : req.getTheme());
+        DramaReq r = req == null ? new DramaReq() : req;
+        return xhsService.createDrama(principal.ownerId(), r.getTheme(),
+                r.getGenre(), r.getMainCharacter(), r.getStoryArc(), r.getTone());
+    }
+
+    /** 短剧工作台:对已存在的 FAILED 项目重跑脚本生成(保留主题 + 4 个输入),不必重提表单。 */
+    @PostMapping("/{id}/drama/regenerate")
+    public XhsProject regenerateDrama(@PathVariable Long id, Principal principal) {
+        return xhsService.regenerateDrama(id, principal.ownerId());
+    }
+
+    /** 短剧工作台:列出该项目的 3 版候选脚本(版本号升序)。 */
+    @GetMapping("/{id}/drafts")
+    public List<XhsDramaDraft> listDrafts(@PathVariable Long id, Principal principal) {
+        return xhsService.listDrafts(id, principal.ownerId());
+    }
+
+    /** 短剧工作台:在线编辑某版候选(narration/scenes/characterProfile/styleLock 部分更新)。 */
+    @PutMapping("/drafts/{draftId}")
+    public XhsDramaDraft updateDraft(@PathVariable Long draftId, @RequestBody DramaDraftUpdateReq req,
+                                     Principal principal) {
+        DramaDraftUpdateReq r = req == null ? new DramaDraftUpdateReq() : req;
+        return xhsService.updateDraft(draftId, principal.ownerId(),
+                r.getCharacterProfile(), r.getStyleLock(), r.getNarration(), r.getScenes());
+    }
+
+    /** 短剧工作台:标记用户选中的候选版(只标记,不启动渲染)。 */
+    @PostMapping("/{id}/drafts/{draftId}/choose")
+    public XhsProject chooseDraft(@PathVariable Long id, @PathVariable Long draftId, Principal principal) {
+        return xhsService.chooseDraft(id, principal.ownerId(), draftId);
+    }
+
+    /** 短剧工作台:启动 CogVideoX 渲染(必须先 chooseDraft,要求 chosenDraftId 非空)。 */
+    @PostMapping("/{id}/drama/render")
+    public XhsProject renderDrama(@PathVariable Long id, Principal principal) {
+        return xhsService.renderDrama(id, principal.ownerId());
     }
 
     /** 短剧独立工作台:列出该主体的全部短剧项目(最新在前)。 */
@@ -174,6 +209,22 @@ public class XhsController {
                 .body(res);
     }
 
+    /** 短剧单段视频(0~5):用于渲染中段位预览,只读,idx 越界返 404。 */
+    @GetMapping("/{id}/drama/seg/{idx}")
+    public ResponseEntity<Resource> dramaSegmentFile(@PathVariable Long id, @PathVariable int idx, Principal principal) {
+        if (idx < 0 || idx > 5) return ResponseEntity.notFound().build();
+        XhsProject p = xhsService.get(id, principal.ownerId());
+        Path dir = Paths.get(props.getStorage().getImageDir(), p.getOwnerId(), String.valueOf(id))
+                .toAbsolutePath().normalize();
+        Path path = dir.resolve("drama_seg_" + idx + ".mp4");
+        Resource res = new FileSystemResource(path);
+        if (!res.exists()) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("video/mp4"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"xhs_drama_" + id + "_seg" + idx + ".mp4\"")
+                .body(res);
+    }
+
     @Data
     public static class CreateReq {
         private String direction;
@@ -197,5 +248,22 @@ public class XhsController {
     @Data
     public static class DramaReq {
         private String theme;
+        /** 短剧类型(可选):都市/悬疑/治愈/古风… */
+        private String genre;
+        /** 主角设定(可选):留空时 LLM 兜底 */
+        private String mainCharacter;
+        /** 故事弧线/走向(可选):留空时 LLM 兜底 */
+        private String storyArc;
+        /** 基调(可选):温暖治愈/黑色幽默/紧张悬疑… */
+        private String tone;
+    }
+
+    /** 候选版在线编辑的 partial update DTO:只更新非 null 字段。 */
+    @Data
+    public static class DramaDraftUpdateReq {
+        private String characterProfile;
+        private String styleLock;
+        private String narration;
+        private List<String> scenes;
     }
 }

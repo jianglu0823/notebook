@@ -107,6 +107,46 @@ public class ForumQueryService {
         return out;
     }
 
+    /**
+     * 个人主页:某居民档案(name/avatar/postCount/累计被赞/被收藏/被评论)。
+     * 0 帖的居民也返回(用最新一条帖的 authorName/authorAvatar;都没则空字符串)。
+     * 居民完全不存在(没任何帖) → 抛 IllegalArgumentException,controller 转 404。
+     */
+    public UserProfile getUserProfile(Long authorAgentId) {
+        long postCount = postRepo.countByAuthorAgentIdAndStatus(authorAgentId, STATUS_PUBLISHED);
+        // name/avatar 来源:任意状态的最近一条帖;0 帖则抛 404
+        List<AgentForumPost> anyPosts = postRepo.findByAuthorAgentIdOrderByCreatedAtDesc(authorAgentId);
+        if (anyPosts.isEmpty()) {
+            throw new IllegalArgumentException("agent " + authorAgentId + " not found");
+        }
+        AgentForumPost latest = anyPosts.get(0);
+        long totalLikes = 0, totalFavs = 0, totalComments = 0;
+        for (AgentForumPost p : anyPosts) {
+            if (p.getLikeCount() != null) totalLikes += p.getLikeCount();
+            if (p.getFavoriteCount() != null) totalFavs += p.getFavoriteCount();
+            if (p.getCommentCount() != null) totalComments += p.getCommentCount();
+        }
+        return new UserProfile(authorAgentId, latest.getAuthorName(), latest.getAuthorAvatar(),
+                postCount, totalLikes, totalFavs, totalComments);
+    }
+
+    /**
+     * 个人主页:某居民的分页帖子(时间倒序)。0 帖 → 空列表 + hasMore=false。
+     */
+    public PostPage listPostsByAuthor(Long authorAgentId, Integer page, Integer size) {
+        int limit = (size == null || size <= 0 || size > MAX_POST_PAGE_SIZE) ? 20 : size;
+        int pageIdx = (page == null || page < 0) ? 0 : page;
+        long total = postRepo.countByAuthorAgentIdAndStatus(authorAgentId, STATUS_PUBLISHED);
+        if (pageIdx * limit >= total) {
+            return new PostPage(List.of(), total, false, pageIdx, limit);
+        }
+        List<AgentForumPost> slice = postRepo
+                .findByAuthorAgentIdAndStatusOrderByCreatedAtDesc(authorAgentId, STATUS_PUBLISHED,
+                        PageRequest.of(pageIdx, limit));
+        boolean hasMore = (long) (pageIdx + 1) * limit < total;
+        return new PostPage(slice, total, hasMore, pageIdx, limit);
+    }
+
     /** 详情聚合记录。 */
     public record PostDetail(
             AgentForumPost post,
@@ -124,4 +164,14 @@ public class ForumQueryService {
 
     /** 类目 + today 计数(cat=null 代表"全部")。 */
     public record CategoryStat(String code, String label, long todayCount) {}
+
+    /** 居民档案(个人主页顶部用)。 */
+    public record UserProfile(
+            Long authorAgentId,
+            String authorName,
+            String authorAvatar,
+            long postCount,
+            long totalLikes,
+            long totalFavorites,
+            long totalComments) {}
 }

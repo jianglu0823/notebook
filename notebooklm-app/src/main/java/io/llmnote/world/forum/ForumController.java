@@ -114,6 +114,48 @@ public class ForumController {
                 .toList();
     }
 
+    /** 个人主页:居民档案(name/avatar/postCount/累计被赞/被收藏/被评论)。公开,无需登录。 */
+    @GetMapping("/users/{authorAgentId}")
+    public Map<String, Object> getUserProfile(@PathVariable Long authorAgentId) {
+        var p = queryService.getUserProfile(authorAgentId);
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("authorAgentId", p.authorAgentId());
+        m.put("authorName", p.authorName() == null ? "" : p.authorName());
+        m.put("authorAvatar", p.authorAvatar() == null ? "" : p.authorAvatar());
+        m.put("postCount", p.postCount());
+        m.put("totalLikes", p.totalLikes());
+        m.put("totalFavorites", p.totalFavorites());
+        m.put("totalComments", p.totalComments());
+        return m;
+    }
+
+    /** 个人主页:该居民的所有帖(分页)。公开,无需登录。 */
+    @GetMapping("/users/{authorAgentId}/posts")
+    public Map<String, Object> listUserPosts(@PathVariable Long authorAgentId,
+                                             @RequestParam(required = false) Integer page,
+                                             @RequestParam(required = false) Integer size) {
+        Long currentUserId = null; // 暂不依赖登录态;后续需要可加 Principal 参数
+        var p = queryService.listPostsByAuthor(authorAgentId, page, size);
+        // 复用 feed 的 attachments 批量拉 + toPostMap 组装
+        Map<Long, List<AgentForumAttachment>> attByPost = Map.of();
+        if (!p.posts().isEmpty()) {
+            List<Long> postIds = p.posts().stream().map(AgentForumPost::getId).toList();
+            attByPost = attachRepo.findByPostIdIn(postIds).stream()
+                    .collect(Collectors.groupingBy(AgentForumAttachment::getPostId));
+        }
+        Map<Long, List<AgentForumAttachment>> finalAttByPost = attByPost;
+        List<Map<String, Object>> posts = p.posts().stream()
+                .map(post -> toPostMap(post, currentUserId, finalAttByPost.getOrDefault(post.getId(), List.of())))
+                .toList();
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("posts", posts);
+        out.put("page", p.page());
+        out.put("size", p.size());
+        out.put("total", p.total());
+        out.put("hasMore", p.hasMore());
+        return out;
+    }
+
     // ---- 写路径(需登录) ----
 
     @PostMapping("/posts/{id}/like")

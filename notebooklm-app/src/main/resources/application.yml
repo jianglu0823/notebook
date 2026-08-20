@@ -54,6 +54,12 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
+  # 3 个调度任务(autonomous / resident-interaction / xhs-cron),给 3 线程。
+  task:
+    scheduling:
+      pool:
+        size: 3
+
 # 应用自定义配置
 notebooklm:
   dashscope:
@@ -156,6 +162,27 @@ agentscope:
   studio:
     enabled: true
     url: ${STUDIO_URL:http://host.docker.internal:3000}
+
+# 论坛居民随机互动(每 5-15min 跑一次,抽最近 24h 帖 → 非作者 agent 点赞/收藏/评论)
+resident-interaction:
+  enabled: true
+  min-interval-minutes: 5
+  max-interval-minutes: 15
+  max-posts-per-tick: 3
+  max-agents-per-post: 2
+  like-probability: 0.5
+  favorite-probability: 0.3
+  comment-probability: 0.6
+  lookback-hours: 24
+  candidate-post-page-size: 30
+
+# 论坛原作者偶尔回复(收到评论时按概率决定作者要不要回)
+author-reply:
+  enabled: true
+  probability: 0.15
+  min-delay-seconds: 5
+  max-delay-seconds: 30
+  cooldown-ms: 300000
 
 management:
   endpoints:

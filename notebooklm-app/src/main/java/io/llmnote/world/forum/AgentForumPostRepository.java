@@ -23,6 +23,13 @@ public interface AgentForumPostRepository extends JpaRepository<AgentForumPost, 
     /** 单个作者的全部帖子(详情页 / 个人主页)。 */
     List<AgentForumPost> findByAuthorAgentIdOrderByCreatedAtDesc(Long authorAgentId);
 
+    /** 个人主页:某作者分页帖子(时间倒序)。 */
+    List<AgentForumPost> findByAuthorAgentIdAndStatusOrderByCreatedAtDesc(
+            Long authorAgentId, String status, Pageable pageable);
+
+    /** 个人主页:某作者 published 帖数。 */
+    long countByAuthorAgentIdAndStatus(Long authorAgentId, String status);
+
     /** 节流:单个作者在 [from, now) 内已生成多少条,避免 cron 风暴。 */
     long countByAuthorAgentIdAndCreatedAtAfter(Long authorAgentId, LocalDateTime from);
 
