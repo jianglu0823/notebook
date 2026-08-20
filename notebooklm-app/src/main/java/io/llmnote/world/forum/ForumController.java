@@ -46,6 +46,9 @@ public class ForumController {
     private final UserRepository userRepo;
     private final NotebookLmProperties props;
 
+    /** 最近点赞人显示数量(每个 post 卡片底部展示几个昵称)。 */
+    private static final int RECENT_LIKERS_PER_POST = 3;
+
     // ---- 读路径(可匿名) ----
 
     @GetMapping("/posts")
@@ -58,15 +61,20 @@ public class ForumController {
         // 2026-08-17:列表也返回 attachments,让 feed 卡片能显示缩略图。
         // 用 findByPostIdIn 一次查所有 post 的 attachments,按 postId 分组,避免 N+1。
         Map<Long, List<AgentForumAttachment>> attByPost = Map.of();
+        Map<Long, List<ForumQueryService.Liker>> likersByPost = Map.of();
         if (!p.posts().isEmpty()) {
             List<Long> postIds = p.posts().stream().map(AgentForumPost::getId).toList();
             attByPost = attachRepo.findByPostIdIn(postIds).stream()
                     .collect(Collectors.groupingBy(AgentForumAttachment::getPostId));
+            likersByPost = queryService.topRecentLikers(postIds, RECENT_LIKERS_PER_POST);
         }
         Map<Long, List<AgentForumAttachment>> finalAttByPost = attByPost;
+        Map<Long, List<ForumQueryService.Liker>> finalLikersByPost = likersByPost;
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("posts", p.posts().stream()
-                .map(post -> toPostMap(post, currentUserId, finalAttByPost.getOrDefault(post.getId(), List.of())))
+                .map(post -> toPostMap(post, currentUserId,
+                        finalAttByPost.getOrDefault(post.getId(), List.of()),
+                        finalLikersByPost.getOrDefault(post.getId(), List.of())))
                 .toList());
         out.put("total", p.total());
         out.put("hasMore", p.hasMore());
@@ -79,8 +87,10 @@ public class ForumController {
     public Map<String, Object> getPost(@PathVariable Long id, Principal principal) {
         Long currentUserId = principal == null ? null : principal.userId();
         var detail = queryService.getPost(id, currentUserId);
+        List<ForumQueryService.Liker> likers = queryService.topRecentLikers(
+                List.of(id), RECENT_LIKERS_PER_POST).getOrDefault(id, List.of());
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("post", toPostMap(detail.post(), currentUserId, detail.attachments()));
+        out.put("post", toPostMap(detail.post(), currentUserId, detail.attachments(), likers));
         out.put("attachments", detail.attachments().stream().map(this::toAttachmentMap).toList());
         out.put("commentsPreview", detail.commentsPreview().stream().map(this::toCommentMap).toList());
         out.put("totalComments", detail.totalComments());
@@ -138,14 +148,19 @@ public class ForumController {
         var p = queryService.listPostsByAuthor(authorAgentId, page, size);
         // 复用 feed 的 attachments 批量拉 + toPostMap 组装
         Map<Long, List<AgentForumAttachment>> attByPost = Map.of();
+        Map<Long, List<ForumQueryService.Liker>> likersByPost = Map.of();
         if (!p.posts().isEmpty()) {
             List<Long> postIds = p.posts().stream().map(AgentForumPost::getId).toList();
             attByPost = attachRepo.findByPostIdIn(postIds).stream()
                     .collect(Collectors.groupingBy(AgentForumAttachment::getPostId));
+            likersByPost = queryService.topRecentLikers(postIds, RECENT_LIKERS_PER_POST);
         }
         Map<Long, List<AgentForumAttachment>> finalAttByPost = attByPost;
+        Map<Long, List<ForumQueryService.Liker>> finalLikersByPost = likersByPost;
         List<Map<String, Object>> posts = p.posts().stream()
-                .map(post -> toPostMap(post, currentUserId, finalAttByPost.getOrDefault(post.getId(), List.of())))
+                .map(post -> toPostMap(post, currentUserId,
+                        finalAttByPost.getOrDefault(post.getId(), List.of()),
+                        finalLikersByPost.getOrDefault(post.getId(), List.of())))
                 .toList();
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("posts", posts);
@@ -200,20 +215,34 @@ public class ForumController {
     @GetMapping("/me/likes")
     public List<Map<String, Object>> myLikes(Principal principal) {
         requireUser(principal);
-        return likeRepo.findByUserIdOrderByIdDesc(principal.userId()).stream()
+        List<AgentForumPost> posts = likeRepo.findByUserIdOrderByIdDesc(principal.userId()).stream()
                 .map(like -> postRepo.findById(like.getPostId()).orElse(null))
                 .filter(Objects::nonNull)
-                .map(p -> toPostMap(p, principal.userId()))
                 .toList();
+        return postsToMaps(posts, principal.userId());
     }
 
     @GetMapping("/me/favorites")
     public List<Map<String, Object>> myFavorites(Principal principal) {
         requireUser(principal);
-        return favRepo.findByUserIdOrderByIdDesc(principal.userId()).stream()
+        List<AgentForumPost> posts = favRepo.findByUserIdOrderByIdDesc(principal.userId()).stream()
                 .map(fav -> postRepo.findById(fav.getPostId()).orElse(null))
                 .filter(Objects::nonNull)
-                .map(p -> toPostMap(p, principal.userId()))
+                .toList();
+        return postsToMaps(posts, principal.userId());
+    }
+
+    /** 把若干 post 转 map 列表,统一灌入 attachments + recentLikers。 */
+    private List<Map<String, Object>> postsToMaps(List<AgentForumPost> posts, Long currentUserId) {
+        if (posts.isEmpty()) return List.of();
+        List<Long> postIds = posts.stream().map(AgentForumPost::getId).toList();
+        Map<Long, List<AgentForumAttachment>> attByPost = attachRepo.findByPostIdIn(postIds).stream()
+                .collect(Collectors.groupingBy(AgentForumAttachment::getPostId));
+        Map<Long, List<ForumQueryService.Liker>> likersByPost = queryService.topRecentLikers(postIds, RECENT_LIKERS_PER_POST);
+        return posts.stream()
+                .map(post -> toPostMap(post, currentUserId,
+                        attByPost.getOrDefault(post.getId(), List.of()),
+                        likersByPost.getOrDefault(post.getId(), List.of())))
                 .toList();
     }
 
@@ -260,10 +289,16 @@ public class ForumController {
     }
 
     private Map<String, Object> toPostMap(AgentForumPost p, Long currentUserId) {
-        return toPostMap(p, currentUserId, List.of());
+        return toPostMap(p, currentUserId, List.of(), List.of());
     }
 
     private Map<String, Object> toPostMap(AgentForumPost p, Long currentUserId, List<AgentForumAttachment> atts) {
+        return toPostMap(p, currentUserId, atts, List.of());
+    }
+
+    private Map<String, Object> toPostMap(AgentForumPost p, Long currentUserId,
+                                          List<AgentForumAttachment> atts,
+                                          List<ForumQueryService.Liker> recentLikers) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", p.getId());
         m.put("authorAgentId", p.getAuthorAgentId());
@@ -279,6 +314,10 @@ public class ForumController {
         m.put("createdAt", p.getCreatedAt());
         // 2026-08-17:列表也带 attachments,feed 卡片显示缩略图
         m.put("attachments", atts.stream().map(this::toAttachmentMap).toList());
+        // 2026-08-20:最近 3 个点赞人,卡片底部 "♡ 张三，李四，王五" 渲染
+        m.put("recentLikers", recentLikers.stream()
+                .map(l -> Map.<String, Object>of("userId", l.userId(), "username", l.username()))
+                .toList());
         boolean liked = currentUserId != null && queryService.hasLiked(currentUserId, p.getId());
         boolean fav = currentUserId != null && queryService.hasFavorited(currentUserId, p.getId());
         m.put("currentUser", Map.of("liked", liked, "favorited", fav));

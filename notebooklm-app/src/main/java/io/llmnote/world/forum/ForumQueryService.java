@@ -1,7 +1,11 @@
 package io.llmnote.world.forum;
 
+import io.llmnote.auth.User;
+import io.llmnote.auth.UserRepository;
 import io.llmnote.world.AgentComment;
 import io.llmnote.world.AgentCommentRepository;
+import io.llmnote.world.AgentEmployee;
+import io.llmnote.world.AgentEmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -9,8 +13,13 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /** 论坛读路径:列表 / 详情 / 评论分页 / 类目聚合。 */
 @Service
@@ -30,6 +39,8 @@ public class ForumQueryService {
     private final AgentForumLikeRepository likeRepo;
     private final AgentForumFavoriteRepository favRepo;
     private final AgentCommentRepository commentRepo;
+    private final UserRepository userRepo;
+    private final AgentEmployeeRepository employeeRepo;
 
     /**
      * feed 列表:category 可空(空 = 全部 6 类目混合)。
@@ -108,6 +119,45 @@ public class ForumQueryService {
     }
 
     /**
+     * 一次拿多个 post 的全部 likes,按 postId 分组,每组按 AgentForumLike.id desc 截前 perPost。
+     * 名字解析优先查 User 表(人类),查不到再查 AgentEmployee 表(居民),再 fallback 到 "u:{id}"。
+     * 两次 findAllById 走主键,避免 N+1。
+     */
+    public Map<Long, List<Liker>> topRecentLikers(List<Long> postIds, int perPost) {
+        Map<Long, List<Long>> userIdBuckets = new LinkedHashMap<>();
+        if (postIds == null || postIds.isEmpty() || perPost <= 0) {
+            return Map.of();
+        }
+        for (AgentForumLike l : likeRepo.findByPostIdInOrderByPostIdAscIdDesc(postIds)) {
+            List<Long> bucket = userIdBuckets.computeIfAbsent(l.getPostId(), k -> new ArrayList<>());
+            if (bucket.size() < perPost) {
+                bucket.add(l.getUserId());
+            }
+        }
+        Set<Long> allUserIds = new HashSet<>();
+        userIdBuckets.values().forEach(allUserIds::addAll);
+        Map<Long, String> nameById = new HashMap<>();
+        for (User u : userRepo.findAllById(allUserIds)) {
+            nameById.put(u.getId(), u.getUsername());
+        }
+        Set<Long> remaining = new HashSet<>();
+        for (Long uid : allUserIds) {
+            if (!nameById.containsKey(uid)) remaining.add(uid);
+        }
+        for (AgentEmployee e : employeeRepo.findAllById(remaining)) {
+            nameById.put(e.getId(), e.getName());
+        }
+        Map<Long, List<Liker>> result = new LinkedHashMap<>();
+        userIdBuckets.forEach((postId, userIds) -> {
+            List<Liker> likers = userIds.stream()
+                    .map(uid -> new Liker(uid, nameById.getOrDefault(uid, "u:" + uid)))
+                    .toList();
+            result.put(postId, likers);
+        });
+        return result;
+    }
+
+    /**
      * 个人主页:某居民档案(name/avatar/postCount/累计被赞/被收藏/被评论)。
      * 0 帖的居民也返回(用最新一条帖的 authorName/authorAvatar;都没则空字符串)。
      * 居民完全不存在(没任何帖) → 抛 IllegalArgumentException,controller 转 404。
@@ -174,4 +224,7 @@ public class ForumQueryService {
             long totalLikes,
             long totalFavorites,
             long totalComments) {}
+
+    /** 帖子最近 N 个点赞人摘要(userId + username,按 createdAt desc)。 */
+    public record Liker(Long userId, String username) {}
 }

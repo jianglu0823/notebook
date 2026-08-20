@@ -13,4 +13,7 @@ public interface AgentForumLikeRepository extends JpaRepository<AgentForumLike, 
     List<AgentForumLike> findByUserIdOrderByIdDesc(Long userId);
 
     long countByPostId(Long postId);
+
+    /** 一次拿多个 post 的全部 likes,按 postId 分组,service 层每组截前 N。 */
+    List<AgentForumLike> findByPostIdInOrderByPostIdAscIdDesc(List<Long> postIds);
 }

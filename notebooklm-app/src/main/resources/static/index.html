@@ -550,6 +550,26 @@
   .mc-foot-stats .act.on { color:var(--moment-action); }
   .mc-foot-stats .act.on.fav { color:#f59e0b; }
   .mc-foot-stats .act-static { color:var(--moment-meta); font-size:12px; }
+  /* 2026-08-20:帖子底部"♡ 张三，李四，王五，等 N 人"likers 行(XHS 风格) */
+  .forum-card-likers {
+    font-size:12.5px; color:var(--moment-meta);
+    margin-top:6px; padding-top:6px;
+    border-top:1px dashed var(--line);
+    display:flex; align-items:center; gap:5px;
+    line-height:1.5;
+  }
+  .forum-card-likers .liker-heart { color:#e84a5f; font-size:13px; flex:none; }
+  .forum-card-likers .liker-names { color:var(--moment-action); flex:1; min-width:0; }
+  .forum-card-likers .liker-extra { color:var(--mut); font-size:12px; }
+  /* 详情模态同款 */
+  .forum-detail-likers {
+    font-size:13px; color:var(--moment-meta);
+    padding:8px 18px 10px;
+    display:flex; align-items:center; gap:6px;
+    border-bottom:1px solid var(--line);
+  }
+  .forum-detail-likers .liker-heart { color:#e84a5f; font-size:14px; }
+  .forum-detail-likers .liker-names { color:var(--moment-action); flex:1; }
   .mc-actions { display:none; gap:4px; }
   .mc-actions button {
     background:transparent; border:0; color:var(--moment-meta);
@@ -2632,6 +2652,8 @@
       <span class="spacer"></span>
       <span class="mut" id="forumDetailCommentCnt">💬 0</span>
     </div>
+    <!-- 2026-08-20:最近 3 个点赞人,有则渲染;0 赞时由 JS 隐藏 -->
+    <div class="forum-detail-likers" id="forumDetailLikers" style="display:none"></div>
     <div class="forum-detail-comments">
       <div class="ch">💬 评论</div>
       <div class="list" id="forumDetailCommentList">
@@ -8257,6 +8279,16 @@ function renderForumCard(p) {
   const isLong = text.length > 200 || lineBreaks >= 6;
   const textCls = isLong ? 'mc-text clamp-6' : 'mc-text';
   const grid = hasAtt ? renderImageGrid(p.id, atts) : '';
+  // 2026-08-20:底部 likers 行(0 赞不渲染;3+ 个时尾部 "等 N 人")
+  const likers = p.recentLikers || [];
+  const likeCnt = p.likeCount || 0;
+  const likersLine = likers.length > 0
+    ? '<div class="forum-card-likers">'
+        + '<span class="liker-heart">♡</span>'
+        + '<span class="liker-names">' + likers.map(l => esc(l.username || ('u:' + l.userId))).join('，') + '</span>'
+        + (likeCnt > likers.length ? '<span class="liker-extra">，等 ' + (likeCnt - likers.length) + ' 人</span>' : '')
+      + '</div>'
+    : '';
   return ''
     + '<div class="forum-card moment-card" data-pid="' + p.id + '">'
     +   '<div class="mc-head">'
@@ -8285,6 +8317,7 @@ function renderForumCard(p) {
     +       '<button data-act="detail">详情</button>'
     +     '</div>'
     +   '</div>'
+    +   likersLine
     + '</div>';
 }
 
@@ -8504,6 +8537,19 @@ function renderForumDetail() {
     + '<div class="content">' + esc(p.content || '') + '</div>'
     + stageHtml
     + thumbsHtml;
+  // 2026-08-20:详情底部 likers 行(0 赞不渲染)
+  const likersEl = document.getElementById('forumDetailLikers');
+  const likers = p.recentLikers || [];
+  const likeCnt = p.likeCount || 0;
+  if (likers.length > 0) {
+    likersEl.innerHTML = '<span class="liker-heart">♡</span>'
+      + '<span class="liker-names">' + likers.map(l => esc(l.username || ('u:' + l.userId))).join('，') + '</span>'
+      + (likeCnt > likers.length ? '<span class="liker-extra">，等 ' + (likeCnt - likers.length) + ' 人</span>' : '');
+    likersEl.style.display = '';
+  } else {
+    likersEl.innerHTML = '';
+    likersEl.style.display = 'none';
+  }
   // 按钮
   const likeBtn = document.getElementById('forumDetailLikeBtn');
   likeBtn.classList.toggle('on', !!cu.liked);
