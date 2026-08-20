@@ -9,6 +9,7 @@ import io.llmnote.auth.Principal;
 import io.llmnote.auth.User;
 import io.llmnote.auth.UserRepository;
 import io.llmnote.llm.ChatModelFactory;
+import io.llmnote.world.config.WorldChildrenProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -93,6 +94,8 @@ public class AgentEmployeeService {
     private final AgentMemoryRepository memoryRepo;
     private final UserRepository userRepo;
     private final ChatModelFactory modelFactory;
+    // town-children-rules:孩子 avatar 走池,确定性 pickAvatar 由 props 提供
+    private final WorldChildrenProperties childrenProps;
 
     /** 列出小镇全体在册居民(active);首次(世界从未播种)则内置预设。 */
     public List<AgentEmployee> list(String ownerIdIgnored) {
@@ -275,7 +278,7 @@ public class AgentEmployeeService {
         AgentEmployee e = new AgentEmployee();
         e.setOwnerId(WORLD);
         e.setName(safe(name, "小居民"));
-        e.setAvatar(safe(avatar, "👶"));
+        e.setAvatar(childrenProps.pickAvatar(name));
         e.setTitle("镇上的孩子");
         e.setPersona(persona == null || persona.isBlank() ? DEFAULT_PERSONA : persona.trim());
         e.setColor("#f9a8d4");

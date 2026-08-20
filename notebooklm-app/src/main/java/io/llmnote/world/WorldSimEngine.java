@@ -9,6 +9,7 @@ import io.agentscope.core.model.ChatUsage;
 import io.agentscope.core.model.GenerateOptions;
 
 import io.llmnote.llm.ChatModelFactory;
+import io.llmnote.world.config.WorldChildrenProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -82,6 +83,8 @@ public class WorldSimEngine {
     private final AgentCommentRepository commentRepo;
     private final TownEconomyService economyService;
     private final StockMarketService stockMarketService;
+    // town-children-rules:夫妇 cap 配置(孩子数达到 maxPerCouple 后不再怀上)
+    private final WorldChildrenProperties childrenProps;
 
     /** 由日期求季节(北半球:3-5春 6-8夏 9-11秋 12-2冬)。 */
     public static String seasonOf(LocalDate d) {
@@ -603,6 +606,8 @@ public class WorldSimEngine {
             boolean fertile = (ageA >= FERTILE_MIN && ageA <= FERTILE_MAX)
                     || (ageB >= FERTILE_MIN && ageB <= FERTILE_MAX);
             if (!fertile) continue; // 双方均超出育龄
+            // town-children-rules:夫妇已有孩子数 ≥ maxPerCouple,不再怀上
+            if (coupleAtCap(a, b)) continue;
             if (rnd(100) >= 8) continue; // 8% 概率今日怀上
             // 由育龄一方孕育(优先在育龄区间者)
             AgentEmployee mom = (ageA >= FERTILE_MIN && ageA <= FERTILE_MAX) ? a : b;
@@ -631,6 +636,29 @@ public class WorldSimEngine {
             if (!employeeRepo.existsByName(cand)) return cand;
         }
         return base + "·" + System.currentTimeMillis() % 100000; // 兜底,几乎不会走到
+    }
+
+    /**
+     * town-children-rules:夫妇 (a, b) 已有孩子数 ≥ maxPerCouple 则视为达 cap。
+     * 用 findByParentIdsContaining(a.id) 粗筛含 a 的孩子,再在 Java 里过滤 parentIds 串同时含 b.id 的行。
+     * 串内可能含尾随 ','(见 birth() 实现),split 后用 trim + 过滤空串避免误判。
+     * package-private 供单元测试直接覆盖。
+     */
+    boolean coupleAtCap(AgentEmployee a, AgentEmployee b) {
+        java.util.Set<String> parentIds = new java.util.HashSet<>();
+        parentIds.add(String.valueOf(a.getId()));
+        parentIds.add(String.valueOf(b.getId()));
+        int count = 0;
+        for (AgentEmployee child : employeeRepo.findByParentIdsContaining(String.valueOf(a.getId()))) {
+            if (child.getParentIds() == null) continue;
+            java.util.Set<String> childsParents = new java.util.HashSet<>();
+            for (String pid : child.getParentIds().split(",")) {
+                String t = pid == null ? "" : pid.trim();
+                if (!t.isEmpty()) childsParents.add(t);
+            }
+            if (childsParents.containsAll(parentIds)) count++;
+        }
+        return count >= childrenProps.getMaxPerCouple();
     }
 
     /**
