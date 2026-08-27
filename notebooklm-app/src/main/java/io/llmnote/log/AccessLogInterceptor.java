@@ -12,21 +12,22 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.util.Set;
 
 /**
- * 记录写操作(POST/PUT/DELETE)到 access_log。登录/注册由 AuthController 显式记录,这里跳过避免重复。
- * 只读请求(GET)不记,避免日志膨胀。
+ * 记录所有非基础设施访问到 access_log:写操作(POST/PUT/DELETE/PATCH)和读操作(GET)。
+ * 登录/注册由 AuthController 显式记录,这里跳过避免重复。
+ * OPTIONS/HEAD/TRACE 视为基础设施请求(CORS 预检、健康检查等),不记。
  */
 @Component
 @RequiredArgsConstructor
 public class AccessLogInterceptor implements HandlerInterceptor {
 
-    private static final Set<String> WRITE_METHODS = Set.of("POST", "PUT", "DELETE", "PATCH");
+    private static final Set<String> LOGGED_METHODS = Set.of("GET", "POST", "PUT", "DELETE", "PATCH");
 
     private final AccessLogService accessLogService;
 
     @Override
     public void afterCompletion(HttpServletRequest req, HttpServletResponse resp, Object handler,
                                 @Nullable Exception ex) {
-        if (!WRITE_METHODS.contains(req.getMethod())) {
+        if (!LOGGED_METHODS.contains(req.getMethod())) {
             return;
         }
         String uri = req.getRequestURI();
