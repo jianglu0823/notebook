@@ -21,15 +21,6 @@ class ImagePromptStyleTest {
     }
 
     @Test
-    void assemble_acrostic_usesWatercolor() {
-        String p = ImagePromptStyle.assemble("acrostic", "代码人生",
-                "代\n码\n人\n生");
-        assertThat(p).contains("watercolor");
-        assertThat(p).contains("macro close-up");
-        assertThat(p).contains("dreamy bokeh");
-    }
-
-    @Test
     void assemble_daily_usesPhotorealisticLifestyle() {
         String p = ImagePromptStyle.assemble("daily", null, "今天去了西湖,柳树发芽了");
         assertThat(p).contains("photorealistic lifestyle");

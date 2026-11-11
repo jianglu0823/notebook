@@ -1,0 +1,45 @@
+# .spec-superflow.yaml — lightweight state machine
+# Derived data. Always rebuildable from artifacts. Lost/corrupt → fall back to content-level detection.
+
+# === Core state ===
+state: debugging
+workflow: tweak
+revision: 2
+
+# === Hashes (fast staleness detection) ===
+artifacts_hash: sha256:4b3e704f887449869872d43ef8e9fc035438d7ac31033f2627f114292e95d8c6
+contract_hash: sha256:ca29e7c281149788a02af158e320a5793236253f62bf76b1bbd1e8990e484bb9
+
+# === Execution progress ===
+execution_mode: sdd
+execution_plan_hash: sha256:6682e357dbd88aedae15e5163dbf92a7451bd47116e4091b66fad82f679febd1
+execution_plan_revision: 2
+batches_completed: 0
+test_result: null
+spec_merged: false
+
+# === Metadata ===
+change_name: forum-category-and-thumbs
+last_transition: 2026-08-17T08:18:31.717Z
+last_transition_from: executing
+last_transition_to: debugging
+
+# === Decision points ===
+dp_0_decisions: 把论坛类目筛选条从左侧 sidebar 改到顶部横排 + 帖子卡片在有附件时显示左侧 80x80 缩略图。只改前端 index.html,不动后端。范围小,workflow=tweak。
+dp_0_result: confirmed
+dp_0_confirmed: true
+dp_0_timestamp: 2026-08-17T07:30:00Z
+dp_1_result: null
+dp_1_timestamp: null
+dp_2_result: null
+dp_2_timestamp: null
+dp_3_result: null
+dp_3_timestamp: null
+dp_4_result: sdd: plan revision 2; default; artifacts 已补齐,重新记录 plan
+dp_4_timestamp: 2026-08-17T07:32:05.471Z
+dp_5_result: null
+dp_5_timestamp: null
+dp_6_result: null
+dp_6_timestamp: null
+dp_7_result: null
+dp_7_timestamp: null

@@ -24,6 +24,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AgentChatService {
 
+    /** 用户主动对话的降级模型:免费 GLM 429 时用 qwen-turbo 兜底(单次成本可忽略)。 */
+    private static final String CHAT_FALLBACK_MODEL = "qwen-turbo";
+
     private final AgentEmployeeRepository employeeRepo;
     private final AgentChatMsgRepository chatRepo;
     private final EmployeeAgentFactory agentFactory;
@@ -67,8 +70,20 @@ public class AgentChatService {
             ChatUsage u = m == null ? null : m.getChatUsage();
             if (u != null) { inTok = u.getInputTokens(); outTok = u.getOutputTokens(); }
         } catch (Exception ex) {
-            log.error("agent chat failed agentId={}", agentId, ex);
-            reply = "(它似乎走神了,没有回应)";
+            // 免费 GLM 被全镇自主行为打到 429 时,用户主动对话降级 qwen-turbo(付费,低频单次成本可忽略)
+            log.warn("agent chat 主模型 {} 失败,降级 {} 重试 agentId={}: {}",
+                    model, CHAT_FALLBACK_MODEL, agentId, ex.getMessage());
+            try {
+                Msg m = agentFactory.forEmployee(e, CHAT_FALLBACK_MODEL)
+                        .call(prompt, RuntimeContext.empty()).block();
+                reply = m == null || m.getTextContent() == null ? "(沉默)" : m.getTextContent().trim();
+                ChatUsage u = m == null ? null : m.getChatUsage();
+                if (u != null) { inTok = u.getInputTokens(); outTok = u.getOutputTokens(); }
+                model = CHAT_FALLBACK_MODEL;
+            } catch (Exception ex2) {
+                log.error("agent chat failed agentId={}", agentId, ex2);
+                reply = "(它似乎走神了,没有回应)";
+            }
         }
 
         BigDecimal cost = BigDecimal.valueOf(modelFactory.costRmb(model, inTok, outTok));

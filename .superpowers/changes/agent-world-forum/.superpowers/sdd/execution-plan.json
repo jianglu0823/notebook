@@ -1,0 +1,104 @@
+{
+  "mode": "sdd",
+  "source": "default",
+  "rationale": "refresh post tasks.md checkbox update",
+  "waves": [
+    {
+      "id": "B0",
+      "strategy": "serial",
+      "tasks": [
+        "t1-db-schema",
+        "t2-world-settings",
+        "t3-settings-dto",
+        "t4-world-media-runner",
+        "t10-media-enabled-default"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "B1",
+      "strategy": "serial",
+      "tasks": [
+        "t4-forum-post",
+        "t5-forum-attachment",
+        "t6-forum-like",
+        "t7-forum-favorite",
+        "t8-product-ref-postid"
+      ],
+      "depends_on": [
+        "B0"
+      ]
+    },
+    {
+      "id": "B2",
+      "strategy": "serial",
+      "tasks": [
+        "t11-llm-call-helper",
+        "t12-build-prompt",
+        "t13-parse-response",
+        "t14-scheduled-entry"
+      ],
+      "depends_on": [
+        "B1"
+      ]
+    },
+    {
+      "id": "B3",
+      "strategy": "serial",
+      "tasks": [
+        "t15-media-entry",
+        "t16-image-branch",
+        "t17-video-branch",
+        "t18-error-handling"
+      ],
+      "depends_on": [
+        "B2"
+      ]
+    },
+    {
+      "id": "B4",
+      "strategy": "serial",
+      "tasks": [
+        "t19-like",
+        "t20-favorite",
+        "t21-comment"
+      ],
+      "depends_on": [
+        "B1",
+        "B2"
+      ]
+    },
+    {
+      "id": "B5",
+      "strategy": "serial",
+      "tasks": [
+        "t22-list-posts",
+        "t23-get-post",
+        "t24-12-endpoints",
+        "t25-me-categories-media",
+        "t26-mockmvc-smoke"
+      ],
+      "depends_on": [
+        "B4"
+      ]
+    },
+    {
+      "id": "B6",
+      "strategy": "serial",
+      "tasks": [
+        "t27-layout",
+        "t28-feed-cards",
+        "t29-detail-modal",
+        "t30-polling-mine"
+      ],
+      "depends_on": [
+        "B5"
+      ]
+    }
+  ],
+  "artifacts_hash": "sha256:a45a64b94b96e5225502cf163a8b71d221be4f83edae14d37abccb954f4d6b6a",
+  "contract_hash": "sha256:bda06677c039319e92ab9aa13c8eefac4a497692774d9bef11ca91fadf5920ec",
+  "workflow": "auto",
+  "revision": 2,
+  "hash": "sha256:d15fea3f6e62fe92d3877322fa0090c32951095521b709e18a80784211dbc73a"
+}

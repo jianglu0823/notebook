@@ -1,0 +1,47 @@
+{
+  "mode": "sdd",
+  "source": "default",
+  "rationale": "town-children-rules 收尾:tasks.md 加 task 状态清单(closing 需要 tasks-complete guard),artifacts_hash 变,需升 plan revision 2;3 waves 不变,W3 之前已收 pass receipt",
+  "waves": [
+    {
+      "id": "W1",
+      "strategy": "serial",
+      "tasks": [
+        "1",
+        "2",
+        "3"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "W2",
+      "strategy": "serial",
+      "tasks": [
+        "4",
+        "5",
+        "6"
+      ],
+      "depends_on": [
+        "W1"
+      ]
+    },
+    {
+      "id": "W3",
+      "strategy": "serial",
+      "tasks": [
+        "7",
+        "8",
+        "9"
+      ],
+      "depends_on": [
+        "W1",
+        "W2"
+      ]
+    }
+  ],
+  "artifacts_hash": "sha256:387d24b1ddc19a26d56f1bd3ded8c78175ae36d539829d500a8dcf15e19da467",
+  "contract_hash": "sha256:03d04a07cd16ad218017dadddde9b52acd7fb5c87ebbe68762a2c6f6faaa1ece",
+  "workflow": "full",
+  "revision": 2,
+  "hash": "sha256:a0e784113ec8bb7f24b45f6959d40f3188119394d2b6dc205dbe6e62952c6577"
+}

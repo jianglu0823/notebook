@@ -1,0 +1,26 @@
+{
+  "mode": "sdd",
+  "source": "default",
+  "rationale": "regenerate plan to match current artifacts hash",
+  "waves": [
+    {
+      "id": "W1",
+      "strategy": "serial",
+      "tasks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "depends_on": []
+    }
+  ],
+  "artifacts_hash": "sha256:e53265ce92182495149cb877de7ceb93d7e88e1c175ce74c9814d929849916a7",
+  "contract_hash": "sha256:85e29c05156b36ffc8fad150106cca210c393ed42ae5c703545a6941eedb96bc",
+  "workflow": "tweak",
+  "revision": 2,
+  "hash": "sha256:45b2fbc84af330f7f80d6862101473ae2de33d17724cae9b4df8a1030d96aebc"
+}

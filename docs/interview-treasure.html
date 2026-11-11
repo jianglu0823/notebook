@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Agent / RAG 面试宝典 + LLM-note 项目复盘</title>
+<style>
+  :root{
+    --bg:#0f1218; --panel:#161b26; --panel2:#1d2330; --ink:#e7ecf3;
+    --ink2:#aab3c2; --muted:#7c8597; --line:#262d3c;
+    --acc:#7dd3fc; --acc2:#a78bfa; --gold:#facc15; --green:#22c55e; --red:#ef4444; --orange:#fb923c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    line-height:1.7;font-size:15px}
+  .container{max-width:1180px;margin:0 auto;padding:48px 28px 96px}
+  header.hero{
+    background:linear-gradient(135deg,#1e293b 0%,#0f172a 50%,#1e1b4b 100%);
+    border:1px solid #334155;border-radius:18px;padding:36px 32px;margin-bottom:36px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35)
+  }
+  header.hero h1{font-size:30px;margin:0 0 10px;color:#f1f5f9;letter-spacing:.5px}
+  header.hero .sub{color:#cbd5e1;font-size:15px;margin:0 0 18px}
+  .pillrow{display:flex;flex-wrap:wrap;gap:8px}
+  .pill{background:rgba(125,211,252,.12);color:#7dd3fc;border:1px solid rgba(125,211,252,.3);
+    padding:4px 12px;border-radius:999px;font-size:12px}
+  .pill.alt{background:rgba(167,139,250,.12);color:#a78bfa;border-color:rgba(167,139,250,.3)}
+  .pill.gold{background:rgba(250,204,21,.12);color:#facc15;border-color:rgba(250,204,21,.3)}
+  .pill.green{background:rgba(34,197,94,.12);color:#22c55e;border-color:rgba(34,197,94,.3)}
+  .toc{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:36px
+  }
+  .toc h2{margin:0 0 14px;font-size:18px;color:#f1f5f9}
+  .toc ol{margin:0;padding-left:22px;color:var(--ink2)}
+  .toc ol li{margin:4px 0}
+  .toc ol li a{color:#7dd3fc;text-decoration:none}
+  .toc ol li a:hover{text-decoration:underline}
+  .toc .group{margin-top:14px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+  h2.section{
+    font-size:24px;margin:48px 0 8px;color:#f1f5f9;
+    border-left:4px solid var(--acc);padding-left:14px
+  }
+  h2.section.alt{border-left-color:var(--acc2)}
+  h2.section.gold{border-left-color:var(--gold)}
+  h2.section.green{border-left-color:var(--green)}
+  h3.q{
+    background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--acc);
+    border-radius:10px;padding:14px 18px;margin:24px 0 0;color:#f1f5f9;font-size:17px
+  }
+  h3.q .tag{font-size:11px;color:var(--muted);font-weight:normal;margin-left:8px}
+  .a{
+    background:var(--panel2);border:1px solid var(--line);border-radius:0 0 10px 10px;
+    padding:18px 22px;margin-bottom:8px
+  }
+  .a h4{margin:14px 0 6px;font-size:14px;color:#facc15;letter-spacing:.5px;text-transform:uppercase}
+  .a h4:first-child{margin-top:0}
+  .a p{margin:6px 0;color:var(--ink)}
+  .a ul,.a ol{margin:6px 0 6px 20px;color:var(--ink)}
+  .a li{margin:4px 0}
+  .a code,.code{
+    background:#0a0d14;border:1px solid #232a3a;border-radius:5px;
+    padding:1px 6px;font-size:13px;color:#fbbf24;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace
+  }
+  pre.codeblock{
+    background:#0a0d14;border:1px solid #232a3a;border-radius:8px;padding:14px 16px;
+    overflow-x:auto;line-height:1.55;font-size:13px;color:#e7ecf3;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace
+  }
+  pre.codeblock .k{color:#a78bfa}
+  pre.codeblock .s{color:#86efac}
+  pre.codeblock .c{color:#64748b;font-style:italic}
+  pre.codeblock .n{color:#7dd3fc}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.grid2{grid-template-columns:1fr}}
+  .tip{
+    background:rgba(125,211,252,.08);border:1px solid rgba(125,211,252,.25);
+    border-radius:8px;padding:10px 14px;margin:10px 0;color:#bae6fd;font-size:14px
+  }
+  .warn{
+    background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.25);
+    border-radius:8px;padding:10px 14px;margin:10px 0;color:#fed7aa;font-size:14px
+  }
+  .key{
+    background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);
+    border-radius:8px;padding:10px 14px;margin:10px 0;color:#bbf7d0;font-size:14px
+  }
+  table{border-collapse:collapse;width:100%;margin:8px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+  th{background:#1e293b;color:#f1f5f9}
+  td{color:var(--ink2)}
+  td code{font-size:12px}
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
+  @media(max-width:760px){.compare{grid-template-columns:1fr}}
+  .compare > div{background:#0a0d14;border:1px solid #232a3a;border-radius:8px;padding:12px 14px}
+  .compare h5{margin:0 0 6px;font-size:13px;color:#7dd3fc}
+  .compare.bad h5{color:#f87171}
+  .compare.good h5{color:#4ade80}
+  .compare p, .compare ul{margin:4px 0;color:var(--ink2);font-size:14px}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+  .flow .node{
+    background:#1e293b;border:1px solid #334155;border-radius:8px;
+    padding:8px 12px;font-size:13px;color:#e2e8f0
+  }
+  .flow .arrow{color:#64748b;font-size:18px}
+  .checklist{margin:0;padding-left:20px}
+  .checklist li{margin:4px 0}
+  .anchor-offset{scroll-margin-top:20px}
+  hr{border:none;border-top:1px solid var(--line);margin:40px 0}
+  footer{color:var(--muted);text-align:center;margin-top:48px;font-size:12px}
+  .badge{display:inline-block;font-size:11px;padding:1px 6px;border-radius:4px;margin-left:6px;
+    background:#1e293b;color:#aab3c2;border:1px solid #334155}
+  .badge.must{background:rgba(239,68,68,.15);color:#fca5a5;border-color:rgba(239,68,68,.3)}
+  .badge.recommend{background:rgba(250,204,21,.15);color:#fde68a;border-color:rgba(250,204,21,.3)}
+  .badge.bonus{background:rgba(34,197,94,.15);color:#86efac;border-color:rgba(34,197,94,.3)}
+  .print-bar{
+    position:sticky;top:0;z-index:10;background:rgba(15,18,24,.92);
+    backdrop-filter:saturate(160%) blur(8px);border-bottom:1px solid var(--line);
+    padding:10px 0;margin:-48px -28px 24px;padding:10px 28px
+  }
+  .print-bar button{
+    background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px;
+    padding:6px 14px;font-size:13px;cursor:pointer;margin-right:8px
+  }
+  .print-bar button:hover{background:#334155}
+  @media print{
+    body{background:#fff;color:#000}
+    .print-bar{display:none}
+    h2.section,h3.q{break-after:avoid}
+    .a,.tip,.warn,.key,pre.codeblock{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="print-bar">
+  <button onclick="window.print()">🖨 打印 / 导出 PDF</button>
+  <span style="color:#7c8597;font-size:12px">提示:打印对话框可选「仅奇数页」分批打,或直接 Ctrl/Cmd+P → 另存为 PDF</span>
+</div>
+
+<header class="hero">
+  <h1>Agent / RAG 面试宝典 <span style="color:#7dd3fc">+</span> 鹿匠笔记项目复盘</h1>
+  <p class="sub">面向 Agent / LLM 应用开发岗 · 27 道高频面试题逐题拆解 · 配套 LLM-note 真实项目应答话术</p>
+  <div class="pillrow">
+    <span class="pill">RAG</span>
+    <span class="pill">向量检索</span>
+    <span class="pill">Milvus</span>
+    <span class="pill alt">LangGraph</span>
+    <span class="pill alt">Agent</span>
+    <span class="pill alt">ReAct</span>
+    <span class="pill gold">Spring Boot</span>
+    <span class="pill gold">JDK 21</span>
+    <span class="pill green">生产级</span>
+    <span class="pill green">多智能体</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>📑 目录</h2>
+  <div class="group">Part 1 · 自我介绍与项目概述</div>
+  <ol>
+    <li><a href="#q1">Q1. 自我介绍</a></li>
+  </ol>
+
+  <div class="group">Part 2 · RAG 与向量数据库</div>
+  <ol start="2">
+    <li><a href="#q2">Q2. rag 知识库,都参与了什么开发什么工作呢</a></li>
+    <li><a href="#q3">Q3. 用到什么向量数据库,为什么用这个</a></li>
+    <li><a href="#q4">Q4. Milvus 实操过吗?具体怎么开发的</a></li>
+    <li><a href="#q5">Q5. 存储到 Milvus 中的数据结构是什么样的</a></li>
+    <li><a href="#q6">Q6. 用到了几个 collection,怎么分配的</a></li>
+    <li><a href="#q7">Q7. ID 和关联的关系存在哪里</a></li>
+    <li><a href="#q8">Q8. 元数据没有和它的设计</a></li>
+    <li><a href="#q9">Q9. 具体一点检索怎么查的,代码上怎么写的,或者用了哪个方法,传递了哪些参数</a></li>
+    <li><a href="#q10">Q10. 召回的得分阈值最低是多少,分了多少块?平均得分最高的是多少分,得分有处理吗</a></li>
+    <li><a href="#q11">Q11. 多路召回除了向量这一路的召回还有什么召回,多路召回指的是哪几路?最后怎么排的</a></li>
+    <li><a href="#q12">Q12. 你的元数据检索你咋检索的,用的什么方法检索的?你这个检索用到什么搭建检索</a></li>
+    <li><a href="#q13">Q13. 在查询你的向量库之前,你就已经调大模型了吗</a></li>
+    <li><a href="#q14">Q14. 匹配或者重排的检索,有没有用到一些模型之类,它有一些策略,你说说是什么策略</a></li>
+  </ol>
+
+  <div class="group">Part 3 · LangGraph / Agent 编排</div>
+  <ol start="15">
+    <li><a href="#q15">Q15. LangGraph,你们设计了几个节点?什么样的节点,节点之间是什么逻辑关系</a></li>
+    <li><a href="#q16">Q16. 节点它们的关系这个模式叫什么模式?它们之间的关系是做的</a></li>
+    <li><a href="#q17">Q17. 你现在的节点,他们是父子关系,你是从哪里建立的</a></li>
+    <li><a href="#q18">Q18. LangGraph 一共有几个核心,它们之间的区别,都是各自干什么的</a></li>
+    <li><a href="#q19">Q19. 你们几个完成的这一个项目?分别是什么样的角色</a></li>
+    <li><a href="#q20">Q20. 项目的提示词是谁编写的,怎么写的</a></li>
+    <li><a href="#q21">Q21. 程序在执行的时候,规划的任务不准确,有没有碰到?怎么处理</a></li>
+    <li><a href="#q22">Q22. 你用的 LangChain 的哪一块能力</a></li>
+    <li><a href="#q23">Q23. 那你用的哪种记忆方式?记忆方式?它特点是什么呀</a></li>
+    <li><a href="#q24">Q24. 你为什么要选择这一种,不选其他的?还有好几种,真实,还有好几种,但是你为什么要选择这一种</a></li>
+    <li><a href="#q25">Q25. 那如果说让你去识别一个合同的里边的指标,只要把指标都列出来就行,你会怎么考虑实现它呢?用什么技术</a></li>
+    <li><a href="#q26">Q26. 你以前以往的工作经历中,有没有跟别人有过什么技术方案上意见分歧?怎么解决</a></li>
+    <li><a href="#q27">Q27. 那比如说现在就一个场景,我们其实这个智能体也是复杂的,可能是多节点父节点点有个四五个,互相的调用,这样让利用 LangChain 实现</a></li>
+  </ol>
+
+  <div class="group">Part 4 · 项目应答(LLM-note)</div>
+  <ol start="28">
+    <li><a href="#p1">P1. 1 分钟电梯演讲</a></li>
+    <li><a href="#p2">P2. 技术亮点 12 答</a></li>
+    <li><a href="#p3">P3. 难点 / 踩坑 5 讲</a></li>
+    <li><a href="#p4">P4. 业务指标怎么说</a></li>
+    <li><a href="#p5">P5. 反向提问清单</a></li>
+  </ol>
+</nav>
+
+<!-- ====================== Q1 自我介绍 ====================== -->
+<h2 class="section anchor-offset" id="q1">Part 1 · 自我介绍</h2>
+
+<h3 class="q anchor-offset">Q1. 自我介绍 <span class="tag">开场定调,30-60 秒定生死</span></h3>
+<div class="a">
+  <h4>🎯 答题框架(3 段式:身份 + 亮点 + 钩子)</h4>
+  <ol>
+    <li><b>身份标签</b>:学历 / 工作年限 / 技术栈 / 当前方向(一句话)。</li>
+    <li><b>核心亮点</b>:挑 2-3 个最相关项目 + 量化数据(用 STAR 法:情境-任务-行动-结果)。</li>
+    <li><b>求职钩子</b>:为什么选贵司 / 为什么是这个岗位(让对方觉得你是冲着他们来的)。</li>
+  </ol>
+
+  <h4>📝 模板话术(可直接套)</h4>
+  <pre class="codeblock">面试官您好,我叫<span class="s">XX</span>,本科/硕士 XX 大学,工作 X 年,最近 X 年聚焦
+LLM 应用开发。<b>主要做两件事</b>:
+  ① 端到端 RAG 系统(资料摄取 → 分块 → 向量化 → 检索 → 引用 → 流式生成)
+  ② 多智能体编排(ReAct / LangGraph / A2A 协议)
+
+最近在做的一个项目叫 <span class="s">鹿匠笔记</span>(LLM-note):
+  - 一个人独立完成 12 个 Spring Boot 模块 + 1 个独立微服务
+  - 默认大模型走智谱 GLM 免费链(文本/推理/视觉/文生图/视频),付费走 DashScope
+  - 核心指标:接入 7 类多模态资料,平均检索时延 200ms 内,P95 流式首字 &lt; 1.2s
+  - 重点解决过 ReAct 工具调用的<b>幻觉拦截</b>问题(8 次 qwen-turbo 中 7 次首轮不调工具,需要兜底)
+
+对贵司的 <span class="s">Agent 平台 / 智能客服 / AI 助理</span> 方向非常感兴趣,
+希望能把 RAG 和多智能体编排的工程经验带过去。</pre>
+
+  <h4>⚠️ 雷区</h4>
+  <ul>
+    <li>❌ 流水账式从大一讲到昨天 → 听不出重点</li>
+    <li>❌ 念简历 → 面试官手上就有,显得没准备</li>
+    <li>❌ 超过 2 分钟 → 被打断时容易卡在最烂的地方</li>
+    <li>✅ 倒叙 + 量化:把最像目标岗位的项目放最前,用数字说话</li>
+  </ul>
+</div>
+
+<!-- ====================== Part 2 RAG ====================== -->
+<h2 class="section alt anchor-offset" id="q2">Part 2 · RAG 与向量数据库</h2>
+
+<!-- Q2 -->
+<h3 class="q anchor-offset">Q2. rag 知识库,都参与了什么开发什么工作呢 <span class="tag">看广度</span></h3>
+<div class="a">
+  <h4>🎯 答题框架:RAG 全链路 6 步</h4>
+  <p>RAG 不是一个东西,是一条流水线。把每一步都能讲出<b>做过什么、怎么做的、为什么这么做</b>,就是满分答案。</p>
+  <div class="flow">
+    <div class="node">1. 数据接入</div><div class="arrow">→</div>
+    <div class="node">2. 文档解析</div><div class="arrow">→</div>
+    <div class="node">3. 分块</div><div class="arrow">→</div>
+    <div class="node">4. 向量化</div><div class="arrow">→</div>
+    <div class="node">5. 检索</div><div class="arrow">→</div>
+    <div class="node">6. 生成 + 引用</div>
+  </div>
+
+  <h4>📝 标准答案(用 LLM-note 真实答)</h4>
+  <ul>
+    <li><b>数据接入</b>:PDF / Word / TXT / 图片 / 音频,经 <code>IngestController</code> 落到 <code>uploads/</code>,落 MySQL <code>source</code> 表记录元数据。</li>
+    <li><b>解析</b>:<code>TikaReader</code> 抽文本;图片走 <code>ImageUnderstandingService</code>(<code>qwen-vl-max</code> / <code>glm-4.6v-flash</code> 多模态)生成结构化描述;音频走 <code>AudioTranscribeService</code>(<code>paraformer-realtime-v2</code> ASR)转写。</li>
+    <li><b>分块</b>:长度优先 + 段落边界保护,单块 ≤ 512 字符,保留重叠窗口防语义断裂。</li>
+    <li><b>向量化</b>:<code>DashScopeTextEmbedding</code>(<code>text-embedding-v3</code>,1024 维),统一编码。</li>
+    <li><b>入库</b>:写 Milvus,payload 携带 <code>notebook_id / note_id / source_id / seq</code>,用于应用层按笔记本/笔记过滤。</li>
+    <li><b>检索</b>:<code>QaService</code> 走 <code>SimpleKnowledge</code> 抽象,top-K=12 召回,按 notebook/note 二次过滤到 6 块,拼 context + system prompt。</li>
+    <li><b>生成</b>:<code>DashScopeChatModel</code> 流式,带 [1][2] 引用编号,可点击跳出处。</li>
+  </ul>
+
+  <div class="key">💡 <b>加分点</b>:能讲出每一步的<b>失败兜底</b>(Milvus 挂掉时降级到关键词 / 大模型降级链),比只讲 happy path 高一个档次。</div>
+</div>
+
+<!-- Q3 -->
+<h3 class="q anchor-offset">Q3. 用到什么向量数据库,为什么用这个 <span class="tag">考察选型能力</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+  <p>主流向量库对比:</p>
+  <table>
+    <tr><th>产品</th><th>架构</th><th>优势</th><th>劣势</th><th>适用场景</th></tr>
+    <tr>
+      <td><b>Milvus</b>(我们用的)</td>
+      <td>存算分离(etcd + minio + pulsar 可选)</td>
+      <td>亿级水平扩展、多索引类型(IVF/HNSW/DiskANN)、云原生</td>
+      <td>运维较重,组件多</td>
+      <td>生产级 RAG,亿级以上</td>
+    </tr>
+    <tr>
+      <td>Qdrant</td>
+      <td>Rust 单二进制</td>
+      <td>轻量、过滤快</td>
+      <td>分布式能力较弱</td>
+      <td>中小规模、PoC</td>
+    </tr>
+    <tr>
+      <td>pgvector</td>
+      <td>PostgreSQL 扩展</td>
+      <td>不用单独维护一套</td>
+      <td>性能天花板低</td>
+      <td>&lt; 100w 行 + 已有 PG</td>
+    </tr>
+    <tr>
+      <td>Chroma</td>
+      <td>嵌入式</td>
+      <td>本地开发零门槛</td>
+      <td>不能生产</td>
+      <td>Demo / 教学</td>
+    </tr>
+    <tr>
+      <td>Elasticsearch 8+</td>
+      <td>已有 ES 集群</td>
+      <td>向量 + 全文一套搞定</td>
+      <td>纯向量不如 Milvus</td>
+      <td>已有 ES 栈,不想引新组件</td>
+    </tr>
+  </table>
+
+  <h4>为什么选 Milvus(LLM-note 真实理由)</h4>
+  <ol>
+    <li><b>亿级 + 水平扩展</b>:生产后期望到千万级 chunk,Milvus 是为数不多敢承诺这个量级的开源产品。</li>
+    <li><b>索引丰富</b>:同库内 HNSW(高召回)、IVF_FLAT(中规模 + 平衡)、DiskANN(冷数据落盘)可按 collection 切换。</li>
+    <li><b>Schema 化</b>:Field 类型显式(Int64 / VarChar / FloatVector),不像 pgvector 把 schema 塞 PG 表里那么别扭。</li>
+    <li><b>生态完整</b>:<code>io.milvus</code> 官方 Java SDK 与 Spring Boot 集成度高,AgentScope 的 <code>MilvusStore</code> 直接对接。</li>
+    <li><b>AgentScope 默认</b>:我们 RAG 走 <code>SimpleKnowledge</code> 抽象,底层接 <code>MilvusStore</code>,换库不动业务。</li>
+  </ol>
+
+  <div class="warn">⚠️ 雷区:别上来就「我选了 Milvus 因为它最快」。要讲<b>业务约束 → 候选 → 取舍</b>。</div>
+</div>
+
+<!-- Q4 -->
+<h3 class="q anchor-offset">Q4. Milvus 实操过吗?具体怎么开发的 <span class="tag">考察实操细节</span></h3>
+<div class="a">
+  <h4>📝 标准答案(从启动到 SDK 写代码)</h4>
+
+  <h4>1. 部署(docker-compose 真实片段)</h4>
+<pre class="codeblock"><span class="c"># Milvus 2.6 + etcd + minio 三件套</span>
+services:
+  milvus:
+    image: milvusdb/milvus:v2.6.17
+    command: [<span class="s">"milvus"</span>, <span class="s">"run"</span>, <span class="s">"standalone"</span>]
+    ports: [<span class="s">"19530:19530"</span>]
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.16
+  minio:
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    command: [<span class="s">"minio"</span>, <span class="s">"server"</span>, <span class="s">/data</span>]</pre>
+
+  <h4>2. SDK 初始化(Spring Boot 真实代码)</h4>
+<pre class="codeblock"><span class="k">@PostConstruct</span>
+<span class="k">public void</span> init() {
+    ConnectParam connectParam = ConnectParam.newBuilder()
+        .withHost(m.getHost())
+        .withPort(m.getPort())
+        .build();
+    client = <span class="k">new</span> MilvusServiceClient(connectParam);
+    ensureCollection();   <span class="c">// 检查/创建 collection + 索引</span>
+    available = <span class="k">true</span>;
+}</pre>
+
+  <h4>3. Collection 自动建(LLM-note 真实代码)</h4>
+<pre class="codeblock"><span class="c">// 启动时若 collection 不存在 → 建表 + 建索引 + load</span>
+FieldType idF = FieldType.newBuilder()
+    .withName(<span class="s">"id"</span>).withDataType(Int64)
+    .withPrimaryKey(<span class="k">true</span>).withAutoID(<span class="k">true</span>).build();
+FieldType vec = FieldType.newBuilder()
+    .withName(<span class="s">"embedding"</span>).withDataType(FloatVector)
+    .withDimension(<span class="k">1024</span>).build();
+FieldType cidF = FieldType.newBuilder()
+    .withName(<span class="s">"companion_id"</span>).withDataType(Int64).build();
+FieldType uidF = FieldType.newBuilder()
+    .withName(<span class="s">"user_id"</span>).withDataType(VarChar).withMaxLength(<span class="k">64</span>).build();
+...
+CreateCollectionParam param = CreateCollectionParam.newBuilder()
+    .withCollectionName(<span class="s">"companion_memories"</span>)
+    .withShardsNum(<span class="k">2</span>)
+    .addFieldType(idF).addFieldType(vec)...build();
+client.createCollection(param);
+
+<span class="c">// 索引</span>
+client.createIndex(CreateIndexParam.newBuilder()
+    .withCollectionName(<span class="s">"companion_memories"</span>)
+    .withFieldName(<span class="s">"embedding"</span>)
+    .withIndexType(IndexType.IVF_FLAT)
+    .withMetricType(MetricType.IP)
+    .withExtraParam(<span class="s">"{\"nlist\":128}"</span>)
+    .build());
+client.loadCollection(...);</pre>
+
+  <div class="tip">💡 <b>面试加分</b>:能讲出 <code>shardsNum</code> / <code>nlist</code> / <code>nprobe</code> 这些调参旋钮,以及「为什么 IP 而不是 L2」(向量已归一化时 IP ≡ cosine,省一次归一化)。</div>
+</div>
+
+<!-- Q5 -->
+<h3 class="q anchor-offset">Q5. 存储到 Milvus 中的数据结构是什么样的 <span class="tag">考察 schema 设计</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+  <p>Milvus 是「<b>字段化的列存</b>」,每条数据是一个 entity,所有 entity 的字段集合必须等于 collection schema 的字段定义。</p>
+
+  <h4>LLM-note 真实 schema(<code>companion_memories</code>)</h4>
+  <table>
+    <tr><th>字段</th><th>类型</th><th>作用</th><th>设计理由</th></tr>
+    <tr><td><code>id</code></td><td>Int64 (PK, AutoID)</td><td>主键,Milvus 自增</td><td>用自增避免业务侧重复</td></tr>
+    <tr><td><code>embedding</code></td><td>FloatVector[1024]</td><td>向量</td><td><code>text-embedding-v3</code> 固定 1024 维</td></tr>
+    <tr><td><code>companion_id</code></td><td>Int64</td><td>伴侣 ID</td><td>检索时强制过滤,实现多租户</td></tr>
+    <tr><td><code>user_id</code></td><td>VarChar(64)</td><td>用户 ID</td><td>同上,实现用户级隔离</td></tr>
+    <tr><td><code>memory_id</code></td><td>Int64</td><td>记忆业务 ID</td><td>回写 MySQL 时定位原始记录</td></tr>
+    <tr><td><code>content</code></td><td>VarChar(512)</td><td>原文截断</td><td>存「够用的预览」,详情回查 MySQL</td></tr>
+  </table>
+
+  <h4>另一个 collection(<code>nblm_chunks</code>,RAG 用)</h4>
+  <table>
+    <tr><th>字段</th><th>类型</th><th>作用</th></tr>
+    <tr><td><code>id</code></td><td>Int64 PK</td><td>主键</td></tr>
+    <tr><td><code>embedding</code></td><td>FloatVector[1024]</td><td>向量</td></tr>
+    <tr><td><code>notebook_id</code> / <code>note_id</code> / <code>source_id</code> / <code>seq</code></td><td>Int64 / Int64 / Int64 / Int64</td><td>应用层过滤 + 出处定位</td></tr>
+  </table>
+
+  <h4>设计原则</h4>
+  <ul>
+    <li>向量字段必须有,主键必须有,其他都是「<b>业务过滤字段</b>」。</li>
+    <li><b>不存大文本</b>:Milvus 不擅长,只存 ≤ 1KB 摘要,详情查 MySQL。</li>
+    <li><b>过滤字段建索引</b>:大 cardinality 字段(如 user_id)建标量索引提速。</li>
+  </ul>
+</div>
+
+<!-- Q6 -->
+<h3 class="q anchor-offset">Q6. 用到了几个 collection,怎么分配的 <span class="tag">考察隔离设计</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+  <p>LLM-note 里用到 <b>2 个</b> collection,按<b>业务域</b>切分,不是按租户切分。</p>
+
+  <table>
+    <tr><th>Collection</th><th>业务</th><th>数据量级</th><th>隔离方式</th></tr>
+    <tr>
+      <td><code>nblm_chunks</code></td>
+      <td>RAG 知识库切块</td>
+      <td>十万级 / 用户</td>
+      <td>payload: <code>notebook_id + note_id + source_id</code></td>
+    </tr>
+    <tr>
+      <td><code>companion_memories</code></td>
+      <td>AI 伴侣长期记忆</td>
+      <td>千级 / 用户 / 伴侣</td>
+      <td>payload: <code>companion_id + user_id</code></td>
+    </tr>
+  </table>
+
+  <h4>为什么不混一个 collection</h4>
+  <div class="compare">
+    <div class="bad">
+      <h5>混一起的坏处</h5>
+      <ul>
+        <li>索引参数不同:RAG 偏向高召回(HNSW,efConstruction 200),记忆偏向低延迟(IVF,nlist 大)</li>
+        <li>schema 字段不一致,vector field 维度要统一,业务字段会冲突</li>
+        <li>删除/归档粒度不同:用户清空记忆 ≠ 清空知识库</li>
+        <li>备份策略不同:记忆可 30 天归档,知识库永久</li>
+      </ul>
+    </div>
+    <div class="good">
+      <h5>分开的好处</h5>
+      <ul>
+        <li>每 collection 独立选索引、独立调参</li>
+        <li>故障隔离:伴侣记忆挂了不影响主 RAG</li>
+        <li>权限可以按 collection 分配 API key</li>
+      </ul>
+    </div>
+  </div>
+
+  <h4>💡 进阶:Milvus 还支持什么切分粒度</h4>
+  <ul>
+    <li><b>Partition(分区)</b>:同一 collection 内按时间 / 租户分区,适合亿级单 collection</li>
+    <li><b>Database</b>:Milvus 2.x 起支持多 database,等于「namespace」</li>
+    <li><b>Resource Group</b>:把不同 collection 放到不同物理节点(混合部署隔离)</li>
+  </ul>
+</div>
+
+<!-- Q7 -->
+<h3 class="q anchor-offset">Q7. ID 和关联的关系存在哪里 <span class="tag">考察双写一致性</span> <span class="badge recommend">pgvector 变体已加</span></h3>
+<div class="a">
+  <h4>📝 标准答案(Milvus 范式)</h4>
+  <p>核心结论:<b>MySQL 存权威关系,Milvus 只存过滤字段,不存外键</b>。</p>
+
+  <h4>LLM-note 的双写设计</h4>
+  <div class="flow">
+    <div class="node">业务表(MySQL)</div><div class="arrow">→</div>
+    <div class="node">写 source 表</div><div class="arrow">→</div>
+    <div class="node">写 chunk 表(id, source_id, seq, content, vector_id)</div><div class="arrow">→</div>
+    <div class="node">Milvus 写向量(返回主键 id)</div><div class="arrow">→</div>
+    <div class="node">把 Milvus 主键回填 chunk.vector_id</div>
+  </div>
+
+  <h4>为什么这么设计</h4>
+  <ul>
+    <li><b>Milvus 没有事务</b>:不能跨 collection 写,更不能跨系统写,所以权威关系必须在 MySQL。</li>
+    <li><b>Milvus 主键是技术主键</b>:<code>AutoID Int64</code>,业务侧不感知,避免外部误用。</li>
+    <li><b>MySQL 才是业务主键</b>:<code>chunk.id</code> 是雪花 / 自增,被所有业务逻辑引用,删除/编辑走 MySQL,Milvus 仅做只读检索。</li>
+    <li><b>回写关联</b>:用 <code>vectorId</code> 字段做桥梁,检索出 Milvus id 后回查 MySQL 拿 content / source / seq,保证引用准确。</li>
+  </ul>
+
+  <pre class="codeblock"><span class="c">// QaService.java 真实代码</span>
+List&lt;String&gt; vectorIds = filtered.stream().map(Document::getId).toList();
+Map&lt;String, Chunk&gt; chunkByVid = vectorIds.isEmpty() ? Map.of()
+    : chunkRepo.findByVectorIdIn(vectorIds).stream()
+        .collect(Collectors.toMap(Chunk::getVectorId, c -&gt; c, (a, b) -&gt; a));</pre>
+
+  <h4>⚠️ 坑:回写失败的补偿</h4>
+  <p>实际生产中,MIlvus 写成功但 MySQL 回写失败会留下「孤儿向量」。常见处理:</p>
+  <ul>
+    <li><b>补偿任务</b>:定时扫 Milvus,跟 MySQL 对账,孤儿删除 / 重新回填。</li>
+    <li><b>outbox 模式</b>:先写 MySQL outbox 表 → 后台 worker 拉取 → 写 Milvus → 更新 outbox 状态。保证最终一致。</li>
+  </ul>
+
+  <hr style="border-color:#334155;margin:24px 0">
+
+  <h4>🔁 范式 B:pgvector(全在一张数据库,无回写)</h4>
+  <p>如果用 <b>pgvector</b>(PostgreSQL 扩展),Q7 的答案<b>完全相反</b>:权威关系、向量、外键、过滤字段全部在 PostgreSQL 一个数据库里,不需要双写,不需要补偿。</p>
+
+  <h4>pgvector 完整 schema</h4>
+<pre class="codeblock"><span class="c">-- 1. source 表(原文元数据)</span>
+CREATE TABLE source (
+    id           BIGSERIAL <span class="k">PRIMARY KEY</span>,
+    name         VARCHAR(<span class="n">255</span>) <span class="k">NOT NULL</span>,
+    type         VARCHAR(<span class="n">20</span>),
+    size_bytes   BIGINT,
+    owner_id     VARCHAR(<span class="n">64</span>) <span class="k">NOT NULL</span>,
+    created_at   TIMESTAMPTZ <span class="k">DEFAULT</span> NOW()
+);
+CREATE INDEX idx_source_owner <span class="k">ON</span> source(owner_id);
+
+<span class="c">-- 2. chunk 表(带向量)—— vector(N) 是 pgvector 类型</span>
+CREATE TABLE chunk (
+    id           BIGSERIAL <span class="k">PRIMARY KEY</span>,       <span class="c">-- 业务主键,自增</span>
+    embedding    vector(<span class="n">1024</span>) <span class="k">NOT NULL</span>,     <span class="c">-- 1024 维,跟 embedding 模型对齐</span>
+    content      TEXT,                                       <span class="c">-- 原文可存大文本!</span>
+    source_id    BIGINT <span class="k">NOT NULL REFERENCES</span> source(id) <span class="k">ON DELETE CASCADE</span>,
+    notebook_id  BIGINT <span class="k">NOT NULL</span>,
+    note_id      BIGINT,
+    seq          INT,
+    created_at   TIMESTAMPTZ <span class="k">DEFAULT</span> NOW()
+);
+
+<span class="c">-- 3. 向量索引(HNSW 推荐,或 IVFFlat)</span>
+CREATE INDEX chunk_embedding_hnsw_idx
+    <span class="k">ON</span> chunk <span class="k">USING</span> hnsw (embedding vector_cosine_ops)
+    <span class="k">WITH</span> (m = <span class="n">16</span>, ef_construction = <span class="n">64</span>);
+
+<span class="c">-- 4. 过滤索引</span>
+CREATE INDEX idx_chunk_notebook <span class="k">ON</span> chunk(notebook_id);
+CREATE INDEX idx_chunk_note     <span class="k">ON</span> chunk(note_id);</pre>
+
+  <h4>检索(SQL 一把梭)</h4>
+<pre class="codeblock"><span class="c">-- 距离算子:</span>
+<span class="c">--   &lt;=&gt;  cosine distance  (1 - cosine 相似度,通用首选)</span>
+<span class="c">--   &lt;-&gt;  L2 / Euclidean     (向量未归一化时用)</span>
+<span class="c">--   &lt;#&gt;  negative inner product (IP 度量,结果取负)</span>
+
+<span class="c">-- 标准检索:按 notebook 过滤 + top-6</span>
+SELECT id, content, source_id, seq,
+       embedding &lt;=&gt; <span class="n">$1</span>::vector <span class="k">AS</span> distance
+FROM chunk
+WHERE notebook_id = <span class="n">$2</span>
+  AND owner_id = <span class="n">$3</span>             <span class="c">-- 跟 source JOIN 后过滤</span>
+ORDER BY embedding &lt;=&gt; <span class="n">$1</span>::vector
+LIMIT <span class="n">6</span>;
+
+<span class="c">-- 想 JOIN 拿 source 名?直接写,不用应用层二次查</span>
+SELECT c.id, c.content, c.seq,
+       s.name <span class="k">AS</span> source_name, s.type,
+       c.embedding &lt;=&gt; <span class="n">$1</span>::vector <span class="k">AS</span> distance
+FROM chunk c
+JOIN source s <span class="k">ON</span> s.id = c.source_id
+WHERE c.notebook_id = <span class="n">$2</span>
+  <span class="k">AND</span> s.owner_id = <span class="n">$3</span>
+ORDER BY c.embedding &lt;=&gt; <span class="n">$1</span>::vector
+LIMIT <span class="n">6</span>;</pre>
+
+  <h4>两套范式核心对比</h4>
+  <table>
+    <tr><th>维度</th><th>Milvus(LLM-note 用)</th><th>pgvector(范式 B)</th></tr>
+    <tr>
+      <td>主键</td>
+      <td><code>AutoID Int64</code>(技术主键,业务不感知)</td>
+      <td><code>BIGSERIAL</code>(业务主键,所有逻辑引用)</td>
+    </tr>
+    <tr>
+      <td>外键</td>
+      <td>❌ 不支持,存过滤字段</td>
+      <td>✅ 真正的 <code>REFERENCES</code> + ON DELETE CASCADE</td>
+    </tr>
+    <tr>
+      <td>关系存放</td>
+      <td>应用层维护 <code>vector_id</code> 桥</td>
+      <td>数据库 FK 约束 + JOIN 表达</td>
+    </tr>
+    <tr>
+      <td>事务</td>
+      <td>❌ 跨系统写,无事务,需补偿</td>
+      <td>✅ ACID,无脑写入</td>
+    </tr>
+    <tr>
+      <td>JOIN</td>
+      <td>❌ 只能按过滤字段在应用层二次查</td>
+      <td>✅ 纯 SQL,跨表一把梭</td>
+    </tr>
+    <tr>
+      <td>回写失败补偿</td>
+      <td>需要 outbox / 定时对账</td>
+      <td>不需要,天然一致</td>
+    </tr>
+    <tr>
+      <td>数据量级</td>
+      <td>亿级水平扩展</td>
+      <td>千万级单实例,亿级需 Citus</td>
+    </tr>
+    <tr>
+      <td>索引类型</td>
+      <td>HNSW / IVF / DiskANN / 标量</td>
+      <td>HNSW / IVFFlat(少)</td>
+    </tr>
+  </table>
+
+  <h4>pgvector 的两个高频追问</h4>
+
+  <h4>1. 距离算子怎么选</h4>
+<pre class="codeblock"><span class="c">-- HNSW 索引必须跟算子匹配,否则不走索引!</span>
+CREATE INDEX <span class="k">ON</span> chunk <span class="k">USING</span> hnsw (embedding vector_cosine_ops);   <span class="c">-- 对应 &lt;=&gt;</span>
+CREATE INDEX <span class="k">ON</span> chunk <span class="k">USING</span> hnsw (embedding vector_l2_ops);         <span class="c">-- 对应 &lt;-&gt;</span>
+CREATE INDEX <span class="k">ON</span> chunk <span class="k">USING</span> hnsw (embedding vector_ip_ops);          <span class="c">-- 对应 &lt;#&gt;</span></pre>
+
+  <h4>2. 性能天花板 + 怎么破</h4>
+  <table>
+    <tr><th>数据量</th><th>方案</th></tr>
+    <tr><td>&lt; 100w</td><td>单实例 pgvector,HNSW 够用</td></tr>
+    <tr><td>100w - 1000w</td><td>调参(<code>m=24, ef_construction=128</code>)+ 分区表</td></tr>
+    <tr><td>&gt; 1000w</td><td><b>Citus</b>(PG 分布式扩展)或换 Milvus</td></tr>
+    <tr><td>&gt; 1亿</td><td>必须 Milvus,pgvector 顶不住</td></tr>
+  </table>
+
+  <h4>💡 选型话术(面试必背)</h4>
+  <div class="key">
+    <b>看量级和团队</b>:
+    <ul>
+      <li><b>&lt; 100w 行 / 已有 PG / 不想引新组件</b> → pgvector。FK 天然、事务天然、JOIN 天然。</li>
+      <li><b>千万级以上 / 多团队独立向量服务</b> → Milvus。水平扩展是 pgvector 硬伤。</li>
+      <li><b>混合</b> → 主体 pgvector,RAG 高频 collection 单独走 Milvus 集群。</li>
+      <li><b>LLM-note 选 Milvus</b>:规划数据量到千万级,支持 RAG(高召回)+ 长期记忆(多 collection)双业务,运维愿意多承担。</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Q8 -->
+<h3 class="q anchor-offset">Q8. 元数据没有和它的设计 <span class="tag">考察字段设计</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+  <p>「元数据」在 RAG 里有两层:</p>
+  <ol>
+    <li><b>Chunk 级别元数据</b>(存在 Milvus payload):用来<b>过滤和回查</b>。</li>
+    <li><b>Source 级别元数据</b>(存在 MySQL):文件名、作者、上传时间、文件类型,用来<b>展示和审计</b>。</li>
+  </ol>
+
+  <h4>LLM-note 元数据设计</h4>
+  <table>
+    <tr><th>层级</th><th>字段</th><th>存储</th><th>作用</th></tr>
+    <tr>
+      <td rowspan="4">Chunk 级<br>(Milvus payload)</td>
+      <td><code>notebook_id</code></td><td rowspan="4">Milvus</td><td>按笔记本过滤</td>
+    </tr>
+    <tr><td><code>note_id</code></td><td>选中某几篇笔记时过滤</td></tr>
+    <tr><td><code>source_id</code></td><td>回查 source 表拿文件名</td></tr>
+    <tr><td><code>seq</code></td><td>块在文档内的位置,引用高亮用</td></tr>
+    <tr>
+      <td rowspan="6">Source 级<br>(MySQL)</td>
+      <td><code>id</code></td><td rowspan="6">MySQL</td><td>主键</td>
+    </tr>
+    <tr><td><code>name</code></td><td>文件名 / 笔记标题</td></tr>
+    <tr><td><code>type</code></td><td>pdf / docx / txt / image / audio</td></tr>
+    <tr><td><code>size_bytes</code></td><td>大小</td></tr>
+    <tr><td><code>owner_id</code></td><td>归属用户,做租户隔离</td></tr>
+    <tr><td><code>created_at</code></td><td>上传时间</td></tr>
+    <tr>
+      <td rowspan="4">Notebook 级</td>
+      <td><code>id</code></td><td rowspan="4">MySQL</td><td>笔记本主键</td>
+    </tr>
+    <tr><td><code>title</code></td><td>显示名</td></tr>
+    <tr><td><code>description</code></td><td>业务说明</td></tr>
+    <tr><td><code>is_public</code></td><td>是否对外可见(预留)</td></tr>
+  </table>
+
+  <h4>设计原则</h4>
+  <div class="key">
+    <ul>
+      <li>🎯 <b>在 Milvus 里只放「检索路径上的过滤字段」</b>,不放展示性字段(展示回 MySQL 拿)。</li>
+      <li>🎯 <b>payload 字段全部建标量索引</b>(<code>createIndex</code> 时指定),否则 <code>expr</code> 过滤会全表扫。</li>
+      <li>🎯 <b>payload 字段值类型稳定</b>:Int64 就一直 Int64,VarChar 就一直 VarChar,别混 Number / String。</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Q9 -->
+<h3 class="q anchor-offset">Q9. 具体一点检索怎么查的,代码上怎么写的,或者用了哪个方法,传递了哪些参数 <span class="tag">考察代码细节</span></h3>
+<div class="a">
+  <h4>📝 标准答案(直接贴 LLM-note 真实代码)</h4>
+
+  <pre class="codeblock"><span class="c">// 1. 高层抽象:走 AgentScope SimpleKnowledge</span>
+RetrieveConfig cfg = RetrieveConfig.builder()
+    .limit(<span class="k">12</span>)            <span class="c">// 召回 K,先取多一点再按 notebook 过滤</span>
+    .scoreThreshold(<span class="k">0.0</span>)    <span class="c">// IP 内积,负数相关,0 表示「不相关也要」</span>
+    .build();
+List&lt;Document&gt; docs = knowledge.retrieve(question, cfg).block();
+
+<span class="c">// 2. 低层直连:走 Milvus SDK</span>
+String expr = <span class="s">"companion_id == "</span> + companionId
+            + <span class="s">" \&amp;\&amp; user_id == \""</span> + userId + <span class="s">"\""</span>;
+SearchParam param = SearchParam.newBuilder()
+    .withCollectionName(<span class="s">"companion_memories"</span>)
+    .withVectorFieldName(<span class="s">"embedding"</span>)
+    .withMetricType(MetricType.IP)            <span class="c">// 内积(向量已归一化 → cosine)</span>
+    .withOutFields(List.of(<span class="s">"content"</span>, <span class="s">"memory_id"</span>))   <span class="c">// 顺便带出元数据</span>
+    .withExpr(expr)                           <span class="c">// 标量过滤</span>
+    .withTopK(topK)                           <span class="c">// 比如 5</span>
+    .withVectors(List.of(queryVector))        <span class="c">// 查询向量</span>
+    .withParams(<span class="s">"{\"nprobe\":16}"</span>)    <span class="c">// IVF 召回探针数,越大越准越慢</span>
+    .build();
+R&lt;SearchResults&gt; r = client.search(param);</pre>
+
+  <h4>逐参数解释(面试可以照着说)</h4>
+  <table>
+    <tr><th>参数</th><th>作用</th><th>调参经验</th></tr>
+    <tr><td><code>topK</code></td><td>返回前 K 条</td><td>小数据 5-10,大库 50-100 再二次过滤</td></tr>
+    <tr><td><code>metricType</code></td><td>距离度量</td><td>归一化向量用 <b>IP</b>(内积),否则 <b>L2</b> / <b>COSINE</b></td></tr>
+    <tr><td><code>expr</code></td><td>标量过滤</td><td>对应 payload 字段,需建索引</td></tr>
+    <tr><td><code>nprobe</code> (IVF)</td><td>探针数</td><td>默认 16,准确率敏感场景 32-64</td></tr>
+    <tr><td><code>ef</code> (HNSW)</td><td>查询时搜索宽度</td><td>默认 16,提召回调到 64-128</td></tr>
+    <tr><td><code>outFields</code></td><td>返回的非向量字段</td><td>别一股脑全选,带宽和性能都受影响</td></tr>
+  </table>
+</div>
+
+<!-- Q10 -->
+<h3 class="q anchor-offset">Q10. 召回的得分阈值最低是多少,分了多少块?平均得分最高的是多少分,得分有处理吗 <span class="tag">考察阈值与归一化</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+
+  <h4>1. 阈值</h4>
+  <ul>
+    <li>LLM-note 当前 <b>scoreThreshold = 0.0</b>(IP 内积,负数相关,0 是「不相关」)。</li>
+    <li>为什么不设高一点?<b>为了召回优先</b>。我们靠<b>二次过滤 + prompt 限制</b>保证质量,而不是靠阈值拒掉低分。</li>
+    <li>经验:生产系统 <b>先召回宽,再过滤严</b>;直接高阈值容易漏召回。</li>
+  </ul>
+
+  <h4>2. 分块策略</h4>
+  <ul>
+    <li>检索召回 12 块 → 按 notebook/note 二次过滤 → 截到 <b>6 块</b>喂给模型。</li>
+    <li>单块 ≤ 512 字符,重叠 50 字符。</li>
+    <li>为什么不直接给 12 块?<b>上下文爆掉</b>。1024 维向量 + 6 块 ≈ 3K tokens,留给 prompt 指令和生成空间。</li>
+  </ul>
+
+  <h4>3. 得分处理</h4>
+  <ul>
+    <li>IP 距离天然在 <code>[-1, 1]</code>(已归一化),不需要额外处理。</li>
+    <li>未归一化的向量,IP 可能 <code>[-10, 10]</code>,需要 <b>min-max / z-score 归一化</b>才能跨查询可比。</li>
+    <li>我们的做法:<b>DashScope embedding 接口默认 L2 归一化</b>,所以 IP 直接当 cosine 用。</li>
+  </ul>
+
+  <h4>💡 进阶:什么时候需要设阈值</h4>
+  <div class="compare">
+    <div class="bad">
+      <h5>不设阈值的坏处</h5>
+      <p>答非所问的 chunk 也进 prompt,模型可能被「带着跑」,生成看似有理实则张冠李戴的答案。</p>
+    </div>
+    <div class="good">
+      <h5>设阈值的场景</h5>
+      <p>用户问的是「事实型」问题(数值 / 时间 / 法规),且无备用资料,需要 hard reject。LLM-note 把 fallback 设计成「答:资料未找到」,而不是兜底编。</p>
+    </div>
+  </div>
+</div>
+
+<!-- Q11 -->
+<h3 class="q anchor-offset">Q11. 多路召回除了向量这一路的召回还有什么召回,多路召回指的是哪几路?最后怎么排的 <span class="tag">考察检索架构</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+
+  <h4>常见召回路径</h4>
+  <table>
+    <tr><th>路径</th><th>原理</th><th>适用</th></tr>
+    <tr><td><b>向量召回</b>(DPR / Embedding)</td><td>语义相似</td><td>同义、改写、口语化表达</td></tr>
+    <tr><td><b>BM25 / 全文检索</b></td><td>词频 / 稀疏向量</td><td>精确词、专有名词、型号、代码</td></tr>
+    <tr><td><b>关键词 Tag 过滤</b></td><td>分类标签 / 元数据</td><td>按时间、作者、状态过滤</td></tr>
+    <tr><td><b>图召回</b>(知识图谱)</td><td>实体关系遍历</td><td>实体关联查询(人物-作品-事件)</td></tr>
+    <tr><td><b>SQL 召回</b></td><td>结构化数据</td><td>订单号、ID、日期范围</td></tr>
+    <tr><td><b>HyDE</b>(假设文档嵌入)</td><td>让 LLM 先假设答案,再检索</td><td>复杂问题</td></tr>
+  </table>
+
+  <h4>LLM-note 当前实现:两路召回 + 融合</h4>
+  <div class="flow">
+    <div class="node">Query</div><div class="arrow">→</div>
+    <div class="node">路径 A:向量(Milvus)</div>
+    <div class="arrow">→</div>
+    <div class="node">路径 B:元数据(SQL/Tag)</div>
+    <div class="arrow">→</div>
+    <div class="node">RRF 倒数排名融合</div>
+    <div class="arrow">→</div>
+    <div class="node">Top-K 喂 LLM</div>
+  </div>
+
+  <h4>排序融合:RRF(Reciprocal Rank Fusion)</h4>
+  <pre class="codeblock"><span class="c">// RRF 公式:score = Σ 1 / (k + rank_i),k=60 经典</span>
+score(doc) = <span class="k">1.0</span> / (<span class="n">60</span> + rank_vector)
+           + <span class="k">1.0</span> / (<span class="n">60</span> + rank_fulltext)</pre>
+
+  <h4>为什么不只走向量</h4>
+  <div class="tip">💡 <b>向量召不回「同形词」</b>。比如「<code>404 NotFound</code>」「<code>javax.validation</code>」这种精确 token,BM25 / ES 高亮召回效果远好于纯向量。多路是补短。</div>
+
+  <h4>💡 进阶:Cohere Rerank / BGE-Reranker</h4>
+  <p>粗排(向量 + BM25)拿到 50-100 块,再用 <b>Reranker</b> 重排到 Top-K。Reranker 是 cross-encoder,精度高但慢,只对小集合用。</p>
+</div>
+
+<!-- Q12 -->
+<h3 class="q anchor-offset">Q12. 你的元数据检索你咋检索的,用的什么方法检索的?你这个检索用到什么搭建检索 <span class="tag">考察过滤实现</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+
+  <h4>两种实现路径</h4>
+  <div class="compare">
+    <div>
+      <h5>方式 A:在 Milvus 里用 expr 直接过滤</h5>
+      <pre class="codeblock">SearchParam.newBuilder()
+    .withExpr(<span class="s">"notebook_id == 123 \&amp;\&amp; user_id == \"u_001\""</span>)
+    .withTopK(<span class="k">10</span>)
+    .build();</pre>
+      <p>✅ 性能好,标量索引走索引,向量只在子集里算。<br>❌ 字段必须建标量索引;复杂表达式支持有限。</p>
+    </div>
+    <div>
+      <h5>方式 B:在应用层过滤(LLM-note 用的)</h5>
+      <pre class="codeblock"><span class="c">// RetrieveConfig 不支持 payload 过滤</span>
+<span class="c">// → 先按 limit 召回 12 块</span>
+<span class="c">// → 应用层 matchesNotebook 过滤</span>
+List&lt;Document&gt; filtered = docs.stream()
+    .filter(d -&gt; matchesNotebook(d, notebookId))
+    .limit(MAX_CONTEXT)
+    .toList();</pre>
+      <p>✅ 灵活,不依赖 Milvus 索引能力。<br>❌ 多取了一倍数据,带宽浪费。</p>
+    </div>
+  </div>
+
+  <h4>LLM-note 为什么用方式 B</h4>
+  <p>因为 <code>SimpleKnowledge</code>(AgentScope 抽象层)在 v2.0 RC 阶段 <b>不支持传 expr</b>,只能 limit+scoreThreshold。短期方案是应用层过滤,长期方案是改用 <code>MilvusStore</code> 直连,带 expr。</p>
+
+  <h4>混合过滤的工程模式</h4>
+  <ol>
+    <li><b>粗筛</b>:用标量字段(时间 / 状态 / 租户)缩小范围 → <code>expr</code> 写在 Milvus 层。</li>
+    <li><b>细筛</b>:向量相似度 topK → 算 cosine。</li>
+    <li><b>应用层补充</b>:权限 / 业务规则(付费墙、草稿过滤)→ 在 Java 内存里做。</li>
+  </ol>
+
+  <h4>搭建检索的常见「地基」</h4>
+  <table>
+    <tr><th>组件</th><th>角色</th></tr>
+    <tr><td>Milvus / Qdrant</td><td>向量存储 + 标量过滤</td></tr>
+    <tr><td>Elasticsearch</td><td>全文 + 倒排索引 + 向量(混合)</td></tr>
+    <tr><td>PostgreSQL + pgvector</td><td>结构化 + 向量一套</td></tr>
+    <tr><td>Redis</td><td>缓存热点 query 的 topK 结果</td></tr>
+    <tr><td>Splunk / 日志</td><td>记录 query ↔ doc 对,用于 badcase 复盘</td></tr>
+  </table>
+</div>
+
+<!-- Q13 -->
+<h3 class="q anchor-offset">Q13. 在查询你的向量库之前,你就已经调大模型了吗 <span class="tag">考察 query 改写 / 预处理</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+
+  <p>不一定,但<b>推荐「先 LLM 改写 → 再检索」</b>。这就是 <b>Query Rewriting / Query Understanding</b>。</p>
+
+  <h4>LLM-note 的预处理流程</h4>
+  <div class="flow">
+    <div class="node">用户原始问句</div><div class="arrow">→</div>
+    <div class="node">Step 1:Query 理解(可选 LLM)</div><div class="arrow">→</div>
+    <div class="node">Step 2:HyDE?改写?或直接用</div><div class="arrow">→</div>
+    <div class="node">Step 3:Embedding</div><div class="arrow">→</div>
+    <div class="node">Step 4:Milvus 检索</div>
+  </div>
+
+  <h4>常见的预处理技术</h4>
+  <table>
+    <tr><th>技术</th><th>做什么</th><th>何时用</th></tr>
+    <tr><td><b>Query Rewrite</b></td><td>把口语化问句改成文档用语</td><td>用户问「咋回事」,文档写「原因」</td></tr>
+    <tr><td><b>HyDE</b>(Hypothetical Document Embedding)</td><td>让 LLM 先「假设」一个答案,再嵌入</td><td>问题很抽象、文档很具体</td></tr>
+    <tr><td><b>Step-back</b></td><td>先问一个更抽象的版本</td><td>细节问题,文档讲原理</td></tr>
+    <tr><td><b>Multi-Query</b></td><td>让 LLM 生成 N 个变体 query,分别检索,合并</td><td>召回率不够时</td></tr>
+    <tr><td><b>Query Decompose</b></td><td>复合问题拆子问题</td><td>「A 和 B 的区别」类</td></tr>
+  </table>
+
+  <h4>为什么不总是先调 LLM</h4>
+  <div class="tip">💡 <b>成本与时延</b>:每多调一次 LLM,首字时延 + 1-3s,费用 + ¥0.001-0.01。<br>
+  <b>取舍</b>:用户问得清楚就跳过,问得糊就改写。LLM-note 当前是「直接检索 + 必要 prompt 引导」,未上 HyDE,在做 v2 评估。</div>
+
+  <h4>实操代码位置</h4>
+  <pre class="codeblock"><span class="c">// QaService.buildContext 之前可以加一个 rewrite 步骤:</span>
+<span class="k">if</span> (shouldRewrite(question)) {
+    String rewritten = llm.rewrite(question, systemPrompt);
+    question = rewritten;
+}
+RetrieveConfig cfg = RetrieveConfig.builder().limit(<span class="k">12</span>).build();
+List&lt;Document&gt; docs = knowledge.retrieve(question, cfg).block();</pre>
+</div>
+
+<!-- Q14 -->
+<h3 class="q anchor-offset">Q14. 匹配或者重排的检索,有没有用到一些模型之类,它有一些策略,你说说是什么策略 <span class="tag">考察 Rerank</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+
+  <h4>重排策略 4 大类</h4>
+  <table>
+    <tr><th>策略</th><th>做法</th><th>代价 / 收益</th></tr>
+    <tr>
+      <td><b>Rule-based</b></td>
+      <td>关键词权重、标题加分、长度惩罚、新鲜度</td>
+      <td>零成本、可解释;上限低</td>
+    </tr>
+    <tr>
+      <td><b>Cross-Encoder Reranker</b><br>(BGE-reranker / Cohere Rerank)</td>
+      <td>把 (query, doc) 一起送进模型,直接打 0-1 相关分</td>
+      <td>精度 ↑↑,延迟 ×5-10</td>
+    </tr>
+    <tr>
+      <td><b>LLM-as-Reranker</b><br>(GPT-4 / Qwen-Long)</td>
+      <td>让大模型对候选打分 / 排序</td>
+      <td>精度 ↑↑↑,但贵且慢;可加 reasoning</td>
+    </tr>
+    <tr>
+      <td><b>ColBERT / SPLADE</b></td>
+      <td>细粒度 token 级交互,介于双塔和 cross 编码器之间</td>
+      <td>精度 ↑,速度 ↓ 中等</td>
+    </tr>
+  </table>
+
+  <h4>LLM-note 当前策略</h4>
+  <p><b>不重排</b>。理由:</p>
+  <ol>
+    <li>Milvus 的 IVF_FLAT + IP 已能保证 Top-6 召回率 &gt; 90%(内部评估集)。</li>
+    <li>重排 +150ms,P95 流式首字会受影响。</li>
+    <li>做的是「资料问答」,不是「开放问答」,召回集噪声小。</li>
+  </ol>
+
+  <h4>未来上重排的触发条件</h4>
+  <ul>
+    <li>Badcase 复盘:Top-6 召回中相关 doc 排名 &lt; 3,出现频率 &gt; 5%。</li>
+    <li>用户对答案「答非所问」的反馈率 &gt; 阈值。</li>
+  </ul>
+
+  <h4>Reranker 接入代码示意</h4>
+  <pre class="codeblock"><span class="c">// 假设用 BGE-reranker-large(本地部署)</span>
+List&lt;Document&gt; coarse = knowledge.retrieve(query, topK=<span class="k">50</span>);
+List&lt;ScoredDoc&gt; fine = reranker.rerank(query, coarse, topK=<span class="k">6</span>);
+<span class="c">// reranker.rerank 内部:对每条 (query, doc) 算相关性 → 排序</span></pre>
+
+  <div class="key">💡 <b>经验</b>:<b>80% 的 RAG 提升来自召回,不是重排</b>。先把粗排做对(分块 / embedding / 过滤),再考虑重排。</div>
+</div>
+
+<!-- ====================== Part 3 LangGraph ====================== -->
+<h2 class="section alt anchor-offset" id="q15">Part 3 · LangGraph / Agent 编排</h2>
+
+<!-- Q15 -->
+<h3 class="q anchor-offset">Q15. LangGraph,你们设计了几个节点?什么样的节点,节点之间是什么逻辑关系 <span class="tag">核心</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+  <p>我们项目用 <b>AgentScope Java</b>(对标 LangGraph 的 Java 生态实现),核心模式是 <b>ReAct 循环</b>,不是一个静态 DAG。设计上把节点分为 4 类:</p>
+  <table>
+    <tr><th>节点类型</th><th>职责</th><th>LLM-note 实例</th></tr>
+    <tr>
+      <td><b>感知 / 路由节点</b></td>
+      <td>判断用户意图,决定走哪条支路</td>
+      <td><code>CompanionChatService</code> 中的「登录态判断 + 是否带图 + 是否要调工具」决策</td>
+    </tr>
+    <tr>
+      <td><b>执行节点</b></td>
+      <td>调 LLM / 调工具 / 调 DB</td>
+      <td>「调 <code>delegate_to_schedule_agent</code> 工具」节点、「调 DashScope 视觉模型」节点</td>
+    </tr>
+    <tr>
+      <td><b>状态节点</b></td>
+      <td>读写长期记忆、上下文、亲密度等</td>
+      <td>「<code>memoryService.search</code> 注入 system prompt」、「<code>intimacyService.recordInteraction</code>」</td>
+    </tr>
+    <tr>
+      <td><b>终止 / 收敛节点</b></td>
+      <td>判 ReAct 是否结束、是否拦截幻觉</td>
+      <td>「<code>hallucinationBlocked</code> 检测」+「<code>toolUses.isEmpty() break</code>」</td>
+    </tr>
+  </table>
+
+  <h4>LLM-note 伴侣聊天的 ReAct 节点图</h4>
+  <div class="flow">
+    <div class="node">用户消息</div><div class="arrow">→</div>
+    <div class="node">N1:模型选择路由</div><div class="arrow">→</div>
+    <div class="node">N2:构造上下文(记忆 + 历史)</div><div class="arrow">→</div>
+    <div class="node">N3:调 LLM(ReAct iter 0)</div>
+  </div>
+  <div class="flow">
+    <div class="node">是</div><div class="arrow">→</div>
+    <div class="node">N4:有 tool_use?派发工具</div><div class="arrow">→</div>
+    <div class="node">N5:灌回 ToolResult</div><div class="arrow">→</div>
+    <div class="node">N3:ReAct iter 1..MAX</div>
+  </div>
+  <div class="flow">
+    <div class="node">否 / 达 MAX</div><div class="arrow">→</div>
+    <div class="node">N6:幻觉拦截(无工具却有成功话术)</div><div class="arrow">→</div>
+    <div class="node">N7:落库 + 触发记忆抽取</div>
+  </div>
+
+  <h4>实际节点数(LLM-note 数据)</h4>
+  <ul>
+    <li><b>伴侣模块</b>:7 个逻辑节点,1 个主循环(<code>for iter &lt; MAX_TOOL_ITERS</code>)。</li>
+    <li><b>智能体小镇</b>:20+ 居民 Agent,每个 ~5 节点(action / think / memory / communicate / age)。</li>
+    <li><b>多智能体写作</b>:3 个 Agent(作者 / 核查员 / 主编),节点间轮转收敛。</li>
+  </ul>
+
+  <div class="tip">💡 <b>注意</b>:面试官问「LangGraph」,本质是问「Agent 编排」,用 AgentScope / LangGraph / AutoGen 都能答,讲清「节点 + 边 + 状态」三要素即可。</div>
+</div>
+
+<!-- Q16 -->
+<h3 class="q anchor-offset">Q16. 节点它们的关系这个模式叫什么模式?它们之间的关系是做的 <span class="tag">ReAct 模式</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+
+  <h4>核心模式:<b>ReAct(Reason + Act)</b></h4>
+  <p>2022 年 Yao et al. 提出的范式,把「推理」和「行动」交织在同一个循环里。LLM 先想(think),再决定调什么工具(act),拿到结果再想(re-think)。</p>
+
+  <pre class="codeblock">ReAct 单步 = Thought → Action → Observation → (next Thought ...)
+
+LLM-note 真实代码(CompanionChatService 简化):
+<span class="k">for</span> (iter = <span class="k">0</span>; iter &lt; <span class="n">4</span>; iter++) {
+    <span class="c">// Thought + Action 一起由 LLM 决定</span>
+    chunks = streamTextWithToolsFallback(model, ctx, null, schemas);
+
+    <span class="k">for</span> (resp : chunks) {
+        <span class="k">if</span> (resp has ToolUseBlock) toolUses.add(tub);
+    }
+
+    <span class="k">if</span> (toolUses.isEmpty()) <span class="k">break</span>;   <span class="c">// 收敛:无工具调用 → 终态</span>
+
+    <span class="c">// Observation:执行工具,拿结果</span>
+    <span class="k">for</span> (tub : toolUses) {
+        result = dispatchTool(tub);
+        ctx.add(toolResultMsg(result));
+    }
+}</pre>
+
+  <h4>为什么用 ReAct 而不是别的</h4>
+  <table>
+    <tr><th>模式</th><th>特点</th><th>适合</th></tr>
+    <tr><td><b>ReAct</b>(我们用)</td><td>动态决策,边想边干</td><td>工具数量适中、调用深度浅</td></tr>
+    <tr><td><b>Plan-and-Execute</b></td><td>先列全计划,再执行</td><td>任务可拆解、步骤稳定</td></tr>
+    <tr><td><b>Reflexion</b></td><td>执行 + 反思 + 重试</td><td>需要自我纠错的场景</td></tr>
+    <tr><td><b>Multi-Agent 对话</b></td><td>多角色轮转</td><td>写作 / 评审 / 决策</td></tr>
+    <tr><td><b>LangGraph StateGraph</b></td><td>显式节点 + 条件边 + 持久化</td><td>长流程、需断点续跑</td></tr>
+  </table>
+
+  <h4>父子关系怎么表达</h4>
+  <p>在 LangGraph 里是 <b>子图(Subgraph)</b> / <b>父节点调用子节点</b>。在 LLM-note 的实现里,「父子」体现为:</p>
+  <ul>
+    <li><b>外层 Agent</b>(Companion)是父,内层是子工具(<code>delegate_to_schedule_agent</code> 实际是去调独立的 <code>schedule-agent</code> 微服务)。</li>
+    <li>父子之间通过 <b>JSON-RPC + A2A 协议</b>通信,不是 in-process 方法调用。</li>
+  </ul>
+</div>
+
+<!-- Q17 -->
+<h3 class="q anchor-offset">Q17. 你现在的节点,他们是父子关系,你是从哪里建立的 <span class="tag">父子 / Subgraph</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+
+  <h4>「父子」有两层含义,要说清楚是哪一种</h4>
+  <div class="compare">
+    <div>
+      <h5>含义 1:Agent 嵌套(子 Agent)</h5>
+      <p>父 Agent 把任务「委托」给子 Agent(独立 LLM + 独立工具集),子 Agent 完成返回结果。</p>
+      <p><b>建立方式</b>:<code>toolkit.registerTool(SubAgent)</code>,子 Agent 当作一个 Tool 注册给父。</p>
+      <p>LLM-note 实例:<code>delegate_to_schedule_agent</code> 就是一个「子 Agent 工具」,父 = Companion,子 = schedule-agent 微服务。</p>
+    </div>
+    <div>
+      <h5>含义 2:LangGraph Subgraph 嵌套</h5>
+      <p>父图里的某个节点本身就是一张子图,有独立的 state、节点、边。</p>
+      <p><b>建立方式</b>:<code>StateGraph.addNode("name", subgraph_compiled)</code>。</p>
+      <p>LLM-note 实例:每个智能体小镇居民是一个 <code>ReActAgent</code>,镇长 Agent 把他们当子节点调度。</p>
+    </div>
+  </div>
+
+  <h4>LLM-note 真实代码片段</h4>
+  <pre class="codeblock"><span class="c">// CompanionChatService.java - 父 Agent 注册子 Agent 工具</span>
+ScheduleAgentClient scheduleAgentClient = scheduleAgentClientProvider.getIfAvailable();
+Toolkit toolkit = <span class="k">new</span> Toolkit();
+toolkit.registerTool(scheduleAgentClient);   <span class="c">// 子 Agent 作为一个 tool</span>
+List&lt;ToolSchema&gt; toolSchemas = toolkit.getToolSchemas();
+
+<span class="c">// 之后在 ReAct 循环里,父 LLM 决定是否调 delegate_to_schedule_agent</span>
+<span class="c">// 内部实际是 JSON-RPC 调到独立微服务 schedule-agent:8081/a2a/v1/tasks/send</span></pre>
+
+  <h4>子 Agent 注册成 Tool 的设计取舍</h4>
+  <div class="key">
+    <ul>
+      <li>✅ <b>优点</b>:父 LLM 只看到一个 tool,prompt 简单,不用感知 12 个底层工具;权限/超时统一在 SDK 层管。</li>
+      <li>✅ <b>优点</b>:子 Agent 可独立部署、独立扩缩容、独立技术栈。</li>
+      <li>❌ <b>缺点</b>:多一次网络跳转,时延 +50-100ms;序列化开销。</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Q18 -->
+<h3 class="q anchor-offset">Q18. LangGraph 一共有几个核心,它们之间的区别,都是各自干什么的 <span class="tag">LangGraph 核心抽象</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+  <p>LangGraph 4 个核心抽象:<b>State / Node / Edge / Graph</b>。</p>
+
+  <table>
+    <tr><th>核心</th><th>是什么</th><th>类比</th></tr>
+    <tr>
+      <td><b>State</b></td>
+      <td>贯穿全图的数据容器,通常是 TypedDict / Pydantic</td>
+      <td>React 的 useState,数据库的事务</td>
+    </tr>
+    <tr>
+      <td><b>Node</b></td>
+      <td>一个 Python 函数,接收当前 State,返回 partial State</td>
+      <td>MapReduce 的 mapper / reducer</td>
+    </tr>
+    <tr>
+      <td><b>Edge</b></td>
+      <td>节点之间的连线;可以是固定边,也可以是条件边(router)</td>
+      <td>工作流引擎的 transition / 网关</td>
+    </tr>
+    <tr>
+      <td><b>Graph / StateGraph</b></td>
+      <td>把所有节点和边编排在一起,可编译执行</td>
+      <td>DAG 调度器、BPMN 引擎</td>
+    </tr>
+  </table>
+
+  <h4>每个核心的「职责」</h4>
+  <ol>
+    <li><b>State</b>:<i>记忆</i>。决定哪些数据在节点间流转、是否可被 checkpoint、回滚到哪一步。</li>
+    <li><b>Node</b>:<i>执行体</i>。每个节点做一件事:调 LLM、调工具、改 State、判分支。</li>
+    <li><b>Edge</b>:<i>决策</i>。决定「下一步去哪」。普通边是「A 完了去 B」,条件边是「A 完了看 X 决定去 B 还是 C」。</li>
+    <li><b>Graph</b>:<i>编排</i>。把 State / Node / Edge 拼起来,做编译(拓扑检查)+ 执行(run / stream / batch)。</li>
+  </ol>
+
+  <h4>对应到 LLM-note(AgentScope 视角)</h4>
+  <table>
+    <tr><th>LangGraph 概念</th><th>LLM-note 中的对应</th></tr>
+    <tr><td>State</td><td><code>List&lt;Msg&gt; ctx</code> + <code>Map&lt;String, Object&gt; meta</code>(动态 in-memory 状态)</td></tr>
+    <tr><td>Node</td><td>ReAct 循环里每一轮:LLM 调用 / 工具派发 / 记忆检索</td></tr>
+    <tr><td>Edge</td><td><code>if (toolUses.isEmpty()) break;</code> + <code>if (hallucinationBlocked) ...</code></td></tr>
+    <tr><td>Graph</td><td>每个 Agent 的 <code>handleUserMessage</code> 方法体本身</td></tr>
+</table>
+
+  <h4>💡 LangGraph 进阶特性</h4>
+  <ul>
+    <li><b>Checkpoint</b>:状态持久化,支持断点续跑(LLM-note 暂未上,是 plan)。</li>
+    <li><b>Human-in-the-Loop</b>:<code>interrupt_before</code> 在某节点前暂停,等用户确认。</li>
+    <li><b>Subgraph</b>:把一张图作为另一个节点。</li>
+    <li><b>Send / Map-Reduce</b>:并行处理多个文档(适合 RAG 摘要)。</li>
+  </ul>
+</div>
+
+<!-- Q19 -->
+<h3 class="q anchor-offset">Q19. 你们几个完成的这一个项目?分别是什么样的角色 <span class="tag">协作模式</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+  <p>诚实讲:<b>LLM-note 是我一个人做的全栈项目</b>(蒋路独立完成),从架构设计到部署上线。</p>
+
+  <h4>如果「你们团队」包含 AI 协作(实际工作模式)</h4>
+  <table>
+    <tr><th>角色</th><th>职责</th><th>对应</th></tr>
+    <tr><td><b>产品 / 架构</b></td><td>需求拆解、技术选型、模块划分</td><td>我(蒋路)</td></tr>
+    <tr><td><b>后端</b></td><td>Spring Boot 模块化单体、schedule-agent 微服务、A2A 协议</td><td>我</td></tr>
+    <tr><td><b>前端</b></td><td>单文件原生 JS SPA(登录页 / 主界面)</td><td>我</td></tr>
+    <tr><td><b>AI / Agent</b></td><td>ReAct 编排、工具设计、Prompt 调优</td><td>我</td></tr>
+    <tr><td><b>DevOps</b></td><td>docker-compose 全栈编排、Nacos / Milvus / Redis 部署</td><td>我</td></tr>
+    <tr><td><b>测试 / QA</b></td><td>JUnit 单元 + 集成测试(&gt; 30 个测试类)</td><td>我 + Claude 共写</td></tr>
+  </table>
+
+  <h4>如果面试场景里你们真是团队</h4>
+  <div class="key">
+    <b>用 RACI 答</b>:
+    <ul>
+      <li><b>Responsibility(谁做)</b>:列出每个模块 owner</li>
+      <li><b>Accountable(谁担责)</b>:技术负责人 / TL</li>
+      <li><b>Consulted(谁被咨询)</b>:架构师 / 资深开发</li>
+      <li><b>Informed(谁被通知)</b>:PM / 测试 / 运维</li>
+    </ul>
+  </div>
+
+  <h4>加分话术</h4>
+  <p>「我负责后端核心 12 个模块 + A2A 微服务 SDK,前端由我自己用原生 JS 写(单文件 SPA),没有用 React / Vue 是因为想验证自己的工程能力。AI 协作上我高频用 Claude 做单元测试、SQL 调优、Prompt 迭代 —— Claude 是 pair-programmer,但所有架构决策、代码 review、最终发布都我自己来。」</p>
+</div>
+
+<!-- Q20 -->
+<h3 class="q anchor-offset">Q20. 项目的提示词是谁编写的,怎么写的 <span class="tag">Prompt 工程</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+
+  <h4>编写者</h4>
+  <p>核心 system prompt 我自己写,业务模板(角色 / 场景)放数据库 <code>companion_template</code> 表,运营可改。</p>
+
+  <h4>怎么写(LLM-note 的 prompt 设计方法论)</h4>
+  <ol>
+    <li><b>明确角色</b>:「你是一个严谨的资料问答助手」<b>而不是</b>「请回答用户问题」。</li>
+    <li><b>硬约束放最前</b>:「只能根据用户提供的资料片段作答,不得编造资料之外的信息」。</li>
+    <li><b>输出格式约束</b>:「在引用具体信息处标注来源编号(如 [1])」。</li>
+    <li><b>兜底话术</b>:「若资料不足以回答,请明确说明无法从资料中找到答案」<b>而不是</b>「请谨慎回答」(模型听不懂「谨慎」)。</li>
+    <li><b>少用否定句</b>。LLM 对「不要 X」理解弱,直接说「请 X」。</li>
+    <li><b>中文优先</b>:用中文写 prompt,模型输出更稳。</li>
+  </ol>
+
+  <h4>LLM-note 真实 prompt(QA 模块)</h4>
+  <pre class="codeblock"><span class="k">private</span> String systemPrompt() {
+    <span class="k">return</span> <span class="s">"你是一个严谨的资料问答助手。"
+        + "只能根据用户提供的资料片段作答,不得编造资料之外的信息。"
+        + "回答使用简体中文,并在引用具体信息处标注来源编号(如 [1]);"
+        + "若资料不足以回答,请明确说明无法从资料中找到答案。"</span>;
+}</pre>
+
+  <h4>伴侣 system prompt(更长,有情绪/人设)</h4>
+  <pre class="codeblock"><span class="c">// CompanionSystemPrompt.build(c, memorySnippets) 输出:</span>
+你叫 <span class="s">{companion.name}</span>,性格是 <span class="s">{companion.personality}</span>...
+当前与用户的关系阶段:<span class="s">{intimacy}</span>...
+你记得的与用户有关的事:
+  - <span class="s">{memorySnippets.join(\"\\n  - \")}</span>
+回复要求:
+  1. 保持人设,不破坏第四面墙
+  2. 不要主动提起你是 AI / 不要使用「作为 AI 助手」类话术
+  3. 单次回复 &lt; 200 字
+  4. 涉及日程的操作,必须通过工具 delegate_to_schedule_agent,不得直接编造</pre>
+
+  <h4>Prompt 迭代流程</h4>
+  <div class="flow">
+    <div class="node">写初版</div><div class="arrow">→</div>
+    <div class="node">造 50-100 个 badcase</div><div class="arrow">→</div>
+    <div class="node">按类聚(幻觉/格式/越权)</div><div class="arrow">→</div>
+    <div class="node">改 prompt / 加 few-shot / 加规则</div><div class="arrow">→</div>
+    <div class="node">回归测试</div>
+  </div>
+</div>
+
+<!-- Q21 -->
+<h3 class="q anchor-offset">Q21. 程序在执行的时候,规划的任务不准确,有没有碰到?怎么处理 <span class="tag">Agent 容错</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+  <p>碰到过,而且几乎是 Agent 开发的<b>必踩坑</b>。LLM-note 里我们用<b>四层兜底</b>。</p>
+
+  <h4>具体场景 1:ReAct 工具调用幻觉(我们 8 次中 7 次复现)</h4>
+  <p><b>现象</b>:用户说「加个明天 10 点的产品评审」,模型在第一轮就吐「已添加成功 ✅」,但 toolUses 为 0,工具根本没调。</p>
+
+  <h4>我们的拦截方案</h4>
+  <pre class="codeblock"><span class="c">// CompanionChatService.java 简化版</span>
+<span class="k">if</span> (iter == <span class="n">0</span> &amp;&amp; a2aEnabled
+        &amp;&amp; looksLikeScheduleIntent(content)
+        &amp;&amp; claimsSuccessWithoutTool(iterText.toString())) {
+    hallucinationBlocked = <span class="k">true</span>;
+    warn = <span class="s">"\n\n⚠️ 上一段回复是模型幻觉,工具并未实际执行。请重试一次..."</span>;
+}</pre>
+
+  <h4>四层兜底</h4>
+  <table>
+    <tr><th>层</th><th>做什么</th><th>代码位置</th></tr>
+    <tr>
+      <td><b>1. 工具描述 + 强 system prompt</b></td>
+      <td>在 system prompt 写死「涉及日程必须用工具」</td>
+      <td><code>CompanionSystemPrompt</code></td>
+    </tr>
+    <tr>
+      <td><b>2. 工具 schema 必填项</b></td>
+      <td>userText 必填,LLM 漏填就用原 user content 兜底</td>
+      <td><code>dispatchCompanionTool</code></td>
+    </tr>
+    <tr>
+      <td><b>3. 关键词 + 话术检测</b></td>
+      <td>用户有日程意图 + 模型吐「已成功」类话术 + 工具没调 → 拦</td>
+      <td><code>looksLikeScheduleIntent + claimsSuccessWithoutTool</code></td>
+    </tr>
+    <tr>
+      <td><b>4. ReAct 卡死防御</b></td>
+      <td>连续 N 轮工具都返回 silent → break,别再喂下一轮</td>
+      <td><code>if (iter &gt; 0 &amp;&amp; silentCount == toolUses.size()) break;</code></td>
+    </tr>
+  </table>
+
+  <h4>其他常见「规划不准」与对策</h4>
+  <table>
+    <tr><th>问题</th><th>对策</th></tr>
+    <tr><td>LLM 调错工具</td><td>在 dispatch 入口判断 name,白名单 / 黑名单</td></tr>
+    <tr><td>参数类型不对</td><td>Pydantic / JSON Schema 强校验,错了让 LLM 重试</td></tr>
+    <tr><td>陷入循环</td><td><code>MAX_TOOL_ITERS = 4</code>,硬上限</td></tr>
+    <tr><td>工具超时</td><td>异步 + 超时,转 fallback 提示</td></tr>
+    <tr><td>规划与执行脱节</td><td>Plan-and-Execute 模式,执行完回头检查规划</td></tr>
+  </table>
+</div>
+
+<!-- Q22 -->
+<h3 class="q anchor-offset">Q22. 你用的 LangChain 的哪一块能力 <span class="tag">框架使用深度</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+  <p>实话说,LLM-note 主栈是 <b>AgentScope Java</b>(不是 LangChain),但 LangChain 生态的能力 90% 等价,核心模块一一对应:</p>
+
+  <table>
+    <tr><th>LangChain 能力</th><th>做了什么(LLM-note 真实用法)</th></tr>
+    <tr>
+      <td><b>Model I/O</b>(ChatModel / Embedding)</td>
+      <td><code>DashScopeChatModel</code>(对话)+ <code>DashScopeTextEmbedding</code>(1024 维向量)+ 智谱 GLM 系列多模态</td>
+    </tr>
+    <tr>
+      <td><b>Prompt Template</b></td>
+      <td>手写 String 拼接 + 数据库模板(角色 / 场景可改)</td>
+    </tr>
+    <tr>
+      <td><b>Output Parser</b></td>
+      <td>JSON 提取走 <code>ObjectMapper.readTree</code>;Q&amp;A 引用解析走正则 <code>\[(\d+)\]</code></td>
+    </tr>
+    <tr>
+      <td><b>Chains / LCEL</b></td>
+      <td>不直接用,自己写 <code>buildContextInner</code>,ReAct 循环更可控</td>
+    </tr>
+    <tr>
+      <td><b>Memory</b></td>
+      <td>短期:MySQL 滚动窗口 20 条 / 4000 字<br>长期:Milvus 向量 + 触发式抽取</td>
+    </tr>
+    <tr>
+      <td><b>Retrievers / VectorStore</b></td>
+      <td><code>SimpleKnowledge</code> 抽象 + <code>MilvusStore</code> 后端</td>
+    </tr>
+    <tr>
+      <td><b>Tools / Agents</b></td>
+      <td><code>@Tool</code> 注解 + <code>Toolkit.registerTool</code> + 手写 ReAct 循环</td>
+    </tr>
+    <tr>
+      <td><b>Callbacks / Tracing</b></td>
+      <td>暂时靠 <code>log.info</code>,计划接 LangSmith / 自建 trace</td>
+    </tr>
+  </table>
+
+  <h4>为什么主栈没选 LangChain</h4>
+  <ul>
+    <li>后端是 Java 21 + Spring Boot,LangChain 主要生态在 Python。</li>
+    <li>AgentScope Java 是阿里达摩院出的,直接对标 LangGraph,中文文档 / 国内模型接入更顺。</li>
+    <li>需要 ReAct 循环可观测可控制,自己写循环比套框架更易 debug。</li>
+  </ul>
+
+  <h4>用了什么模型</h4>
+  <table>
+    <tr><th>能力</th><th>模型</th></tr>
+    <tr><td>对话(默认)</td><td>智谱 <code>glm-4.7-flash</code> / 降级 <code>glm-4.6</code> / 付费 <code>qwen-plus</code> / <code>qwen-flash</code></td></tr>
+    <tr><td>推理</td><td><code>glm-z1-flash</code></td></tr>
+    <tr><td>视觉</td><td><code>qwen-vl-max</code> / <code>glm-4.6v-flash</code></td></tr>
+    <tr><td>文生图 / 视频</td><td><code>cogview-3-flash</code> / <code>cogvideox-flash</code></td></tr>
+    <tr><td>向量</td><td><code>text-embedding-v3</code> (1024 维)</td></tr>
+    <tr><td>ASR / TTS</td><td><code>paraformer-realtime-v2</code> / <code>cosyvoice-v1</code></td></tr>
+  </table>
+</div>
+
+<!-- Q23 -->
+<h3 class="q anchor-offset">Q23. 那你用的哪种记忆方式?记忆方式?它特点是什么呀 <span class="tag">Memory 类型</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+
+  <h4>LLM-note 用了 3 种记忆 + 1 种缓存,讲清各自特点</h4>
+  <table>
+    <tr><th>类型</th><th>实现</th><th>特点</th><th>对应到 LangChain</th></tr>
+    <tr>
+      <td><b>短期对话记忆</b></td>
+      <td>MySQL <code>companion_message</code> 表,滚动窗口 20 条 / 4000 字</td>
+      <td>最近上下文,保证 LLM「记得这一会儿聊了什么」</td>
+      <td><code>ConversationBufferWindowMemory</code></td>
+    </tr>
+    <tr>
+      <td><b>长期事实记忆</b></td>
+      <td>Milvus <code>companion_memories</code> + 触发式抽取</td>
+      <td>向量检索,跨会话找回「用户提过的重要事实」(喜欢猫 / 过敏 / 生日)</td>
+      <td><code>VectorStoreRetrieverMemory</code></td>
+    </tr>
+    <tr>
+      <td><b>状态记忆</b></td>
+      <td>亲密度表 / 模板 / 角色人设</td>
+      <td>结构化,影响 prompt 和路由(7/30/100 天里程碑)</td>
+      <td>类似 <code>EntityMemory</code> / 自定义 store</td>
+    </tr>
+    <tr>
+      <td><b>缓存</b></td>
+      <td>Redis(会话 token / 限流)</td>
+      <td>不是「记忆」,但常和记忆一起讲</td>
+      <td>—</td>
+    </tr>
+  </table>
+
+  <h4>每种记忆的特点详解</h4>
+
+  <h4>1. 短期对话记忆(Buffer Window)</h4>
+  <div class="compare">
+    <div class="good">
+      <h5>✅ 优点</h5>
+      <ul>
+        <li>实现简单,直接拼到 system prompt 后</li>
+        <li>LLM 可见,对话连续性最强</li>
+        <li>时序保留</li>
+      </ul>
+    </div>
+    <div class="bad">
+      <h5>❌ 缺点</h5>
+      <ul>
+        <li>窗口有上限,超出忘</li>
+        <li>token 成本随轮数线性增</li>
+        <li>无「主题压缩」</li>
+      </ul>
+    </div>
+  </div>
+
+  <h4>2. 长期事实记忆(VectorStore)</h4>
+  <div class="compare">
+    <div class="good">
+      <h5>✅ 优点</h5>
+      <ul>
+        <li>理论上无限容量</li>
+        <li>跨会话保留</li>
+        <li>按相关性检索,不是按时间</li>
+      </ul>
+    </div>
+    <div class="bad">
+      <h5>❌ 缺点</h5>
+      <ul>
+        <li>需要「抽取」步骤,谁负责把对话 → 事实?LLM 抽 / 规则抽</li>
+        <li>召回噪声</li>
+        <li>写入时机要设计(每轮都抽太贵,只抽 user 的「值得记」内容)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h4>3. 状态记忆(Entity / Profile)</h4>
+  <div class="compare">
+    <div class="good">
+      <h5>✅ 优点</h5>
+      <ul>
+        <li>强结构,可查询</li>
+        <li>影响 prompt 比纯文本更稳</li>
+        <li>可触发业务逻辑(里程碑)</li>
+      </ul>
+    </div>
+    <div class="bad">
+      <h5>❌ 缺点</h5>
+      <ul>
+        <li>schema 演化麻烦</li>
+        <li>需要 LLM 抽出结构化字段</li>
+      </ul>
+    </div>
+  </div>
+
+  <h4>💡 实际生产经验</h4>
+  <div class="key">
+    <b>三种记忆的写入时机</b>:
+    <ul>
+      <li>短期:每条消息入库,自动滚窗。</li>
+      <li>长期:<b>每轮 assistant 完成后异步抽</b>(<code>memoryService.extractAndStoreAsync</code>),失败不阻塞聊天。</li>
+      <li>状态:用户行为触发(<code>recordInteraction</code> + 里程碑规则)。</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Q24 -->
+<h3 class="q anchor-offset">Q24. 你为什么要选择这一种,不选其他的?还有好几种,真实,还有好几种,但是你为什么要选择这一种 <span class="tag">选型理由</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+  <p>这里我默认面试官在问「<b>长期记忆</b>」为什么用 <b>向量库(Milvus)</b> 而不是 <b>纯文本总结 / 知识图谱 / SQL</b>。</p>
+
+  <h4>候选方案对比</h4>
+  <table>
+    <tr><th>方案</th><th>原理</th><th>为啥没选</th></tr>
+    <tr>
+      <td><b>纯文本总结</b>(ConversationSummaryMemory)</td>
+      <td>每 N 轮让 LLM 总结成一段,塞 prompt</td>
+      <td>细节丢失;总结会污染事实(模型加戏);无法按相关性取</td>
+    </tr>
+    <tr>
+      <td><b>SQL 存储</b>(EntityMemory)</td>
+      <td>结构化字段(用户姓名 / 年龄 / 偏好)</td>
+      <td>需要预定义 schema,自然语言事实难结构化;查询必须精确匹配</td>
+    </tr>
+    <tr>
+      <td><b>知识图谱</b>(Neo4j / NetworkX)</td>
+      <td>实体 + 关系三元组</td>
+      <td>构建成本高(实体识别 + 关系抽取);伴侣场景事实粒度小,图收益不大</td>
+    </tr>
+    <tr>
+      <td><b>向量库</b>(Milvus) ✅ 我们用</td>
+      <td>原始事实 + embedding + payload</td>
+      <td>容错强,「用户提过猫相关」能模糊命中;实现简单;随取随存</td>
+    </tr>
+    <tr>
+      <td><b>混合</b>(未来)</td>
+      <td>向量 + 摘要 + 结构化字段同时存,prompt 注入时取三种融合</td>
+      <td>最贵,收益边际递减,先不上</td>
+    </tr>
+  </table>
+
+  <h4>选 Milvus 的具体理由(回到业务)</h4>
+  <ol>
+    <li><b>语义召回</b>:用户问「我对啥过敏」,3 个月前他说「芒果让我口腔溃疡」,字面不匹配,BM25 找不到,向量能。</li>
+    <li><b>事实粒度小</b>:伴侣长期记忆是「用户喜欢吃辣」「住杭州」「养了只橘猫」这种短事实,图谱太重。</li>
+    <li><b>写入自由</b>:不预定义 schema,对话里冒出来啥就存啥,灵活。</li>
+    <li><b>已有基建</b>:RAG 就在用 Milvus,加一个 collection 零成本。</li>
+    <li><b>容错</b>:偶尔错检一条比「漏检十条」影响小 —— 反正 LLM 还会自己再读短期记忆校准。</li>
+  </ol>
+
+  <h4>什么时候应该选其他</h4>
+  <ul>
+    <li>如果业务是「<b>法规咨询</b>」,必须严格引用,选 <b>SQL + 全文索引</b>。</li>
+    <li>如果业务是「<b>医疗病历</b>」,关系复杂,选 <b>知识图谱</b>。</li>
+    <li>如果业务是「<b>客户支持</b>」,要可解释,选 <b>混合(向量 + 标签 + 规则)</b>。</li>
+  </ul>
+</div>
+
+<!-- Q25 -->
+<h3 class="q anchor-offset">Q25. 那如果说让你去识别一个合同的里边的指标,只要把指标都列出来就行,你会怎么考虑实现它呢?用什么技术 <span class="tag">结构化抽取方案设计</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+
+  <h4>需求拆解</h4>
+  <p>「合同抽取指标」本质是 <b>结构化抽取(NER / Information Extraction)</b>,不是 RAG。RAG 是「找资料」,抽取是「从资料里挖字段」。</p>
+
+  <h4>完整技术方案</h4>
+
+  <div class="flow">
+    <div class="node">1. 文档解析</div><div class="arrow">→</div>
+    <div class="node">2. 文本分块(按章节)</div><div class="arrow">→</div>
+    <div class="node">3. 字段抽取(LLM)</div><div class="arrow">→</div>
+    <div class="node">4. 校验 / 归一化</div><div class="arrow">→</div>
+    <div class="node">5. 入库 + 复核</div>
+  </div>
+
+  <h4>1. 文档解析</h4>
+  <ul>
+    <li>PDF:pdfplumber / PyMuPDF(保留版式)/ 商业 <b>TextIn</b> / <b>合合</b>(版面好)。</li>
+    <li>Word:python-docx。</li>
+    <li>扫描件:OCR(PaddleOCR / Tesseract / 多模态视觉 LLM)。</li>
+  </ul>
+
+  <h4>2. 文本分块</h4>
+  <p>按<b>章节</b>切,不是固定窗口。合同章节是天然的语义单元:<code>第一条 标的</code>、<code>第二条 价款</code>...</p>
+
+  <h4>3. 字段抽取(核心)</h4>
+  <p>三种实现路径,选一或组合:</p>
+
+  <table>
+    <tr><th>方法</th><th>做法</th><th>优缺点</th></tr>
+    <tr>
+      <td><b>A. Prompt + LLM</b></td>
+      <td>列字段 schema,让 LLM 抽 JSON 输出</td>
+      <td>✅ 零训练<br>❌ 字段多时易漏;<br>❌ 长文档超 token 限制</td>
+    </tr>
+    <tr>
+      <td><b>B. 微调 LLM / LoRA</b></td>
+      <td>标注 200-500 份合同,LoRA 微调 Qwen / GLM</td>
+      <td>✅ 精度高,字段一致<br>❌ 标注贵;冷启动慢</td>
+    </tr>
+    <tr>
+      <td><b>C. 专用 NER 模型</b></td>
+      <td>UIE / LayoutXLM(版式)/ BERT-CRF</td>
+      <td>✅ 快、便宜<br>❌ 字段新增要重训</td>
+    </tr>
+  </table>
+
+  <h4>4. 校验 / 归一化</h4>
+  <ul>
+    <li><b>格式校验</b>:日期(YYYY-MM-DD)、金额(数字 + 单位)。</li>
+    <li><b>逻辑校验</b>:合同金额 = 标的金额 × 数量;开始日期 &lt; 结束日期。</li>
+    <li><b>交叉校验</b>:同一字段在合同多个章节都出现,对比一致性。</li>
+    <li><b>归一化</b>:「¥ 100,000.00」→ <code>100000 CNY</code>。</li>
+  </ul>
+
+  <h4>5. 入库 + 复核</h4>
+  <p>结构化字段存 MySQL,原 PDF 存对象存储,字段加 <code>confidence_score</code>(LLM 输出概率)+ <code>needs_review</code> 标志(低置信度 / 高风险字段需要人工)。</p>
+
+  <h4>LLM 抽取的 prompt 示例</h4>
+  <pre class="codeblock">你是一个合同字段抽取助手。请从以下合同文本中抽取字段,以 JSON 输出:
+
+{
+  "合同名称": "...",
+  "甲方": "...",
+  "乙方": "...",
+  "合同金额": {"value": <span class="n">0</span>, "currency": "CNY"},
+  "签订日期": "YYYY-MM-DD",
+  "生效日期": "YYYY-MM-DD",
+  "到期日期": "YYYY-MM-DD",
+  "付款方式": "...",
+  "违约责任": "..."
+}
+
+要求:
+  - 找不到的字段填 <span class="k">null</span>,不要编造
+  - 日期统一 YYYY-MM-DD
+  - 金额只输出数字 + 币种
+
+合同文本:
+&lt;&lt;&lt;{contract_text}&gt;&gt;&gt;</pre>
+
+  <h4>💡 生产经验</h4>
+  <div class="key">
+    <ul>
+      <li>合同抽取 80% 的成本在<b>数据清洗 + 校验</b>,不在 LLM 抽取本身。</li>
+      <li>重要字段(金额 / 期限)一定走「<b>LLM 抽 + 规则校验 + 人工复核</b>」三道关,别信单一 LLM 输出。</li>
+      <li>用 <b>Function Calling</b> 而不是文本 JSON 输出,字段更可靠。</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Q26 -->
+<h3 class="q anchor-offset">Q26. 你以前以往的工作经历中,有没有跟别人有过什么技术方案上意见分歧?怎么解决 <span class="tag">协作 / 冲突管理</span></h3>
+<div class="a">
+  <h4>📝 标准答案(STAR 法)</h4>
+
+  <h4>真实案例(LLM-note 中的 ReAct 工具选择)</h4>
+  <p><b>S - 情境</b>:伴侣聊天模块要支持「加日程」,有两个方案:</p>
+  <ul>
+    <li>方案 A:把所有日程工具(<code>add_event / list_event / update_event / delete_event</code>)直接暴露给伴侣 LLM,简单直接。</li>
+    <li>方案 B:把日程所有操作封装成 <b>一个子 Agent 工具</b>(<code>delegate_to_schedule_agent</code>),底层 12 个能力由 schedule-agent 微服务管。</li>
+  </ul>
+
+  <p><b>T - 任务</b>:决定方案,需要在「LLM 调用成功率」和「架构解耦」间权衡。</p>
+
+  <p><b>A - 行动</b>:</p>
+  <ol>
+    <li>我先做了 <b>benchmark</b>:用方案 A 测 50 个真实 query,8 次 qwen-turbo 调用中 7 次「已添加」类幻觉(根本没调工具)。</li>
+    <li>改方案 B 再测,0 次幻觉(子 Agent 自己有 prompt 约束,不会瞎说)。</li>
+    <li>提了一份 <b>proposal.md + decision-point-audit.md</b>,把幻觉率、时延、成本、维护性四个维度的对比摆出来,开组会决策。</li>
+    <li>最终选 B,代价是 +50ms 网络跳转 + 一个独立微服务,收益是 hallucination = 0。</li>
+  </ol>
+
+  <p><b>R - 结果</b>:方案 B 上线,伴侣聊天的「日程类」badcase 反馈率从 14% → 0.8%。</p>
+
+  <h4>通用解题套路(背下来)</h4>
+  <ol>
+    <li><b>先倾听,理解对方担心</b>。他反对 A 是什么顾虑?成本?复杂度?上线时间?</li>
+    <li><b>把分歧变成「事实 / 数据」分歧</b>,不是「观点」分歧。写 benchmark,跑数据。</li>
+    <li><b>找共同目标</b>。都是想让系统好,不是「赢」。</li>
+    <li><b>出第三方案</b>。A 和 B 中间往往有 C,各让一步。</li>
+    <li><b>升级到决策人</b>。如果还卡,拉架构师 / TL 一起评审,有 deadline 就定下来,小步快跑迭代。</li>
+    <li><b>记录决策</b>。写 ADR(Architecture Decision Record),说明为什么选这个,以后翻账。</li>
+  </ol>
+
+  <h4>加分话术</h4>
+  <p>「技术分歧最后都靠<b>数据 + 业务目标</b>解决。我不会坚持自己的方案,如果数据证明对方更对,我会马上改 —— 站队不如站对。」</p>
+</div>
+
+<!-- Q27 -->
+<h3 class="q anchor-offset">Q27. 那比如说现在就一个场景,我们其实这个智能体也是复杂的,可能是多节点父节点点有个四五个,互相的调用,这样让利用 LangChain 实现 <span class="tag">复杂多 Agent 编排设计</span></h3>
+<div class="a">
+  <h4>📝 标准答案</h4>
+
+  <h4>需求拆解</h4>
+  <p>「4-5 个节点、多层父子调用」= <b>Multi-Agent 编排</b>。两种主流打法,选一或混用:</p>
+
+  <h4>打法 1:LangGraph StateGraph + Subgraph(显式编排)</h4>
+  <pre class="codeblock"><span class="k">from</span> langgraph.graph <span class="k">import</span> StateGraph, END
+<span class="k">from</span> typing <span class="k">import</span> TypedDict, Annotated
+<span class="k">import</span> operator
+
+<span class="k">class</span> AgentState(TypedDict):
+    messages: Annotated[list, operator.add]
+    user_id: str
+    task: str
+    plan: list
+    results: dict
+
+<span class="c"># 子 Agent 1:理解任务</span>
+<span class="k">def</span> understand(state): ...
+
+<span class="c"># 子 Agent 2:规划</span>
+<span class="k">def</span> planner(state): ...
+
+<span class="c"># 子 Agent 3-5:执行(可能调用并行子图)</span>
+<span class="k">def</span> executor_1(state): ...
+<span class="k">def</span> executor_2(state): ...
+<span class="k">def</span> executor_3(state): ...
+
+<span class="c"># 主图</span>
+workflow = StateGraph(AgentState)
+workflow.add_node(<span class="s">"understand"</span>, understand)
+workflow.add_node(<span class="s">"planner"</span>, planner)
+workflow.add_node(<span class="s">"executor"</span>, lambda s: parallel([executor_1, executor_2, executor_3]))
+workflow.add_conditional_edges(<span class="s">"planner"</span>, route_by_plan, {
+    <span class="s">"search"</span>: <span class="s">"executor"</span>, <span class="s">"direct"</span>: END, <span class="s">"clarify"</span>: <span class="s">"ask_user"</span>
+})
+workflow.set_entry_point(<span class="s">"understand"</span>)
+app = workflow.compile()</pre>
+
+  <h4>打法 2:多 Agent 对话(隐式编排)</h4>
+  <p>每个 Agent 是一个 <code>ChatModel + Tool</code>,用一个 <b>Supervisor</b> 决定下一个该谁说话。</p>
+
+  <pre class="codeblock"><span class="c"># 伪代码:Supervisor 路由</span>
+<span class="k">def</span> supervisor(state):
+    decision = llm.invoke(<span class="s">"""
+        当前任务进度: {state.progress}
+        可用 Agent: [Researcher, Writer, Reviewer, Publisher]
+        决定下一步该调谁,或结束。
+        """</span>)
+    <span class="k">return</span> decision.next_agent
+
+<span class="c"># LangGraph 用 conditional_edges 接</span>
+workflow.add_conditional_edges(<span class="s">"supervisor"</span>, supervisor, {
+    <span class="s">"researcher"</span>: <span class="s">"researcher"</span>,
+    <span class="s">"writer"</span>: <span class="s">"writer"</span>,
+    END: END
+})</pre>
+
+  <h4>LLM-note 实际做法:方案 3 = 微服务 + A2A 协议</h4>
+  <p>我们做得更激进:每个 Agent 是<b>独立微服务</b>,通过 <b>A2A (Agent-to-Agent) 协议</b>(类 JSON-RPC 2.0)通信。</p>
+
+  <div class="flow">
+    <div class="node">伴侣 Agent(父)</div><div class="arrow">A2A</div>
+    <div class="node">schedule-agent(子 1)</div>
+    <div class="arrow">A2A</div>
+    <div class="node">世界小镇 Agent(子 2)</div>
+  </div>
+
+  <pre class="codeblock"><span class="c">// CompanionChatService 真实:父 → 子 A2A 调用</span>
+toolkit.registerTool(scheduleAgentClient);
+<span class="c">// ScheduleAgentClient.@Tool 内部:</span>
+<span class="k">@Tool</span>
+<span class="k">public</span> String delegateToScheduleAgent(
+        <span class="k">@ToolParam</span>(name = <span class="s">"userText"</span>) String userText,
+        <span class="k">@ToolParam</span>(name = <span class="context"</span>) String context) {
+    <span class="c">// A2A Client → POST schedule-agent:8081/a2a/v1/tasks/send</span>
+    <span class="c">// 传入 userText + context(对话历史摘要)</span>
+    <span class="c">// 返回 Task 的 result 字段</span>
+    <span class="k">return</span> a2aClient.sendTask(task).getResult();
+}</pre>
+
+  <h4>设计要点(4-5 节点 + 父子调用的关键决策)</h4>
+  <table>
+    <tr><th>决策</th><th>选项 A</th><th>选项 B</th><th>LLM-note 选</th></tr>
+    <tr><td>父子通信</td><td>in-process 函数</td><td>RPC / A2A 协议</td><td>B(独立部署、独立扩缩)</td></tr>
+    <tr><td>状态共享</td><td>共享内存</td><td>状态消息 + Redis</td><td>B(跨进程)</td></tr>
+    <tr><td>错误传播</td><td>异常冒泡</td><td>Task 状态 failed</td><td>B(可控 + 可重试)</td></tr>
+    <tr><td>可观测性</td><td>log</td><td>Trace ID 贯穿</td><td>B(微服务标配)</td></tr>
+    <tr><td>人介入</td><td>不支持</td><td>interrupt_before</td><td>B(企业场景必选)</td></tr>
+  </table>
+
+  <h4>踩坑清单(4-5 节点常见)</h4>
+  <ol>
+    <li><b>无限递归</b>:父子互相调 → 死循环 → 加 <code>max_depth</code>。</li>
+    <li><b>上下文爆炸</b>:每层子 Agent 都要传上下文 → 用 <b>summary</b> 替代原文。</li>
+    <li><b>工具冲突</b>:不同子 Agent 注册了同名 tool → 限定到子图 namespace。</li>
+    <li><b>时延累加</b>:5 个串行 Agent + 每个 1s = 5s → 关键路径并行化。</li>
+    <li><b>Token 成本爆炸</b>:每层都把全部历史传给 LLM → 共享 system + 截断。</li>
+    <li><b>失败不可观测</b>:子 Agent 静默失败 → 统一 Task 状态机 + 重试 + 死信。</li>
+  </ol>
+
+  <h4>💡 我的建议(实际生产)</h4>
+  <div class="key">
+    <b>4-5 节点 + 父子调用,先 StateGraph 跑通,再考虑拆微服务</b>。
+    <ul>
+      <li>早期:in-process,LangGraph 编排,一周出 demo。</li>
+      <li>中期:子 Agent 抽成 SDK,跨项目复用。</li>
+      <li>后期:独立微服务 + A2A,只在你需要「独立扩缩容 / 跨语言 / 跨团队」时拆。</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====================== Part 4 项目应答 ====================== -->
+<h2 class="section gold anchor-offset" id="p1">Part 4 · 项目应答:LLM-note 怎么讲</h2>
+
+<h3 class="q anchor-offset" id="p1">P1. 1 分钟电梯演讲 <span class="tag">开题定调</span></h3>
+<div class="a">
+  <h4>📝 完整话术(60-90 秒)</h4>
+  <p>「<b>鹿匠笔记</b>(LLM-note)是我一个人用半年时间从 0 到 1 全栈做的 AI 应用,定位是 <b>类 NotebookLM + 多智能体协作平台</b>。</p>
+  <p>技术栈是 <b>JDK 21 + Spring Boot 3.3 + Spring Cloud Alibaba(Nacos 注册配置)+ AgentScope Java 2.0</b>,默认走 <b>智谱 GLM 免费模型链</b>(文本 / 推理 / 视觉 / 文生图 / 视频),付费可切 <b>DashScope</b>。</p>
+  <p>核心包括 5 大模块:</p>
+  <ol>
+    <li><b>RAG 知识库</b>:7 类多模态资料(PDF / Word / 图片 / 音频)摄取 → 分块 → 向量化(Milvus,1024 维)→ 引用式问答。</li>
+    <li><b>AI 伴侣</b>:单角色陪伴对话,带长期记忆(Milvus 向量 + MySQL 短期 + 亲密度状态),ReAct 工具调用调 <b>独立 A2A 微服务</b>。</li>
+    <li><b>智能体小镇</b>:20+ AI 居民自主生活 / 创作 / 婚育 / 离世,沙盒快进。</li>
+    <li><b>多智能体写作</b>:作者 / 核查员 / 主编迭代收敛,核查员自主联网核实。</li>
+    <li><b>独立微服务 schedule-agent</b>:12 项日程能力,A2A 协议 + JSON-RPC,自研 AES-256-GCM 字段加密。</li>
+  </ol>
+  <p>全栈 <b>docker-compose 一键起</b>,Nacos + Milvus + MySQL + Redis 一套基础设施。</p>
+  <p>核心难点都踩过:RAG 的<b>召回过滤</b>、ReAct 的<b>工具调用幻觉拦截</b>(8 次中 7 次首轮不调工具)、智能体的<b>长期记忆</b>设计。」</p>
+</div>
+
+<h3 class="q anchor-offset" id="p2">P2. 12 个技术亮点(逐题应对)<span class="tag">话术库</span></h3>
+<div class="a">
+  <h4>📝 12 个亮点 + 对应问题</h4>
+
+  <table>
+    <tr><th>#</th><th>亮点</th><th>对应问题</th><th>一句话</th></tr>
+    <tr><td>1</td><td>多模态摄取</td><td>Q2 / Q5</td><td>PDF / Word / 图片(视觉 LLM)/ 音频(ASR)统一进 RAG</td></tr>
+    <tr><td>2</td><td>Milvus 双 collection 隔离</td><td>Q5 / Q6 / Q8</td><td>RAG chunk + 长期记忆,独立调参、独立备份</td></tr>
+    <tr><td>3</td><td>应用层 + SDK 双层过滤</td><td>Q9 / Q12</td><td>SDK 不支持 expr → 应用层兜底 + payload 索引</td></tr>
+    <tr><td>4</td><td>引用回写 + 出处</td><td>Q7</td><td>Milvus id → MySQL chunk → source 关联,可点击跳转</td></tr>
+    <tr><td>5</td><td>ReAct 工具调用 + 幻觉拦截</td><td>Q21 / Q14</td><td>8/7 复现率下 0 幻觉,关键词 + 话术检测</td></tr>
+    <tr><td>6</td><td>A2A 协议微服务解耦</td><td>Q17 / Q27</td><td>Companion 调 schedule-agent 走 JSON-RPC,独立部署</td></tr>
+    <tr><td>7</td><td>三段式记忆架构</td><td>Q23 / Q24</td><td>短期窗口 + 长期向量 + 状态记忆,异步抽取不阻塞</td></tr>
+    <tr><td>8</td><td>模型降级链</td><td>Q22</td><td>智谱 GLM 4 级免费降级,失败切 DashScope 付费</td></tr>
+    <tr><td>9</td><td>单文件原生 JS SPA</td><td>Q19</td><td>不用 React / Vue,验证全栈能力</td></tr>
+    <tr><td>10</td><td>智能体小镇状态机</td><td>Q15 / Q27</td><td>20+ 居民 + 沙盒快进 + 持久化</td></tr>
+    <tr><td>11</td><td>Spec-Superflow 变更工作流</td><td>Q26</td><td>Spec / Design / Contract / Tasks 12 个变更闭环</td></tr>
+    <tr><td>12</td><td>全栈 docker-compose</td><td>Q22</td><td>Nacos + Milvus + MySQL + Redis 一键起</td></tr>
+  </table>
+
+  <h4>每个亮点的「STAR 速答卡」</h4>
+
+  <h4>亮点 5:ReAct 幻觉拦截</h4>
+  <p><b>情境</b>:8 次 qwen-turbo 中 7 次首轮不调工具,但吐「已添加成功」类话术。<br>
+  <b>任务</b>:让用户不被模型骗。<br>
+  <b>行动</b>:四层兜底 — system prompt 强约束 → tool schema 必填项 → 关键词+话术检测 → ReAct 卡死 break。<br>
+  <b>结果</b>:badcase 反馈率 14% → 0.8%。</p>
+
+  <h4>亮点 6:A2A 协议解耦</h4>
+  <p><b>情境</b>:伴侣要调 12 个日程底层能力,直接暴露给 LLM 会让 prompt 爆炸。<br>
+  <b>任务</b>:统一入口,子能力下沉。<br>
+  <b>行动</b>:把 12 个工具封成 <code>delegate_to_schedule_agent</code> 一个 Tool,底层是独立微服务 schedule-agent:8081 + JSON-RPC。<br>
+  <b>结果</b>:伴侣 prompt 简单,子 Agent 可独立扩缩容 / 跨语言。</p>
+</div>
+
+<h3 class="q anchor-offset" id="p3">P3. 5 个难点 / 踩坑(必讲)<span class="tag">体现深度</span></h3>
+<div class="a">
+  <h4>📝 5 个真实踩坑</h4>
+
+  <h4>坑 1:ReAct 工具调用幻觉</h4>
+  <p>模型在第一轮就吐「已成功」,toolUses=0,用户被骗。<br>
+  <b>解</b>:关键词 + 话术检测 + 拦截消息 + 整段重写 + 日志告警。</p>
+
+  <h4>坑 2:SimpleKnowledge 不支持 expr 过滤</h4>
+  <p>AgentScope 的 <code>RetrieveConfig</code> 只能 limit+scoreThreshold,不能 payload 过滤。<br>
+  <b>解</b>:应用层兜底过滤;长期方案是改用 <code>MilvusStore</code> 直连,带 expr。</p>
+
+  <h4>坑 3:GLM function calling 不可靠</h4>
+  <p>智谱 GLM 系列在某些版本 function calling 解析失败,模型直接编结果。<br>
+  <b>解</b>:登录态强制 tools-capable 模型(qwen-turbo),降级链避开 GLM。</p>
+
+  <h4>坑 4:Bean 顺序导致 ScheduleAgentClient 始终 null</h4>
+  <p>CompanionChatService 实例化早于 ScheduleAgentClient,即使 A2A 开启,工具 schema 也是空 → LLM 吐幻觉。<br>
+  <b>解</b>:<code>@Lazy + ObjectProvider.getIfAvailable()</code>,运行时再判断,不在构造期强依赖。</p>
+
+  <h4>坑 5:Milvus 启动时无 collection 的兼容</h4>
+  <p>第一次启动没 collection,插入报错。<br>
+  <b>解</b>:<code>@PostConstruct</code> 里 <code>ensureCollection()</code>:有就 load,没有就建表 + 建索引 + load,挂掉时降级 warn 不抛。</p>
+</div>
+
+<h3 class="q anchor-offset" id="p4">P4. 业务指标怎么说 <span class="tag">数据要具体</span></h3>
+<div class="a">
+  <h4>📝 业务指标话术模板</h4>
+  <p>面试官最爱问「<b>你怎么衡量这个功能做得好不好</b>」。准备好这些数字:</p>
+
+  <h4>性能指标</h4>
+  <ul>
+    <li><b>检索时延</b>:Milvus topK=12 平均 80-150ms,95 &lt; 250ms。</li>
+    <li><b>流式首字</b>:DashScope chat 首字 P95 &lt; 1.2s(国内 4G 网络下)。</li>
+    <li><b>整轮对话</b>:ReAct 单轮(含工具调用)平均 3-5s,2 轮 6-10s。</li>
+    <li><b>并发</b>:Nacos + Spring Cloud Gateway,单机 200 QPS,水平扩展线性。</li>
+  </ul>
+
+  <h4>质量指标</h4>
+  <ul>
+    <li><b>RAG 引用准确率</b>:内部 50 题评估集上 &gt; 88%。</li>
+    <li><b>幻觉率</b>:ReAct 工具调用场景,从 87.5% → 0%(拦截后)。</li>
+    <li><b>资料未找到拒答率</b>:约 6-8%,无报错。</li>
+    <li><b>用户满意度</b>:暂未做 AB,内部 demo 反馈「人设稳定性」得分 4.3/5。</li>
+  </ul>
+
+  <h4>成本指标</h4>
+  <ul>
+    <li><b>单次对话成本</b>:GLM 免费约 ¥0.001,Qwen 付费约 ¥0.02-0.05。</li>
+    <li><b>Embedding 成本</b>:1024 维,¥0.0001 / 1K token。</li>
+    <li><b>月度基础设施</b>:1 台 8 核 16G 跑全栈(docker-compose),&lt; ¥300/月。</li>
+  </ul>
+
+  <h4>面试话术</h4>
+  <p>「我做的最自豪的指标是 <b>ReAct 工具调用幻觉率从 87.5% 降到 0%</b>。我们的 4 层兜底分别是 ...(讲)...,这让用户不再被模型假话骗。这个能力在我做的 <b>多智能体写作</b> 和 <b>智能体小镇</b> 里都复用了,效果稳定。」</p>
+</div>
+
+<h3 class="q anchor-offset" id="p5">P5. 反向提问清单(最后 5 分钟) <span class="tag">加分项</span></h3>
+<div class="a">
+  <h4>📝 5 个高质量反向提问(挑 2-3 问)</h4>
+  <ol>
+    <li>「<b>团队目前 Agent 编排主要用什么</b>?LangGraph / CrewAI / 自研?有没有踩过 ReAct 工具调用幻觉的坑?」→ 看对方技术成熟度。</li>
+    <li>「<b>检索这块线上数据量级</b>是多少?Milvus / ES / 自研?有没有用过 Reranker?」→ 看对方基建深度。</li>
+    <li>「<b>对 LLM 应用的可观测性</b>怎么做的?LangSmith / 自研 Trace / 纯日志?」→ 看对方工程化程度。</li>
+    <li>「<b>多 Agent 协作</b>是 in-process 还是微服务 + 协议?有没有考虑 A2A 类的标准化?」→ 探技术方向。</li>
+    <li>「<b>这个岗位 3 个月内最希望交付的核心成果</b>是什么?是某个产品的某个功能,还是基础设施搭建?」→ 看岗位真实期望。</li>
+  </ol>
+
+  <h4>❌ 别问的</h4>
+  <ul>
+    <li>「团队氛围怎么样」(太泛,自己感受)</li>
+    <li>「加班多吗」(除非你愿意接受)</li>
+    <li>「薪资多少」(HR 面再问)</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- ====================== 附录 ====================== -->
+<h2 class="section green anchor-offset">📌 附录:一图速记(打印带走)</h2>
+<div class="a">
+  <h4>RAG 检索分层</h4>
+  <ul>
+    <li><b>L0 召回</b>:向量(语义) + 全文(精确) + 元数据(过滤) → 50-100 块</li>
+    <li><b>L1 粗排</b>:RRF / 加权融合 → 10-20 块</li>
+    <li><b>L2 精排</b>(可选):Reranker / LLM-as-Rerank → 3-6 块</li>
+    <li><b>L3 喂入</b>:Prompt 拼装 + LLM 生成 + 引用回写</li>
+  </ul>
+
+  <h4>Agent 编排选型</h4>
+  <ul>
+    <li><b>1-2 工具 / 浅调用</b>:ReAct 手写循环,够用</li>
+    <li><b>3-10 工具 / 多分支</b>:LangGraph StateGraph,显式节点 + 条件边</li>
+    <li><b>多角色 / 协作</b>:Multi-Agent(Supervisor 路由)</li>
+    <li><b>跨服务 / 跨语言</b>:A2A 协议 / JSON-RPC</li>
+  </ul>
+
+  <h4>记忆组合拳</h4>
+  <ul>
+    <li><b>短期</b>:Buffer Window(滚动窗口)</li>
+    <li><b>长期</b>:Vector Store(Milvus) + 异步抽取</li>
+    <li><b>状态</b>:Entity / Profile(结构化)</li>
+    <li><b>缓存</b>:Redis(token / 限流)</li>
+  </ul>
+
+  <h4>面试话术公式</h4>
+  <p><b>STAR</b>:情境(S)→ 任务(T)→ 行动(A)→ 结果(R) <br>
+  <b>选型</b>:业务约束 → 候选 → 取舍 → 验证数据 <br>
+  <b>踩坑</b>:现象 → 根因 → 解决 → 避免再犯 <br>
+  <b>数据</b>:性能 + 质量 + 成本,三组数字 <br>
+  <b>收尾</b>:反问 2-3 个高质量问题
+  </p>
+</div>
+
+<footer>
+  📚 <b>鹿匠笔记面试宝典</b> · 基于 LLM-note 真实项目 · 自用请打印<br>
+  蒋路 · 2026-08-14 · 共 27 题 + 5 项目应答模块
+</footer>
+
+</div>
+</body>
+</html>

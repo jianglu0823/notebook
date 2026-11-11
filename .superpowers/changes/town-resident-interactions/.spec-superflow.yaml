@@ -1,0 +1,45 @@
+# .spec-superflow.yaml — lightweight state machine
+# Derived data. Always rebuildable from artifacts. Lost/corrupt → fall back to content-level detection.
+
+# === Core state ===
+state: closing
+workflow: full
+revision: 2
+
+# === Hashes (fast staleness detection) ===
+artifacts_hash: sha256:c26088aa721bba239aff9ee20266aedd8efd5df9e725f226a38bbf938c84f670
+contract_hash: sha256:3a3a488b87db3396f9efa7240b94d68848fceae40b2131b30f0e901eee25e3bb
+
+# === Execution progress ===
+execution_mode: sdd
+execution_plan_hash: sha256:cfc1d52afe7b974d555812c0beefe0a65489e95b89f72b0b56e0e21554d278d1
+execution_plan_revision: 2
+batches_completed: 0
+test_result: pass
+spec_merged: true
+
+# === Metadata ===
+change_name: town-resident-interactions
+last_transition: 2026-08-18T06:32:47.227Z
+last_transition_from: executing
+last_transition_to: closing
+
+# === Decision points ===
+dp_0_decisions: change 名 town-resident-interactions;范围=① 修水印(只保证新帖不再带) ② 居民定时随机评论/点赞/收藏 + 作者偶尔回复;调度走后台 Quartz 5-15 分钟;沟通一次性出全 proposal+spec+contract
+dp_0_result: confirmed
+dp_0_confirmed: true
+dp_0_timestamp: 2026-08-18T05:47:56Z
+dp_1_result: null
+dp_1_timestamp: null
+dp_2_result: null
+dp_2_timestamp: null
+dp_3_result: approved
+dp_3_timestamp: null
+dp_4_result: sdd: plan revision 2; default; refresh after tasks checkbox update + spec merge
+dp_4_timestamp: 2026-08-18T06:28:01.712Z
+dp_5_result: null
+dp_5_timestamp: null
+dp_6_result: pass: 195/195 tests green (mvn test, 0 fail/0 error, 1 pre-existing skip); 4/4 wave receipts pass (plan revision 2); 4 waves (16dd3b9..3c389b9) + post-deploy fix commit 3d2ae4b (1 file +7 lines application.yml spring.task.scheduling.pool.size: 3); 4 new classes + 1 event + 1 modified ForumInteractionService + 4 new tests + 1 modified test + application.yml (original + pool-size fix); spec merge 4 specs → c13-c16; zero new dependencies; release-archivist 5-step verification done; T4.2 deploy verified PASS (7 new agent_comment rows in 22 min, exceeds 1h ≥ 5 requirement); T4.4 visual pending user check; KNOWN ISSUE: 2nd deploy (16:11) tick() not firing 19 min after init despite pool.size: 3 verified in deployed jar — separate investigation
+dp_6_timestamp: 2026-08-18T08:33:15Z
+dp_7_result: confirmed: 4 waves W1-W4 (16dd3b9..3c389b9) + post-deploy fix commit 3d2ae4b (1 file +7 lines application.yml spring.task.scheduling.pool.size: 3); 14 files +1483/-15 in main (4 new classes ResidentCommentGenerator/ResidentInteractionJob/AuthorReplyGenerator/AuthorReplyListener + 1 event CommentAddedEvent + 1 modified ForumInteractionService + 4 new tests + 1 modified test + application.yml) + 5 files +292 for spec merge (c13-c16); 195/195 tests green, 0 fail, 1 skip; 4/4 wave receipts pass; 4 delta specs merged to c13-c16; zero new dependencies; decision-point-audit at .superpowers/changes/town-resident-interactions/decision-point-audit.md; T4.2 deploy verified PASS (7 new agent_comment rows in 22 min after 1st deploy pool-size fix, exceeds 1h ≥ 5 requirement); T4.4 visual pending user check; KNOWN ISSUE: 2nd fresh deploy (16:11 CST) tick() silent 19+ min after init despite pool.size: 3 confirmed in deployed jar — separate investigation, does not block archive
+dp_7_timestamp: 2026-08-18T08:33:15Z

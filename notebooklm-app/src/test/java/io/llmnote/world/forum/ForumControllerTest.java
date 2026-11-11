@@ -98,12 +98,11 @@ class ForumControllerTest {
     }
 
     @Test
-    void categories_returns7ItemsIncludingAllWithRealTodayCount() {
+    void categories_returns6ItemsIncludingAllWithRealTodayCount() {
         ForumController ctrl = newController();
         when(queryService.listCategoryStats()).thenReturn(List.of(
                 new ForumQueryService.CategoryStat(null, "all", 5L),
                 new ForumQueryService.CategoryStat("joke", "joke", 1L),
-                new ForumQueryService.CategoryStat("acrostic", "acrostic", 0L),
                 new ForumQueryService.CategoryStat("daily", "daily", 2L),
                 new ForumQueryService.CategoryStat("chicken_soup", "chicken_soup", 0L),
                 new ForumQueryService.CategoryStat("video_series", "video_series", 1L),
@@ -111,12 +110,12 @@ class ForumControllerTest {
         ));
 
         List<Map<String, Object>> cats = ctrl.listCategories();
-        assertThat(cats).hasSize(7);
+        assertThat(cats).hasSize(6);
         // 第一项 = "全部"
         assertThat(cats.get(0).get("code")).isEqualTo("");
         assertThat(cats.get(0).get("label")).isEqualTo("全部");
         assertThat(cats.get(0).get("todayCount")).isEqualTo(5L);
-        // 6 个具体类目
+        // 5 个具体类目
         assertThat(cats.get(1).get("code")).isEqualTo("joke");
         assertThat(cats.get(1).get("label")).isEqualTo("段子");
         assertThat(cats.get(1).get("todayCount")).isEqualTo(1L);

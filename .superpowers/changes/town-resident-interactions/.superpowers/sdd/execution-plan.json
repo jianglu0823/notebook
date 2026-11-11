@@ -1,0 +1,60 @@
+{
+  "mode": "sdd",
+  "source": "default",
+  "rationale": "refresh after tasks checkbox update + spec merge",
+  "waves": [
+    {
+      "id": "W1",
+      "strategy": "serial",
+      "tasks": [
+        "T1.1",
+        "T1.2",
+        "T1.3",
+        "T1.4",
+        "T1.5",
+        "T1.6"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "W2",
+      "strategy": "serial",
+      "tasks": [
+        "T2.1",
+        "T2.2",
+        "T2.3",
+        "T2.4",
+        "T2.5",
+        "T2.6",
+        "T2.7"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "W3",
+      "strategy": "serial",
+      "tasks": [
+        "T3.1",
+        "T3.2",
+        "T3.3"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "W4",
+      "strategy": "serial",
+      "tasks": [
+        "T4.1",
+        "T4.2",
+        "T4.3",
+        "T4.4"
+      ],
+      "depends_on": []
+    }
+  ],
+  "artifacts_hash": "sha256:c26088aa721bba239aff9ee20266aedd8efd5df9e725f226a38bbf938c84f670",
+  "contract_hash": "sha256:3a3a488b87db3396f9efa7240b94d68848fceae40b2131b30f0e901eee25e3bb",
+  "workflow": "full",
+  "revision": 2,
+  "hash": "sha256:cfc1d52afe7b974d555812c0beefe0a65489e95b89f72b0b56e0e21554d278d1"
+}

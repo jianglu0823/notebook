@@ -1,0 +1,45 @@
+# .spec-superflow.yaml — lightweight state machine
+# Derived data. Always rebuildable from artifacts. Lost/corrupt → fall back to content-level detection.
+
+# === Core state ===
+state: exploring
+workflow: full
+revision: null
+
+# === Hashes (fast staleness detection) ===
+artifacts_hash: sha256:24e80e7676c0b13c5fd0bfaa19b06ad1e14061de32ebf7a5e11f25d54d0afc45
+contract_hash: sha256:dad3e8a6880222ab0ed6ebab6d9c35eb6ad6b78e7c141da3dc0791c3f9bcd664
+
+# === Execution progress ===
+execution_mode: null
+execution_plan_hash: null
+execution_plan_revision: null
+batches_completed: 0
+test_result: null
+spec_merged: false
+
+# === Metadata ===
+change_name: member-points
+last_transition: 2026-10-13T02:10:36.928Z
+last_transition_from: null
+last_transition_to: null
+
+# === Decision points ===
+dp_0_decisions: 定位=消耗型额度(credits);范围=全套(计量+账户+清算+充值+运营规则+等级);目录=member-points;沟通=草稿直出,决策点再确认
+dp_0_result: confirmed
+dp_0_confirmed: true
+dp_0_timestamp: 2026-10-13T02:10:40Z
+dp_1_result: null
+dp_1_timestamp: null
+dp_2_result: approved: 4产物整体批准;新增D9小镇居民自主模拟归平台账户只计量,用户主动互动归用户
+dp_2_timestamp: 2026-10-15T03:53:34Z
+dp_3_result: approved: 契约整体批准,27需求全映射,6批次B1-B6,回退条件锁定
+dp_3_timestamp: 2026-10-15T04:03:54Z
+dp_4_result: null
+dp_4_timestamp: null
+dp_5_result: null
+dp_5_timestamp: null
+dp_6_result: null
+dp_6_timestamp: null
+dp_7_result: null
+dp_7_timestamp: null

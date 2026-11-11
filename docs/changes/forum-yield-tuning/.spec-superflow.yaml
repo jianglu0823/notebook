@@ -1,0 +1,45 @@
+# .spec-superflow.yaml — lightweight state machine
+# Derived data. Always rebuildable from artifacts. Lost/corrupt → fall back to content-level detection.
+
+# === Core state ===
+state: executing
+workflow: tweak
+revision: 1
+
+# === Hashes (fast staleness detection) ===
+artifacts_hash: sha256:1495dbbb25bf55381ba1daad07163b48275fd92714f0a74a382355d55b2ee495
+contract_hash: sha256:35c9ed980fd3c9cd91c29912d6598eba983091b5424ab0aabaf13e4a0631572c
+
+# === Execution progress ===
+execution_mode: sdd
+execution_plan_hash: sha256:540f108634dd520b98a843310b7e66bc2b27eaa763b988cbfa7ee1d54ff316ef
+execution_plan_revision: 1
+batches_completed: 0
+test_result: null
+spec_merged: false
+
+# === Metadata ===
+change_name: forum-yield-tuning
+last_transition: 2026-08-17T07:55:58.553Z
+last_transition_from: approved-for-build
+last_transition_to: executing
+
+# === Decision points ===
+dp_0_decisions: 论坛帖日产 5→135。3 改动:WorldSettings cap 2→3;ForumGenerationService 类目硬推荐 + 反空响应;AutonomousRunner 每 tick 2 agent。不动 LLM model、套话、@Scheduled 周期、daily cap 上限。tweak 模式。
+dp_0_result: confirmed
+dp_0_confirmed: true
+dp_0_timestamp: null
+dp_1_result: null
+dp_1_timestamp: null
+dp_2_result: null
+dp_2_timestamp: null
+dp_3_result: null
+dp_3_timestamp: null
+dp_4_result: sdd: plan revision 1; default; tweak 改 3 文件
+dp_4_timestamp: 2026-08-17T07:55:29.018Z
+dp_5_result: null
+dp_5_timestamp: null
+dp_6_result: null
+dp_6_timestamp: null
+dp_7_result: null
+dp_7_timestamp: null

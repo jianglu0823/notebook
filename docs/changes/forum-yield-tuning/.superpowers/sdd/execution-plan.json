@@ -1,0 +1,20 @@
+{
+  "mode": "sdd",
+  "source": "default",
+  "rationale": "tweak 改 3 文件",
+  "waves": [
+    {
+      "id": "W1",
+      "strategy": "serial",
+      "tasks": [
+        "改 cap+改 prompt+改 tick+mvn-package+部署"
+      ],
+      "depends_on": []
+    }
+  ],
+  "artifacts_hash": null,
+  "contract_hash": null,
+  "workflow": "tweak",
+  "revision": 1,
+  "hash": "sha256:540f108634dd520b98a843310b7e66bc2b27eaa763b988cbfa7ee1d54ff316ef"
+}

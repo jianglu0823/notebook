@@ -1,0 +1,45 @@
+# .spec-superflow.yaml — lightweight state machine
+# Derived data. Always rebuildable from artifacts. Lost/corrupt → fall back to content-level detection.
+
+# === Core state ===
+state: executing
+workflow: auto
+revision: 1
+
+# === Hashes (fast staleness detection) ===
+artifacts_hash: sha256:a8434c174f40a9dcdf41ea74697a1789a5b1090558ce947d8f015ecf4c9c3a38
+contract_hash: sha256:92535f26a2a4a9a9ee0b0c4c7f093abee0c9b1d5d3ddbe5181abc7eae0bff385
+
+# === Execution progress ===
+execution_mode: sdd
+execution_plan_hash: sha256:b93f02bc083900ab145289858582a4052dc3df2ae98f5a920c40f51315486509
+execution_plan_revision: 1
+batches_completed: 0
+test_result: pass
+spec_merged: false
+
+# === Metadata ===
+change_name: world-content-restraint-v2
+last_transition: 2026-08-18T09:02:02.044Z
+last_transition_from: approved-for-build
+last_transition_to: executing
+
+# === Decision points ===
+dp_0_decisions: change 名 world-content-restraint-v2;范围=① XhsService 通义万相水印 ② WorldSimEngine 守门 media_enabled(注入+主守门+二次短路) ③ ForumGenerationService 兜底 video_series 配额(N=1 走 settings 配);mode=full;comm 先 carry-over 再开工
+dp_0_result: confirmed
+dp_0_confirmed: true
+dp_0_timestamp: 2026-08-18T08:50:00Z
+dp_1_result: null
+dp_1_timestamp: null
+dp_2_result: null
+dp_2_timestamp: null
+dp_3_result: approved: 3 fixes approved by user '全都改' direction. F1 rescope to Zhipu cogview watermark (was XhsService). F2 WorldSimEngine media_enabled gate. F3 Forum video quota N=1. Single wave W1.
+dp_3_timestamp: 2026-08-18T09:00:00Z
+dp_4_result: sdd: plan revision 1; default; full workflow 3 fixes single wave
+dp_4_timestamp: 2026-08-18T09:01:57.669Z
+dp_5_result: null
+dp_5_timestamp: null
+dp_6_result: null
+dp_6_timestamp: null
+dp_7_result: null
+dp_7_timestamp: null

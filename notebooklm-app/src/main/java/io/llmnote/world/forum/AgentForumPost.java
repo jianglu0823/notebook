@@ -55,6 +55,9 @@ public class AgentForumPost {
     @Column(nullable = false, length = 16)
     private String status = "published";
 
+    @Column(name = "image_prompt", columnDefinition = "TEXT")
+    private String imagePrompt;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 }

@@ -276,6 +276,7 @@ public class ForumController {
         m.put("favoriteCount", p.getFavoriteCount());
         m.put("commentCount", p.getCommentCount());
         m.put("status", p.getStatus());
+        m.put("imagePrompt", p.getImagePrompt());
         m.put("createdAt", p.getCreatedAt());
         // 2026-08-17:列表也带 attachments,feed 卡片显示缩略图
         m.put("attachments", atts.stream().map(this::toAttachmentMap).toList());
@@ -291,6 +292,7 @@ public class ForumController {
         m.put("mediaType", a.getMediaType());
         m.put("filePath", a.getFilePath());
         m.put("seq", a.getSeq());
+        m.put("prompt", a.getPrompt());
         m.put("width", a.getWidth());
         m.put("height", a.getHeight());
         m.put("durationSec", a.getDurationSec());
@@ -309,7 +311,6 @@ public class ForumController {
     private static String labelOf(String c) {
         return switch (c) {
             case "joke" -> "段子";
-            case "acrostic" -> "藏头诗";
             case "daily" -> "日常分享";
             case "chicken_soup" -> "心灵鸡汤";
             case "video_series" -> "视频连载";

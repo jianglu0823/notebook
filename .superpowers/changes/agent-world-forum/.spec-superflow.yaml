@@ -1,0 +1,45 @@
+# .spec-superflow.yaml — lightweight state machine
+# Derived data. Always rebuildable from artifacts. Lost/corrupt → fall back to content-level detection.
+
+# === Core state ===
+state: closing
+workflow: auto
+revision: 2
+
+# === Hashes (fast staleness detection) ===
+artifacts_hash: sha256:11e5234b23a6d78ac43515f0c43365c062e1728081288a60edbcfd5eb54dcfb2
+contract_hash: sha256:bda06677c039319e92ab9aa13c8eefac4a497692774d9bef11ca91fadf5920ec
+
+# === Execution progress ===
+execution_mode: sdd
+execution_plan_hash: sha256:d15fea3f6e62fe92d3877322fa0090c32951095521b709e18a80784211dbc73a
+execution_plan_revision: 2
+batches_completed: 0
+test_result: pass
+spec_merged: true
+
+# === Metadata ===
+change_name: agent-world-forum
+last_transition: 2026-08-12T06:45:39.446Z
+last_transition_from: executing
+last_transition_to: closing
+
+# === Decision points ===
+dp_0_decisions: change=agent-world-forum; 暂停现有 画作/短片/文字 创作调度(WorldMediaRunner 等保留为死代码); 新增小世界论坛 — 6 类内容(搞笑段子/段子藏头诗/日常分享/心灵鸡汤/视频连载/实用工具),支持多图多视频; 论坛内容全局共享(小镇视角,所有访客一致); 喜欢/收藏/评论 per-user 隔离; 文案要有 个性/内涵/自主性; 论坛产出的图片进图片作品库,视频进视频作品库
+dp_0_result: confirmed
+dp_0_confirmed: true
+dp_0_timestamp: 2026-08-12T05:31:53Z
+dp_1_result: confirmed: 8 capability c1~c10 forum 数据模型 + 内容生成 + 配图视频 + 互动 + REST + 前端 + 暂停旧创作;7 约束:不删旧代码/Spring Security 不动/MySQL 8 锁/LLM=GLM-4.7-flash/无新 maven 依赖/WorldSettings 单行表扩展/forum 子包隔离
+dp_1_timestamp: 2026-08-12T05:43:28Z
+dp_2_result: approved: proposal+10 specs+design+tasks 14 artifacts validate 全绿(0 error);8 batches B0~B7 30 tasks,跨 4 类(backend entity+repo / backend service / REST / frontend);依赖图清晰;R-T 映射 37 R 覆盖
+dp_2_timestamp: 2026-08-12T05:43:28Z
+dp_3_result: approved: 37R + 26C 全部映射;7 batches B0~B6 serial;execution mode=sdd(无 override);review timing per wave;escalation rules defined
+dp_3_timestamp: 2026-08-12T05:45:58Z
+dp_4_result: sdd: plan revision 2; default; refresh post tasks.md checkbox update
+dp_4_timestamp: 2026-08-12T06:44:20.522Z
+dp_5_result: null
+dp_5_timestamp: null
+dp_6_result: pass: 143/143 tests green, 0 fail, 1 skip (pre-existing CompanionA2AEndToEndTest); 7/7 wave receipts pass; 34 files +2882/-13 within scope (infra init.sql + 9 world files + 1 forum/ subpackage + index.html + 14 test files); zero new dependencies; release-archivist 5-step verification done
+dp_6_timestamp: 2026-08-12T06:43:49Z
+dp_7_result: confirmed: 7 waves B0-B6, 7 commits (1fc2108..15683f4), 34 files +2882/-13, 143/143 tests green, 10 delta specs merged, scope clean (infra init.sql + 9 world/ files + 1 forum/ subpackage + 1 index.html + 14 test files), zero new dependencies, decision-point audit at .superpowers/changes/agent-world-forum/decision-point-audit.md
+dp_7_timestamp: 2026-08-12T06:45:44Z

@@ -17,7 +17,8 @@ import static org.mockito.Mockito.when;
 
 /**
  * 访问日志拦截器:GET 也记;OPTIONS/HEAD 跳过(基础设施);
- * /api/auth/* 跳过(由 AuthController 显式记,避免重复)。
+ * /api/auth/* 跳过(由 AuthController 显式记,避免重复);
+ * 前台轮询端点(/api/world/feed、/api/world/forum/posts、/api/studio/xhs/* 等)按路径前缀跳过。
  */
 @ExtendWith(MockitoExtension.class)
 class AccessLogInterceptorTest {
@@ -132,5 +133,41 @@ class AccessLogInterceptorTest {
         } finally {
             io.llmnote.auth.CurrentPrincipalHolder.clear();
         }
+    }
+
+    @Test
+    void pollingPaths_areSkipped() {
+        String[] uris = {
+                "/api/world/feed",
+                "/api/world/feed?since=123",
+                "/api/world/forum/posts?page=0&size=20",
+                "/api/studio/xhs/42",
+                "/api/studio/xhs/42/drafts",
+                "/api/studio/writing/7",
+                "/api/world/meetings/3",
+                "/api/news",
+        };
+        for (String uri : uris) {
+            when(req.getMethod()).thenReturn("GET");
+            when(req.getRequestURI()).thenReturn(uri);
+            interceptor.afterCompletion(req, resp, null, null);
+        }
+        verify(accessLogService, never()).logRequest(
+                org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyInt());
+    }
+
+    @Test
+    void nonPollingGet_stillLogged() {
+        // 对照:普通 GET 即使路径包含子串但不是轮询前缀,仍应记
+        when(req.getMethod()).thenReturn("GET");
+        when(req.getRequestURI()).thenReturn("/api/studio/xhs-templates"); // 不在白名单
+        when(resp.getStatus()).thenReturn(200);
+
+        interceptor.afterCompletion(req, resp, null, null);
+
+        verify(accessLogService).logRequest(req, null, "GET_XHS-TEMPLATES", 200);
     }
 }

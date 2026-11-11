@@ -25,12 +25,6 @@ public final class ImagePromptStyle {
                     "bright pop colors, soft global illumination",
                     "Pixar-style 3D render, joyful mood, clean background",
                     "high detail, 8k"),
-            // 藏头诗:水彩,微距,梦幻 bokeh
-            "acrostic",     new Modifier(
-                    "macro close-up of poetic objects (ink, brush, paper, flower)",
-                    "soft natural light, dreamy bokeh",
-                    "watercolor illustration, artistic, ethereal mood",
-                    "ultra-detailed, soft palette"),
             // 日常分享:中景,自然光,生活摄影
             "daily",        new Modifier(
                     "medium shot, slice-of-life framing, natural composition",

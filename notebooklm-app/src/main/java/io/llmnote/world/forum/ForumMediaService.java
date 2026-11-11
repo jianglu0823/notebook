@@ -32,7 +32,6 @@ public class ForumMediaService {
     /** category → 附件生成计划(imageCount, videoCount)。沿用 c4 spec 表格。 */
     private static final Map<String, int[]> ATTACHMENT_PLAN = Map.of(
             "joke",         new int[]{2, 0},
-            "acrostic",     new int[]{1, 0},
             "daily",        new int[]{2, 0},
             "chicken_soup", new int[]{1, 0},
             "video_series", new int[]{0, 1},
@@ -133,12 +132,22 @@ public class ForumMediaService {
         p.setSimDate(LocalDate.now());
         p.setKind(mediaType);
         p.setSeq(seq);
-        p.setTitle(post.getTitle());
+        p.setTitle(deriveTitle(post));
         p.setContent(relPath);
         p.setRefPostId(post.getId());
         productRepo.save(p);
 
         log.info("[forum-media] {} done postId={} seq={} path={}", mediaType, post.getId(), seq, relPath);
+    }
+
+    /** 作品馆标题:joke/daily/chicken_soup 帖子没有标题,从正文截取(≤16 字,超出加 …),
+     *  避免 agent_product.title 落 NULL → 作品馆一片"无题"。 */
+    private static String deriveTitle(AgentForumPost post) {
+        String t = post.getTitle();
+        if (t != null && !t.isBlank()) return t.trim();
+        String c = post.getContent() == null ? "" : post.getContent().replaceAll("\\s+", "");
+        if (c.isBlank()) return "无题";
+        return c.length() <= 16 ? c : c.substring(0, 16) + "…";
     }
 
     /** 图片 prompt:用 ImagePromptStyle 拼接"主体+镜头+光线+风格+画质"五段式,

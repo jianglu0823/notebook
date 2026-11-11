@@ -74,10 +74,10 @@ class ForumQueryServiceTest {
     }
 
     @Test
-    void listCategoryStats_returnsAllPlus6Categories() {
+    void listCategoryStats_returnsAllPlus5Categories() {
         org.mockito.Mockito.lenient().when(postRepo.countByStatusAndCreatedAtGreaterThanEqual(
                 org.mockito.ArgumentMatchers.eq("published"), any())).thenReturn(7L);
-        for (String cat : java.util.List.of("joke", "acrostic", "daily", "chicken_soup", "video_series", "utility")) {
+        for (String cat : java.util.List.of("joke", "daily", "chicken_soup", "video_series", "utility")) {
             org.mockito.Mockito.lenient().when(postRepo.countByStatusAndCategoryAndCreatedAtGreaterThanEqual(
                     org.mockito.ArgumentMatchers.eq("published"),
                     org.mockito.ArgumentMatchers.eq(cat), any())).thenReturn(1L);
@@ -86,12 +86,12 @@ class ForumQueryServiceTest {
         ForumQueryService svc = new ForumQueryService(postRepo, attachRepo, likeRepo, favRepo, commentRepo);
         var stats = svc.listCategoryStats();
 
-        assertThat(stats).hasSize(7);
+        assertThat(stats).hasSize(6);
         // 第一项 = 全部(code=null)
         assertThat(stats.get(0).code()).isNull();
         assertThat(stats.get(0).todayCount()).isEqualTo(7L);
-        // 后 6 项 = 6 个具体类目
-        for (int i = 1; i <= 6; i++) {
+        // 后 5 项 = 5 个具体类目
+        for (int i = 1; i <= 5; i++) {
             assertThat(stats.get(i).code()).isNotNull();
             assertThat(stats.get(i).todayCount()).isEqualTo(1L);
         }

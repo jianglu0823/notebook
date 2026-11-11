@@ -57,6 +57,48 @@ class ForumMediaServiceTest {
         verify(productRepo, org.mockito.Mockito.times(2)).save(capProd.capture());
         assertThat(capProd.getAllValues()).allMatch(p -> p.getRefPostId().equals(100L));
         assertThat(capProd.getAllValues()).allMatch(p -> "image".equals(p.getKind()));
+        // 帖子无标题 → 作品标题从正文截取,不落 NULL(作品馆"无题"根因)
+        assertThat(capProd.getAllValues()).allMatch(p -> "哈哈哈哈今天天气真好啊".equals(p.getTitle()));
+    }
+
+    @Test
+    void untitledPost_longContent_productTitleTruncatedWithEllipsis() {
+        when(mediaClient.generateImage(anyString())).thenReturn("http://img/0.png", "http://img/1.png");
+        when(mediaClient.downloadToWorld(anyString(), anyLong(), any(LocalDate.class), anyInt(), anyString()))
+                .thenReturn("world/1/2026-08-12-0.png", "world/1/2026-08-12-1.png");
+        when(attachRepo.save(any(AgentForumAttachment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(productRepo.save(any(AgentProduct.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ForumMediaService svc = new ForumMediaService(mediaClient, attachRepo, productRepo, employeeRepo);
+        AgentForumPost post = post(104L, 1L, "alice", "daily",
+                "今天去了很远的地方散步看到了很美的晚霞心情特别舒畅想分享给大家");
+
+        svc.generateAttachments(post);
+
+        ArgumentCaptor<AgentProduct> capProd = ArgumentCaptor.forClass(AgentProduct.class);
+        verify(productRepo, org.mockito.Mockito.times(2)).save(capProd.capture());
+        assertThat(capProd.getAllValues()).allMatch(p ->
+                "今天去了很远的地方散步看到了很美…".equals(p.getTitle()) && p.getTitle().length() == 17);
+    }
+
+    @Test
+    void titledPost_productKeepsPostTitle() {
+        when(mediaClient.submitVideo(anyString())).thenReturn("task-9");
+        when(mediaClient.pollVideo(anyString(), anyInt(), anyLong())).thenReturn("http://video/9.mp4");
+        when(mediaClient.downloadToWorld(anyString(), anyLong(), any(LocalDate.class), anyInt(), anyString()))
+                .thenReturn("world/1/2026-08-12-9.mp4");
+        when(attachRepo.save(any(AgentForumAttachment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(productRepo.save(any(AgentProduct.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ForumMediaService svc = new ForumMediaService(mediaClient, attachRepo, productRepo, employeeRepo);
+        AgentForumPost post = post(105L, 1L, "alice", "video_series", "剧情简介");
+        post.setTitle("小镇风云第一集");
+
+        svc.generateAttachments(post);
+
+        ArgumentCaptor<AgentProduct> capProd = ArgumentCaptor.forClass(AgentProduct.class);
+        verify(productRepo).save(capProd.capture());
+        assertThat(capProd.getValue().getTitle()).isEqualTo("小镇风云第一集");
     }
 
     @Test

@@ -39,16 +39,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ForumGenerationService {
 
-    /** 6 个类目(与 DB 约束 / c3 spec / c5 spec 对齐)。 */
+    /** 5 个类目(与 DB 约束 / c3 spec / c5 spec 对齐)。2026-09-24 应要求下架藏头诗类目。 */
     public static final List<String> CATEGORIES = List.of(
-            "joke", "acrostic", "daily", "chicken_soup", "video_series", "utility");
+            "joke", "daily", "chicken_soup", "video_series", "utility");
 
-    private static final Set<String> TITLE_REQUIRED = Set.of("acrostic", "video_series", "utility");
+    private static final Set<String> TITLE_REQUIRED = Set.of("video_series", "utility");
 
     /** 类目 → 长度区间 [min, max],与 c5 spec 一致。 */
     private static final Map<String, int[]> LENGTH_RANGES = Map.of(
             "joke",         new int[]{30, 300},
-            "acrostic",     new int[]{30, 300},
             "daily",        new int[]{30, 300},
             "chicken_soup", new int[]{30, 300},
             "video_series", new int[]{50, 500},
@@ -105,7 +104,9 @@ public class ForumGenerationService {
                         actor.getId(), action.getType());
                 return;
             }
-            List<AgentForumPost> posts = parseResponse(raw, actor, LocalDate.now());
+            // 拼出本次实际发给 LLM 的完整 prompt,落库便于前端展示"当时用的什么 prompt"
+            String fullPrompt = "[SYSTEM]\n" + prompt.system() + "\n\n[USER]\n" + prompt.user();
+            List<AgentForumPost> posts = parseResponse(raw, actor, LocalDate.now(), fullPrompt);
             for (AgentForumPost p : posts) {
                 AgentForumPost saved = postRepo.save(p);
                 try {
@@ -177,13 +178,12 @@ public class ForumGenerationService {
                 人设:%s
 
                 【个性】你不是一个无情的输出机器。你发这条帖子,基于你刚刚在小镇里<b>实际做了的那件事</b>,不是流水账、不是今日总结。
-                【内涵】段子/藏头诗/鸡汤要让人会心一笑或若有所思 —— 可以用双关、典故、反差、自嘲、谐音梗、藏头诗(每行首字组成关键词)。"内涵"不是堆砌辞藻,而是"看完想点赞"或"看完想截图"。
+                【内涵】段子/鸡汤要让人会心一笑或若有所思 —— 可以用双关、典故、反差、自嘲、谐音梗。"内涵"不是堆砌辞藻,而是"看完想点赞"或"看完想截图"。
                 【自主性】不要每次都"今天天气真好/工作辛苦/加油"。你要有自己的观点、自己的小确幸或小牢骚。"鸡汤"也可以是你作为过来人的反鸡汤。
                 【行动一致性】帖子内容必须紧扣你刚刚那件具体的事;不要把它升华成"人生感悟大会",也不要因这次行动平平就硬抒情。
 
-                类目清单(必须从中选,0~%d 条):joke / acrostic / daily / chicken_soup / video_series / utility
+                类目清单(必须从中选,0~%d 条):joke / daily / chicken_soup / video_series / utility
                 - joke:段子,正文 30~300 字符
-                - acrostic:藏头诗,4 行,每行首字组成关键词(关键词由你定),标题必填
                 - daily:日常分享,正文 30~300 字符
                 - chicken_soup:心灵鸡汤/反鸡汤,正文 30~300 字符
                 - video_series:视频连载剧情简介,正文 50~500 字符,标题必填
@@ -195,12 +195,12 @@ public class ForumGenerationService {
 
                 【发帖倾向】小镇管理员希望帖数更丰富、类目更均衡。
                 - 默认<b>倾向发帖</b>(你今天还有配额,小镇需要内容);除非这次行动<b>完全没灵感</b>,否则请尽量发一条。
-                - 优先从上面推荐顺序 top-3 选类目(top-1 强烈推荐);即使 top-3 不完全契合行动主题,也请从中找最贴近的,不要为了"完全契合"而跳回 acrostic/daily 等你已发烂的类目。
+                - 优先从上面推荐顺序 top-3 选类目(top-1 强烈推荐);即使 top-3 不完全契合行动主题,也请从中找最贴近的,不要为了"完全契合"而跳回 daily 等你已发烂的类目。
                 - 返回 [] 必须是"完全没灵感"才用 —— 不是"类目不太合适"或"今天已经发过"。
 
                 严格返回 JSON 数组(无前后说明文字):
                 - 完全没灵感:返回 []
-                - 要发:[{"category":"joke","title":null,"content":"..."},{"category":"acrostic","title":"代码人生","content":"代...\\n码...\\n人...\\n生..."}]
+                - 要发:[{"category":"joke","title":null,"content":"..."},{"category":"daily","title":null,"content":"..."}]
                 """.formatted(
                 e.getName(), persona, maxThisAction,
                 String.join(" / ", CLICHE_PREFIXES),
@@ -248,7 +248,7 @@ public class ForumGenerationService {
     }
 
     /** 解析 LLM 响应 → 帖子列表;每条走类目 + 长度 + 套话 + 标题校验。失败抛 IllegalArgumentException。 */
-    List<AgentForumPost> parseResponse(String raw, AgentEmployee e, LocalDate today) {
+    List<AgentForumPost> parseResponse(String raw, AgentEmployee e, LocalDate today, String fullPrompt) {
         // 去掉 LLM 偶尔在 JSON 外的 ```json 包装
         String cleaned = raw.trim();
         if (cleaned.startsWith("```")) {
@@ -306,6 +306,7 @@ public class ForumGenerationService {
             p.setCategory(category);
             p.setTitle(title);
             p.setContent(content);
+            p.setImagePrompt(fullPrompt);
             p.setStatus("published");
             out.add(p);
         }

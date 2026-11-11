@@ -44,6 +44,8 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./infra/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - llm-note-net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -60,6 +62,8 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - llm-note-net
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
@@ -79,6 +83,8 @@ services:
     command: etcd -advertise-client-urls=http://milvus-etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     volumes:
       - etcd_data:/etcd
+    networks:
+      - llm-note-net
     healthcheck:
       test: ["CMD", "etcdctl", "endpoint", "health"]
       interval: 30s
@@ -88,7 +94,7 @@ services:
 
   # ---------- Milvus 依赖: minio(对象存储) ----------
   milvus-minio:
-    image: minio/minio:RELEASE.2024-05-28T17-19-04Z
+    image: quay.io/minio/minio:RELEASE.2024-05-28T17-19-04Z
     container_name: nblm-milvus-minio
     environment:
       MINIO_ACCESS_KEY: minioadmin
@@ -96,6 +102,8 @@ services:
     command: minio server /minio_data --console-address ":9001"
     volumes:
       - minio_data:/minio_data
+    networks:
+      - llm-note-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
@@ -116,6 +124,8 @@ services:
       - "9091:9091"
     volumes:
       - milvus_data:/var/lib/milvus
+    networks:
+      - llm-note-net
     depends_on:
       milvus-etcd:
         condition: service_healthy
@@ -154,6 +164,12 @@ services:
       DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY}
       ZHIPU_API_KEY: ${ZHIPU_API_KEY}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-prod-at-least-32-bytes-long-secret}
+      # init.sql 落后于实体模型(缺 companion_template / agent_employee.due_date 等),
+      # 首次启动由 Hibernate 补齐缺失的表和列
+      SPRING_JPA_HIBERNATE_DDLAUTO: update
+      # schedule-agent 独立服务:容器直连其在 llm-note_default 的钉死 IP,不走 host 端口
+      SCHEDULE_AGENT_BASE_URL: http://172.21.0.10:8081
+      SCHEDULE_AGENT_NACOS_ADDR: nacos:8848
       UPLOAD_DIR: /data/uploads
       AUDIO_DIR: /data/audio
       IMAGE_DIR: /data/images
@@ -162,6 +178,8 @@ services:
       - "${APP_PORT:-8080}:8080"
     volumes:
       - app_data:/data
+    networks:
+      - llm-note-net
     depends_on:
       nacos:
         condition: service_healthy
@@ -189,6 +207,8 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     ports:
       - "${GATEWAY_PORT:-9000}:8090"
+    networks:
+      - llm-note-net
     depends_on:
       nacos:
         condition: service_healthy
@@ -208,7 +228,11 @@ volumes:
   app_data:
 
 networks:
+  # 所有服务显式挂载此网络;name 必须为 llm-note_default — schedule-agent
+  # compose 以 external 方式引用该名字,且其 server.address 钉死 172.21.0.10
   llm-note-net:
     name: llm-note_default
-    external: true
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
 

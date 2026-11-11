@@ -1,0 +1,31 @@
+{
+  "mode": "sdd",
+  "source": "default",
+  "rationale": "full workflow 3 fixes single wave",
+  "waves": [
+    {
+      "id": "W1",
+      "strategy": "serial",
+      "tasks": [
+        "T1.1",
+        "T1.2",
+        "T1.3",
+        "T2.1",
+        "T2.2",
+        "T2.3",
+        "T2.4",
+        "T3.1",
+        "T3.2",
+        "T3.3",
+        "T3.4",
+        "T3.5"
+      ],
+      "depends_on": []
+    }
+  ],
+  "artifacts_hash": "sha256:a8434c174f40a9dcdf41ea74697a1789a5b1090558ce947d8f015ecf4c9c3a38",
+  "contract_hash": "sha256:92535f26a2a4a9a9ee0b0c4c7f093abee0c9b1d5d3ddbe5181abc7eae0bff385",
+  "workflow": "auto",
+  "revision": 1,
+  "hash": "sha256:b93f02bc083900ab145289858582a4052dc3df2ae98f5a920c40f51315486509"
+}

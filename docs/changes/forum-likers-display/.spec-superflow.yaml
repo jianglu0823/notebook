@@ -1,0 +1,45 @@
+# .spec-superflow.yaml — lightweight state machine
+# Derived data. Always rebuildable from artifacts. Lost/corrupt → fall back to content-level detection.
+
+# === Core state ===
+state: closing
+workflow: tweak
+revision: 2
+
+# === Hashes (fast staleness detection) ===
+artifacts_hash: sha256:e53265ce92182495149cb877de7ceb93d7e88e1c175ce74c9814d929849916a7
+contract_hash: sha256:85e29c05156b36ffc8fad150106cca210c393ed42ae5c703545a6941eedb96bc
+
+# === Execution progress ===
+execution_mode: sdd
+execution_plan_hash: sha256:45b2fbc84af330f7f80d6862101473ae2de33d17724cae9b4df8a1030d96aebc
+execution_plan_revision: 2
+batches_completed: 7
+test_result: pass
+spec_merged: false
+
+# === Metadata ===
+change_name: forum-likers-display
+last_transition: 2026-08-20T07:20:59.984Z
+last_transition_from: executing
+last_transition_to: closing
+
+# === Decision points ===
+dp_0_decisions: 论坛帖子点赞区在 likeCount 之外,展示最近 3 个点赞人昵称(XHS 风格)。后端加 repo 查询 + controller 注入 recentLikers;前端 renderForumCard / renderForumDetail 加底部行。3 文件改动,tweak 模式。
+dp_0_result: confirmed
+dp_0_confirmed: true
+dp_0_timestamp: 2026-08-20T06:01:04Z
+dp_1_result: null
+dp_1_timestamp: null
+dp_2_result: null
+dp_2_timestamp: null
+dp_3_result: approved
+dp_3_timestamp: 2026-08-20T06:01:05Z
+dp_4_result: sdd: plan revision 2; default; regenerate plan to match current artifacts hash
+dp_4_timestamp: 2026-08-20T07:19:08.228Z
+dp_5_result: null
+dp_5_timestamp: null
+dp_6_result: pass: tweak lightweight closure; 5 files in scope fence + 338/-16 lines; 194/194 tests pass (mvn package); docker compose up verified; API recentLikers field returns real agent names; review-w1.md pass
+dp_6_timestamp: 2026-08-20T07:21:18Z
+dp_7_result: confirmed: tweak archive; commit 23cf228 on branch forum-likers-display; review-w1.md pass; decision-point-audit.md generated; 5 files in scope (3 backend + 1 frontend + 1 test); no delta specs to merge (single file under specs/forum-likers/)
+dp_7_timestamp: 2026-08-20T07:21:24Z

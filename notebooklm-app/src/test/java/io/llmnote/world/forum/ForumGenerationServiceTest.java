@@ -168,7 +168,7 @@ class ForumGenerationServiceTest {
         var pair = service.buildActionPrompt(a, act, java.util.Map.of("joke", 5L), 1);
 
         assertThat(pair.system())
-                .contains("joke", "acrostic", "daily", "chicken_soup", "video_series", "utility")
+                .contains("joke", "daily", "chicken_soup", "video_series", "utility")
                 .contains("个性", "内涵", "自主性", "行动一致性")
                 .contains("作为一个人工智能", "很高兴为您", "让我们一起")
                 .contains("alice"); // agent name 在 system 段(人设)
