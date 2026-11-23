@@ -4,7 +4,8 @@
       "Bash(git commit -m ' *)",
       "Bash(docker compose up -d --build app:*)",
       "Bash(set -a && . ./.env && set +a && docker compose up -d --build app:*)",
-      "Bash(docker exec nblm-mysql *)"
+      "Bash(docker exec nblm-mysql *)",
+      "Bash(docker info *mjnmjjjnmn)"
     ]
   },
   "enabledPlugins": {

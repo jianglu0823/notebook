@@ -815,6 +815,28 @@
   .cpn-side-actions { padding:8px 8px 12px; display:flex; flex-direction:column; gap:6px; }
   .cpn-side-actions button { width:100%; }
   .cpn-main { display:flex; flex-direction:column; overflow:hidden; }
+  .cpn-avatar-stage { height:260px; margin:10px 16px 0; border:1px solid var(--line); border-radius:var(--radius-lg); background:linear-gradient(145deg, var(--panel), var(--panel2)); display:flex; flex-direction:column; overflow:hidden; flex:none; }
+  .cpn-avatar-toolbar { min-height:36px; padding:5px 10px; display:flex; align-items:center; gap:7px; color:var(--mut); font-size:12px; border-bottom:1px solid var(--line); }
+  .cpn-avatar-toolbar .spacer { flex:1; }
+  .cpn-avatar-state-dot { width:7px; height:7px; border-radius:50%; background:var(--mut); }
+  .cpn-avatar-stage[data-state="listening"] .cpn-avatar-state-dot { background:#0ea5e9; }
+  .cpn-avatar-stage[data-state="thinking"] .cpn-avatar-state-dot { background:var(--warn); animation:pulse 1.2s ease-in-out infinite; }
+  .cpn-avatar-stage[data-state="speaking"] .cpn-avatar-state-dot { background:var(--ok); box-shadow:0 0 8px var(--ok); }
+  .cpn-avatar-toggle, .cpn-avatar-sound, .cpn-avatar-retry { border:0; background:transparent; color:var(--mut); padding:4px 6px; font-size:12px; }
+  .cpn-avatar-sound { color:var(--accent); }
+  .cpn-avatar-body { position:relative; flex:1; min-height:170px; overflow:hidden; }
+  .cpn-live2d-host { position:absolute; inset:0; display:none; }
+  .cpn-live2d-canvas { width:100%; height:100%; display:block; cursor:pointer; }
+  .cpn-avatar-fallback { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  .cpn-avatar-fallback span { width:86px; height:86px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:34px; font-weight:800; color:var(--accent-fg); background:linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, white)); }
+  .cpn-avatar-stage.ready .cpn-live2d-host { display:block; }
+  .cpn-avatar-stage.ready .cpn-avatar-fallback { display:none; }
+  .cpn-avatar-footer { min-height:24px; padding:3px 10px 6px; display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--mut); font-size:10px; }
+  .cpn-avatar-copyright { text-align:right; opacity:.75; }
+  .cpn-avatar-stage.collapsed { height:auto; }
+  .cpn-avatar-stage.collapsed .cpn-avatar-body, .cpn-avatar-stage.collapsed .cpn-avatar-footer { display:none; }
+  .cpn-avatar-stage.collapsed .cpn-avatar-toolbar { border-bottom:0; }
+  .cpn-avatar-sound[hidden], .cpn-avatar-retry[hidden] { display:none; }
   .cpn-hd { padding:12px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; background:var(--panel); flex:none; }
   .cpn-hd .nm { font-size:15px; font-weight:800; }
   .cpn-hd .desc { font-size:12px; color:var(--mut); }
@@ -2783,6 +2805,8 @@
   </div>
 </div>
 
+<script src="/companion-tts-player.js"></script>
+<script src="/companion-live2d.js"></script>
 <script>
 const API = '/api';
 let notebooks = [];            // 全部可读笔记本
@@ -3288,6 +3312,10 @@ function setActiveNav(elId) {
   ['view-home','view-all','view-studio','view-writing','view-world','view-drama','view-companion','view-schedule'].forEach(id => {
     const e = document.getElementById(id); if (e) e.classList.toggle('active', id === elId);
   });
+  if (elId !== 'view-companion' && window.__cpnViewActive) {
+    window.__cpnViewActive = false;
+    cpnLeaveCompanion();
+  }
 }
 // ---- 首页 ----
 function selectHome() {
@@ -7999,10 +8027,12 @@ window.addEventListener('resize', () => {
 //  - WS /api/ws/companion JSON 帧 + 二进制 PCM 语音
 // =====================================================================
 const CPN = {
-  list: [], activeId: null, messages: [], model: '', models: [], intimacy: null,
+  list: [], activeId: null, current: null, messages: [], model: '', models: [], intimacy: null,
   ws: null, wsReady: false, sending: false, currentAiMsgId: null, currentAiText: '',
   recording: false, mediaRecorder: null, audioCtx: null, audioBuf: [],
   pendingAttachments: [],  // [{url, kind:'image'}]
+  epoch: 0, avatar: null, ttsPlayer: null, avatarState: 'idle', avatarCollapsed: false,
+  voiceReplyPending: false, _ttsSeq: null,
 };
 const CPN_TAGS = ['GENTLE','LIVELY','COLD','TSUNDERE','CUTE','MATURE','MYSTERIOUS'];
 const CPN_GENDERS = [{k:'FEMALE',t:'女'},{k:'MALE',t:'男'},{k:'NON_BINARY',t:'其他'}];
@@ -8010,7 +8040,11 @@ const CPN_TONE = [{k:'SWEET',t:'温柔甜蜜'},{k:'CUTE',t:'俏皮可爱'},{k:'I
 const CPN_RELATION = [{k:'CASUAL',t:'朋友'},{k:'INTERNET',t:'网友'},{k:'BESTIE',t:'闺蜜'},{k:'ROMANTIC',t:'恋人'}];
 const CPN_VOICE = [{k:'SWEET',t:'温柔'},{k:'MAGNETIC',t:'磁性'},{k:'YOUNG',t:'年轻'},{k:'MATURE',t:'成熟'},{k:'CUTE',t:'可爱'},{k:'HOARSE',t:'沙哑'},{k:'CALM',t:'冷静'}];
 
-function cpnApi(path, opts) { return j('/api/companion' + path, opts || {}); }
+function cpnApi(path, opts) {
+  opts = opts || {};
+  const headers = typeof opts.body === 'string' ? { 'Content-Type': 'application/json' } : {};
+  return j('/api/companion' + path, { ...opts, headers: { ...headers, ...(opts.headers || {}) } });
+}
 
 // ---- 工作台 · 论坛 (agent-world-forum) ----
 const FORUM_CAT_LABELS = {joke:'段子', daily:'日常分享', chicken_soup:'心灵鸡汤', video_series:'视频连载', utility:'实用工具'};
@@ -8722,6 +8756,7 @@ async function submitForumComment() {
 function stopForumPollIfActive() { stopForumPoll(); }
 
 function selectCompanion() {
+  window.__cpnViewActive = true;
   closeAI();
   ['home','studio','drama','writing','world','schedule','forum'].forEach(v => document.body.classList.remove(v));
   document.body.classList.add('companion');
@@ -8774,6 +8809,7 @@ function renderCpnList() {
 }
 
 async function openCompanion(id) {
+  const epoch = cpnResetCompanionRuntime();
   CPN.activeId = id;
   renderCpnList();
   try {
@@ -8782,9 +8818,13 @@ async function openCompanion(id) {
       cpnApi('/' + id + '/messages'),
       cpnApi('/' + id + '/intimacy'),
     ]);
+    if (epoch !== CPN.epoch) return;
+    CPN.current = c;
     renderCompanionChat(c, msgs || [], intim);
     cpnConnectWs();
-  } catch (e) { toast('打开伴侣失败: ' + e.message, 'err'); }
+  } catch (e) {
+    if (epoch === CPN.epoch) toast('打开伴侣失败: ' + e.message, 'err');
+  }
 }
 
 function renderCompanionChat(c, msgs, intim) {
@@ -8806,6 +8846,24 @@ function renderCompanionChat(c, msgs, intim) {
       <button class="sec" style="padding:6px 10px;font-size:12px" onclick="openCompanionEdit(${c.id})">编辑</button>
       <button class="danger" style="padding:6px 10px;font-size:12px" onclick="deleteCompanion(${c.id})">删除</button>
     </div>
+    <div class="cpn-avatar-stage ${CPN.avatarCollapsed?'collapsed':''}" id="cpnAvatarStage" data-state="idle">
+      <div class="cpn-avatar-toolbar">
+        <span class="cpn-avatar-state-dot"></span>
+        <span id="cpnAvatarState">待命中</span>
+        <button class="cpn-avatar-sound" id="cpnAvatarSound" hidden onclick="cpnUnlockAudio()">🔇 开启声音</button>
+        <button class="cpn-avatar-retry" id="cpnAvatarRetry" hidden onclick="cpnRetryAvatar()">重试形象</button>
+        <span class="spacer"></span>
+        <button class="cpn-avatar-toggle" id="cpnAvatarToggle" onclick="cpnToggleAvatar()">${CPN.avatarCollapsed?'数字人 ▾':'数字人 ▴'}</button>
+      </div>
+      <div class="cpn-avatar-body">
+        <div class="cpn-avatar-fallback"><span>${escapeHtml(ini)}</span></div>
+        <div class="cpn-live2d-host" id="cpnLive2dHost"></div>
+      </div>
+      <div class="cpn-avatar-footer">
+        <span id="cpnAvatarHint">数字人加载中…</span>
+        <span class="cpn-avatar-copyright">This content uses sample data owned and copyrighted by Live2D Inc.</span>
+      </div>
+    </div>
     <div class="cpn-msgs" id="cpnMsgs"></div>
     <div class="cpn-input">
       <div id="cpnAttPreview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
@@ -8818,7 +8876,7 @@ function renderCompanionChat(c, msgs, intim) {
         <button class="ico" onclick="document.getElementById('cpnImgInput').click()" title="发图片">🖼️ 图片</button>
         <input type="file" id="cpnImgInput" accept="image/*" class="hidden" onchange="cpnAttachImage(event)">
         <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
-          <input type="checkbox" id="cpnTtsChk"> 语音回复
+          <input type="checkbox" id="cpnTtsChk" onchange="cpnUnlockAudio()"> 语音回复
         </label>
         <span class="spacer"></span>
         <span id="cpnConn" class="mut">未连接</span>
@@ -8826,6 +8884,7 @@ function renderCompanionChat(c, msgs, intim) {
       </div>
     </div>
   `;
+  cpnSetupDigitalHuman();
   document.getElementById('cpnInput').focus();
   // 后端按 id DESC 返回,渲染前翻成 ASC(老→新),使最新消息在底部;appendCpnMessage 继续 push 到末尾不变。
   CPN.messages = (msgs || []).slice().reverse();
@@ -8885,20 +8944,27 @@ function cpnConnectWs() {
   try { if (CPN.ws) CPN.ws.close(); } catch (e) {}
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   const tok = token();
+  const epoch = CPN.epoch;
   const url = `${proto}://${location.host}/api/ws/companion${tok ? ('?token='+encodeURIComponent(tok)) : ''}`;
   const ws = new WebSocket(url);
   ws.binaryType = 'arraybuffer';
   CPN.ws = ws;
-  ws.onopen = () => { CPN.wsReady = true; setCpnConn('已连接'); };
-  ws.onclose = () => { CPN.wsReady = false; setCpnConn('已断开'); };
-  ws.onerror = () => setCpnConn('连接错误');
+  const isCurrent = () => CPN.ws === ws && CPN.epoch === epoch;
+  ws.onopen = () => {
+    if (!isCurrent()) return;
+    CPN.wsReady = true;
+    setCpnConn('已连接');
+  };
+  ws.onclose = () => {
+    if (!isCurrent()) return;
+    CPN.wsReady = false;
+    setCpnConn('已断开');
+  };
+  ws.onerror = () => { if (isCurrent()) setCpnConn('连接错误'); };
   ws.onmessage = (ev) => {
+    if (!isCurrent()) return;
     if (typeof ev.data !== 'string') {
-      // 二进制 TTS 音频:按 sentenceSeq 入队
-      if (CPN._ttsSeq != null) {
-        const arr = CPN_TTS_QUEUE.get(CPN._ttsSeq);
-        if (arr) arr.push(ev.data);
-      }
+      if (CPN._ttsSeq != null) CPN.ttsPlayer?.append(CPN._ttsSeq, ev.data);
       return;
     }
     let f; try { f = JSON.parse(ev.data); } catch (e) { return; }
@@ -8906,7 +8972,15 @@ function cpnConnectWs() {
   };
 }
 
-function cpnReconnect() { cpnConnectWs(); toast('正在重连…'); }
+function cpnReconnect() {
+  CPN.ttsPlayer?.stop();
+  CPN.voiceReplyPending = false;
+  cpnSetAvatarState('idle');
+  try { CPN.ws?.close(); } catch (e) {}
+  CPN.ws = null;
+  cpnConnectWs();
+  toast('正在重连…');
+}
 
 function setCpnConn(s) {
   const el = document.getElementById('cpnConn');
@@ -8916,14 +8990,37 @@ function setCpnConn(s) {
 function cpnHandleFrame(f) {
   switch (f.kind) {
     case 'ready': setCpnConn('已连接 · ' + (f.ownerId || '?')); break;
-    case 'chat.delta': cpnAppendDelta(f.messageId, f.delta); break;
-    case 'chat.done': cpnFinishAi(f.messageId, f.fullText, f.model); break;
-    case 'chat.error': toast('对话错误: ' + (f.error || '?'), 'err'); cpnSendingDone(); break;
-    case 'error': toast(f.error || '错误', 'err'); cpnSendingDone(); break;
-    case 'voice.text': /* 显示中间识别结果 */ break;
-    case 'tts.start': CPN._ttsSeq = f.sentenceSeq; break;
-    case 'tts.sentence': /* binary frames buffered by ws.onmessage */ break;
-    case 'tts.end': cpnDequeueTts(f.sentenceSeq); CPN._ttsSeq = null; break;
+    case 'chat.delta':
+      cpnAppendDelta(f.messageId, f.delta);
+      cpnSetAvatarState('thinking');
+      break;
+    case 'chat.done':
+      cpnFinishAi(f.messageId, f.fullText, f.model);
+      if (!CPN.voiceReplyPending) cpnSetAvatarState('idle');
+      break;
+    case 'chat.error':
+      toast('对话错误: ' + (f.error || '?'), 'err');
+      cpnSendingDone();
+      cpnResetAvatarAfterError();
+      break;
+    case 'error':
+      toast(f.error || '错误', 'err');
+      cpnSendingDone();
+      cpnResetAvatarAfterError();
+      break;
+    case 'voice.text': cpnSetAvatarState(f.finalFlag ? 'thinking' : 'listening'); break;
+    case 'tts.start':
+      CPN._ttsSeq = f.sentenceSeq;
+      CPN.ttsPlayer?.start(f.sentenceSeq);
+      break;
+    case 'tts.sentence':
+      CPN._ttsSeq = f.sentenceSeq;
+      CPN.ttsPlayer?.setMime(f.sentenceSeq, f.mime);
+      break;
+    case 'tts.end':
+      CPN.ttsPlayer?.end(f.sentenceSeq);
+      CPN._ttsSeq = null;
+      break;
     case 'milestone': appendCpnSystem('💗 ' + f.text); cpnRefreshIntimacy(); break;
     case 'pong': break;
   }
@@ -8990,6 +9087,10 @@ function cpnSend() {
   const text = (input.value || '').trim();
   if (!text && !CPN.pendingAttachments.length) return;
   if (!CPN.wsReady) { toast('WS 未连接,先重连', 'err'); return; }
+  const wantTts = !!document.getElementById('cpnTtsChk')?.checked;
+  CPN.ttsPlayer?.stop();
+  CPN.voiceReplyPending = wantTts;
+  CPN.ttsPlayer?.unlock();
   const atts = CPN.pendingAttachments.slice();
   CPN.pendingAttachments = [];
   renderCpnAttPreview();
@@ -9001,7 +9102,6 @@ function cpnSend() {
   input.value = '';
   CPN.sending = true;
   const btn = document.getElementById('cpnSendBtn'); if (btn) btn.disabled = true;
-  const wantTts = !!document.getElementById('cpnTtsChk')?.checked;
   const frame = {
     kind: 'chat.text',
     companionId: CPN.activeId,
@@ -9011,6 +9111,7 @@ function cpnSend() {
     voiceReply: wantTts,
   };
   CPN.ws.send(JSON.stringify(frame));
+  cpnSetAvatarState('thinking');
 }
 
 async function cpnAttachImage(ev) {
@@ -9044,6 +9145,10 @@ async function cpnToggleMic() {
     toast('WS 未连接,先重连', 'err');
     return;
   }
+  const wantTts = !!document.getElementById('cpnTtsChk')?.checked;
+  CPN.ttsPlayer?.stop();
+  CPN.voiceReplyPending = wantTts;
+  CPN.ttsPlayer?.unlock();
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1 } });
     CPN.audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
@@ -9063,13 +9168,18 @@ async function cpnToggleMic() {
       }
     };
     // 先发 voice.start(server 端 asrSessions.put 之后才接收 binary),再连 audio 触发 onaudioprocess
-    CPN.ws.send(JSON.stringify({ kind: 'voice.start', companionId: CPN.activeId, model: CPN.model, voiceReply: !!document.getElementById('cpnTtsChk')?.checked }));
+    CPN.ws.send(JSON.stringify({ kind: 'voice.start', companionId: CPN.activeId, model: CPN.model, voiceReply: wantTts }));
     started = true;
     source.connect(proc); proc.connect(CPN.audioCtx.destination);
     CPN._audioProc = proc; CPN._audioSource = source; CPN._audioStream = stream;
     CPN.recording = true;
     if (btn) { btn.classList.add('rec'); btn.textContent = '⏹ 停止'; }
-  } catch (e) { toast('麦克风权限失败: ' + e.message, 'err'); }
+    cpnSetAvatarState('listening');
+  } catch (e) {
+    CPN.voiceReplyPending = false;
+    cpnSetAvatarState('idle');
+    toast('麦克风权限失败: ' + e.message, 'err');
+  }
 }
 
 function cpnStopMic() {
@@ -9081,20 +9191,135 @@ function cpnStopMic() {
   CPN._audioStream = CPN._audioSource = CPN._audioProc = null; CPN.audioCtx = null;
   CPN.recording = false;
   if (btn) { btn.classList.remove('rec'); btn.textContent = '🎙️ 语音'; }
+  cpnSetAvatarState('thinking');
 }
 
-const CPN_TTS_QUEUE = new Map();
-function cpnQueueTts(seq) { CPN_TTS_QUEUE.set(seq, []); }
-function cpnDequeueTts(seq) {
-  const bufs = CPN_TTS_QUEUE.get(seq) || [];
-  if (bufs.length) {
-    const blob = new Blob(bufs, { type: 'audio/mpeg' });
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    audio.play().catch(() => {});
+const CPN_AVATAR_STATE_TEXT = {
+  idle: '待命中', listening: '正在聆听…', thinking: '正在思考…',
+  speaking: '正在说话…', blocked: '声音暂未开启',
+};
+
+function cpnSetupDigitalHuman() {
+  const epoch = CPN.epoch;
+  CPN.avatarState = 'idle';
+  CPN.voiceReplyPending = false;
+  if (typeof CpnTtsPlayer !== 'undefined') {
+    CPN.ttsPlayer = new CpnTtsPlayer({
+      onState: state => {
+        if (epoch !== CPN.epoch) return;
+        if (state === 'speaking' || state === 'blocked') {
+          cpnSetAvatarState(state);
+          return;
+        }
+        CPN.voiceReplyPending = false;
+        if (!CPN.sending && !CPN.recording) cpnSetAvatarState('idle');
+      },
+      onMouthLevel: level => {
+        if (epoch === CPN.epoch) CPN.avatar?.setMouthLevel(level);
+      },
+      onError: error => console.warn('伴侣语音播放:', error),
+    });
   }
-  CPN_TTS_QUEUE.delete(seq);
+  cpnSetAvatarState('idle');
+  cpnCreateAvatar();
 }
+
+function cpnCreateAvatar() {
+  const host = document.getElementById('cpnLive2dHost');
+  if (CPN.avatarCollapsed || !host || CPN.avatar) return;
+  if (typeof CpnAvatarController === 'undefined') {
+    const hint = document.getElementById('cpnAvatarHint');
+    if (hint) hint.textContent = '数字人组件加载失败，已保留文字聊天';
+    return;
+  }
+  const epoch = CPN.epoch;
+  const avatar = new CpnAvatarController({
+    onStatus: (status, message) => {
+      if (epoch !== CPN.epoch) return;
+      const stage = document.getElementById('cpnAvatarStage');
+      const hint = document.getElementById('cpnAvatarHint');
+      const retry = document.getElementById('cpnAvatarRetry');
+      stage?.classList.toggle('ready', status === 'ready');
+      if (hint) hint.textContent = message || '点击立绘可互动';
+      if (retry) retry.hidden = status !== 'error';
+    },
+    onError: error => console.warn('Live2D 数字人:', error),
+  });
+  CPN.avatar = avatar;
+  avatar.mount(host).then(() => {
+    if (epoch === CPN.epoch) avatar.setState(CPN.avatarState);
+  });
+}
+
+function cpnSetAvatarState(state) {
+  CPN.avatarState = state;
+  CPN.avatar?.setState(state);
+  const stage = document.getElementById('cpnAvatarStage');
+  if (stage) stage.dataset.state = state;
+  const label = document.getElementById('cpnAvatarState');
+  if (label) label.textContent = CPN_AVATAR_STATE_TEXT[state] || CPN_AVATAR_STATE_TEXT.idle;
+  const sound = document.getElementById('cpnAvatarSound');
+  if (sound) sound.hidden = state !== 'blocked';
+}
+
+async function cpnUnlockAudio() {
+  if (!CPN.ttsPlayer) return;
+  const ready = await CPN.ttsPlayer.unlock();
+  if (!ready) cpnSetAvatarState('blocked');
+}
+
+function cpnToggleAvatar() {
+  CPN.avatarCollapsed = !CPN.avatarCollapsed;
+  const stage = document.getElementById('cpnAvatarStage');
+  const toggle = document.getElementById('cpnAvatarToggle');
+  stage?.classList.toggle('collapsed', CPN.avatarCollapsed);
+  if (toggle) toggle.textContent = CPN.avatarCollapsed ? '数字人 ▾' : '数字人 ▴';
+  if (CPN.avatarCollapsed) {
+    CPN.avatar?.destroy();
+    CPN.avatar = null;
+  } else {
+    cpnCreateAvatar();
+  }
+}
+
+function cpnRetryAvatar() {
+  CPN.avatar?.destroy();
+  CPN.avatar = null;
+  cpnCreateAvatar();
+}
+
+function cpnResetAvatarAfterError() {
+  CPN.voiceReplyPending = false;
+  CPN.ttsPlayer?.stop();
+  cpnSetAvatarState('idle');
+}
+
+function cpnResetCompanionRuntime() {
+  CPN.epoch += 1;
+  if (CPN.recording) cpnStopMic();
+  const ws = CPN.ws;
+  CPN.ws = null;
+  CPN.wsReady = false;
+  try { ws?.close(); } catch (e) {}
+  CPN.avatar?.destroy();
+  CPN.avatar = null;
+  CPN.ttsPlayer?.destroy();
+  CPN.ttsPlayer = null;
+  CPN._ttsSeq = null;
+  CPN.voiceReplyPending = false;
+  CPN.sending = false;
+  cpnAiMsgEl = null;
+  return CPN.epoch;
+}
+
+function cpnLeaveCompanion() {
+  cpnResetCompanionRuntime();
+}
+
+window.addEventListener('pagehide', cpnLeaveCompanion);
+window.addEventListener('pageshow', event => {
+  if (event.persisted && document.body.classList.contains('companion') && CPN.activeId) openCompanion(CPN.activeId);
+});
 
 // ===== 创建/编辑/删除/模板 =====
 function openCompanionCreate(prefill) {
@@ -9155,7 +9380,12 @@ async function submitCompanion(id) {
 
 async function deleteCompanion(id) {
   if (!confirm('确定删除这个伴侣?聊天记录会保留。')) return;
-  try { await cpnApi('/' + id, { method: 'DELETE' }); CPN.activeId = null; loadCpnList();
+  try {
+    await cpnApi('/' + id, { method: 'DELETE' });
+    cpnLeaveCompanion();
+    CPN.activeId = null;
+    CPN.current = null;
+    loadCpnList();
     document.getElementById('cpnMain').innerHTML = `<div class="cpn-empty" id="cpnEmpty">
       <p style="font-size:15px;margin-bottom:10px">还没有伴侣,从模板快速开始,或自定义一个</p>
       <div style="display:flex;gap:8px;justify-content:center">

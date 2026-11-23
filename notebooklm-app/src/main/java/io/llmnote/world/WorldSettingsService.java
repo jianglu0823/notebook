@@ -2,6 +2,7 @@ package io.llmnote.world;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /** 全局世界设置(单行 id=1)的读写:自主行动总开关/间隔/模型。 */
 @Service
@@ -37,8 +38,10 @@ public class WorldSettingsService {
         return repo.save(s);
     }
 
-    /** 持久化整体设置(供世界时钟推进后保存)。 */
-    public WorldSettings save(WorldSettings s) {
-        return repo.save(s);
+    /** 只更新世界时钟字段，避免日结期间覆盖并发修改的开关和模型。 */
+    @Transactional
+    public void saveClock(WorldSettings s) {
+        repo.updateClock(s.getId(), s.getSimDate(), s.getSimMinute(),
+                s.getSeason(), s.getWeather(), s.getTemperature());
     }
 }

@@ -7,10 +7,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /** B0 单元测试:WorldSettingsService 扩展字段后 update/getOrCreate 行为符合 c1 spec。
@@ -80,5 +83,22 @@ class WorldSettingsServiceTest {
         assertThat(existing.getAutonomousEnabled()).isFalse();
         assertThat(existing.getForumEnabled()).isTrue();
         assertThat(existing.getForumMaxPostsPerAgentPerDay()).isEqualTo(3);
+    }
+
+    @Test
+    void saveClock_updatesOnlyClockFields() {
+        WorldSettings s = new WorldSettings();
+        s.setId(1L);
+        s.setSimDate(LocalDate.of(2027, 1, 17));
+        s.setSimMinute(1320);
+        s.setSeason("冬");
+        s.setWeather("大雪");
+        s.setTemperature(8);
+        s.setMediaEnabled(true);
+
+        service.saveClock(s);
+
+        verify(repo).updateClock(1L, s.getSimDate(), 1320, "冬", "大雪", 8);
+        verify(repo, never()).save(any());
     }
 }

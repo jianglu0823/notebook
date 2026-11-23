@@ -91,7 +91,7 @@ public class AutonomousRunner {
             if (s.getSimMinute() == null) s.setSimMinute(480);
             if (s.getMinutesPerTick() == null) s.setMinutesPerTick(120);
             s.setSeason(WorldSimEngine.seasonOf(s.getSimDate()));
-            settingsService.save(s);
+            settingsService.saveClock(s);
             return;
         }
         int step = s.getMinutesPerTick() == null ? 120 : Math.max(1, s.getMinutesPerTick());
@@ -109,7 +109,7 @@ public class AutonomousRunner {
         }
         s.setSimDate(date);
         s.setSimMinute(min);
-        settingsService.save(s);
+        settingsService.saveClock(s);
     }
 
     /** 让 actor 自主行动一次并落库。 */
